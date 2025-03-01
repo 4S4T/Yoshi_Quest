@@ -82,11 +82,11 @@ eSceneType Map::Update(float delta_second) {
 	Vector2D currentPos = player->GetLocation();
 
 	// **エンカウント処理**
-	if ((int)currentPos.x != (int)lastPlayerPos.x || (int)currentPos.y != (int)lastPlayerPos.y) {
+	if (isEncounterEnabled &&
+		((int)currentPos.x != (int)lastPlayerPos.x || (int)currentPos.y != (int)lastPlayerPos.y)) {
 		encounterStepCounter++;
 		lastPlayerPos = currentPos;
 
-		// 5歩移動後、1% の確率でバトルへ遷移
 		if (encounterStepCounter >= 5) {
 			encounterStepCounter = 0;
 			if (rand() % 100 < 1) {
@@ -96,6 +96,8 @@ eSceneType Map::Update(float delta_second) {
 			}
 		}
 	}
+
+
 
 	// **マップ遷移ポイントの処理**
 	for (const auto& point : transitionPoints) {
@@ -150,6 +152,9 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 	std::string line;
 	int rowIdx = 0;
 
+	// **エンカウント可否の設定**
+	isEncounterEnabled = (map_name != "Resource/stage2.csv");
+
 	while (std::getline(ifs, line)) {
 		std::vector<char> row;
 		std::vector<bool> collisionRow;
@@ -174,6 +179,7 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 	}
 	return data;
 }
+
 
 // マップの描画
 void Map::DrawStageMap() {

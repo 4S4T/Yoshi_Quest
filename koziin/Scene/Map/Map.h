@@ -39,6 +39,8 @@ private:
 	const float fadeSpeed = 150.0f;
 
 	bool isFirstSpawn = true; // ‰‰ñƒXƒ|[ƒ“”»’è
+	bool isEncounterEnabled = true;
+
 
 	void UpdateCamera();
 	void CheckEncounter();
