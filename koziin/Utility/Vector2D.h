@@ -69,6 +69,11 @@ public:
 	Vector2D& operator/=(const float& scalar);
 	Vector2D& operator/=(const Vector2D& v);
 
+
+	// **等値・非等値比較の宣言のみ**
+	bool operator==(const Vector2D& v) const;
+	bool operator!=(const Vector2D& v) const;
+
 public:
 	// ベクトルの長さ
 	float SqrLength() const;

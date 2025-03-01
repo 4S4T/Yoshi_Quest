@@ -1,4 +1,3 @@
-// Map.h
 #pragma once
 
 #include "../SceneBase.h"
@@ -28,27 +27,24 @@ private:
 	const int encounterStepThreshold = 5;
 	std::mt19937 randomEngine;
 	std::uniform_int_distribution<int> distribution;
-	bool hasInitialFadeOut = false;		  // 初回フェードアウト開始フラグ
-	bool initialFadeOutCompleted = false; // 初回フェードアウト完了フラグ
-
-
+	bool hasInitialFadeOut = false;
+	bool initialFadeOutCompleted = false;
 
 	// フェードイン・フェードアウト用変数
 	bool isFadingIn = false;
 	bool isFadingOut = false;
-	// Mapクラスにフラグ追加
-	bool hasTransitioned = false; 
+	bool hasTransitioned = false;
 	eSceneType nextScene = eSceneType::eMap;
 	float fadeAlpha = 255.0f;
 	const float fadeSpeed = 150.0f;
+
+	bool isFirstSpawn = true; // 初回スポーン判定
 
 	void UpdateCamera();
 	void CheckEncounter();
 	void StartFadeIn();
 	void UpdateFadeIn(float delta_second);
 	void DrawFadeIn();
-
-	// フェードアウト用関数
 	void StartFadeOut(eSceneType targetScene);
 	void UpdateFadeOut(float delta_second);
 	void DrawFadeOut();

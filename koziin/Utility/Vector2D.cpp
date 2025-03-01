@@ -78,3 +78,13 @@ Vector2D Vector2D::Lerp(const Vector2D& a, const Vector2D& b, const float t) {
 float Vector2D::Distance(const Vector2D& a, const Vector2D& b) {
 	return Vector2D(a - b).SqrLength();
 }
+
+// “™’l”äŠr
+bool Vector2D::operator==(const Vector2D& v) const {
+	return (fabsf(this->x - v.x) < 1.0e-6f) && (fabsf(this->y - v.y) < 1.0e-6f);
+}
+
+// ”ñ“™’l”äŠr
+bool Vector2D::operator!=(const Vector2D& v) const {
+	return !(*this == v);
+}
