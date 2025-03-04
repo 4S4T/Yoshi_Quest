@@ -75,8 +75,9 @@ public:
 	void SetAttack(const int attack);
 
 	const int GetDefense();
-	void GetDefense(const int defense);
 
+
+	void SetDefense(const int defense);
 	const int GetAHp();
 	void SetHp(const int hp);
 

@@ -85,14 +85,28 @@ void SceneManager::ChangeScene(eSceneType type) {
 		throw("シーンが生成できませんでした\n");
 	}
 
-	// Map -> Battle 遷移時に位置情報を渡す
 	if (type == eSceneType::eBattle) {
 		Map* mapScene = dynamic_cast<Map*>(current_scene);
 		BattleScene* battleScene = dynamic_cast<BattleScene*>(new_scene);
-		if (mapScene && battleScene) {
-			battleScene->SetPlayerPosition(mapScene->player->GetLocation());
+
+		if (!mapScene) {
+			printf("Error: current_scene is not a Map instance!\n");
+			return;
 		}
+		if (!battleScene) {
+			printf("Error: new_scene is not a BattleScene instance!\n");
+			return;
+		}
+
+		if (!mapScene->player) {
+			printf("Error: mapScene->player is nullptr! Initializing new player.\n");
+			mapScene->player = new Player(); // 仮の初期化（メモリ管理に注意）
+		}
+
+		battleScene->SetPlayerPosition(mapScene->player->GetLocation());
+		battleScene->SetPlayer(mapScene->player);
 	}
+
 
 	if (current_scene != nullptr) {
 		current_scene->Finalize();
@@ -102,6 +116,7 @@ void SceneManager::ChangeScene(eSceneType type) {
 	new_scene->Initialize();
 	current_scene = new_scene;
 }
+
 
 
 /// <summary>

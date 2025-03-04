@@ -41,6 +41,7 @@ const Vector2D& GameObject::GetLocation() const {
 }
 
 const int GameObject::GetAttack() {
+	printf("Debug: GetAttack called, Attack = %d\n", attack);
 	return attack;
 }
 
@@ -52,7 +53,7 @@ const int GameObject::GetDefense() {
 	return defense;
 }
 
-void GameObject::GetDefense(const int defense) {
+void GameObject::SetDefense(const int defense) {
 	this->defense = defense;
 }
 
@@ -60,9 +61,13 @@ const int GameObject::GetAHp() {
 	return hp;
 }
 
-void GameObject::SetHp(const int attak) {
-	this->hp -= attack;
+void GameObject::SetHp(const int damage) {
+	this->hp -= damage;
+	if (this->hp < 0) {
+		this->hp = 0; // HP‚ª•‰‚Ì’l‚É‚È‚ç‚È‚¢‚æ‚¤‚É‚·‚é
+	}
 }
+
 
 void GameObject::SetLocation(const Vector2D& location) {
 	this->location = location;
