@@ -102,3 +102,4 @@ void GameManager::CheckDestroyObject() {
 		destroy_objects.clear();
 	}
 }
+

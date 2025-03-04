@@ -3,6 +3,7 @@
 #include "../Object/GameObject.h"
 #include <vector>
 #include"../Utility/Collsion.h"
+#include"Charactor/Player/Player.h"
 
 class GameManager : public Singleton<class Type> {
 protected:
@@ -11,6 +12,12 @@ protected:
 	std::vector<GameObject*> destroy_objects;
 	std::vector<GameObject*> game_objects;
 	Vector2D screen_offset;
+
+	private:
+	Player* player = nullptr; // **プレイヤーをメンバ変数として定義**
+public:
+	void SetPlayer(Player* p) { player = p; } // **プレイヤーをセットする関数**
+	Player* GetPlayer() { return player; }	  // **プレイヤーを取得する関数**
 
 public:
 	GameManager();

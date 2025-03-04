@@ -1,11 +1,15 @@
 #pragma once
 #include "SceneBase.h"
 #include "../Singleton.h"
+#include"../Object/Charactor/Player/Player.h"
 
 class SceneManager : public Singleton<class Type> {
 private:
 	SceneBase* current_scene; // 現在のシーン情報のポインタ
 	/*static SceneManager* instance;*/
+private:
+	Player* player;
+
 
 public:
 	SceneManager();

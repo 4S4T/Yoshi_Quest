@@ -1,9 +1,11 @@
 #include "Map.h"
+#include"../Battle/Battle.h"
 #include "../../Utility/InputControl.h"
 #include "DxLib.h"
 #include "../SceneManager.h"
 #include "../../Object/GameObjectManager.h"
 #include "../../Utility/ResourceManager.h"
+#include"../../Utility/PlayerData.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -15,6 +17,10 @@
 #define D_OBJECT_SIZE 24.0 // オブジェクトの基本サイズ
 
 static Vector2D old_location; // 戦闘開始時のプレイヤー位置の保存用
+static int old_stageIndex;	  // 戦闘前のステージインデックスを記録
+
+
+
 
 // コンストラクタ
 Map::Map() : encounterStepCounter(0), lastPlayerPos(Vector2D(0, 0)), isFadingIn(false), fadeAlpha(255.0f) {
@@ -32,8 +38,10 @@ void Map::Initialize() {
 	// ゲームマネージャーのインスタンス取得
 	GameManager* obj = Singleton<GameManager>::GetInstance();
 
+
 	// **プレイヤーのスポーン位置を決定**
-	if (isFirstSpawn) {
+	if (isFirstSpawn)
+	{
 		generate_location = Vector2D(200.0f, 600.0f);
 		isFirstSpawn = false; // 初回スポーンが終わったのでフラグをオフ
 	}
@@ -50,6 +58,7 @@ void Map::Initialize() {
 	// **old_location の初期値を設定**
 	if (isFirstSpawn) {
 		old_location = generate_location; // 初回は (200,600)
+		currentStageIndex = old_stageIndex; // **戦闘前のマップに戻す**
 	}
 
 	encounterStepCounter = 0;
@@ -60,6 +69,9 @@ void Map::Initialize() {
 
 
 // 更新処理
+// 戦闘復帰処理のフラグ（戦闘開始時に設定する）
+static bool wasInBattle = false;
+
 eSceneType Map::Update(float delta_second) {
 	InputControl* input = Singleton<InputControl>::GetInstance();
 	GameManager* obj = Singleton<GameManager>::GetInstance();
@@ -71,51 +83,40 @@ eSceneType Map::Update(float delta_second) {
 	if (isFadingIn)
 		UpdateFadeIn(delta_second);
 
-	// **戦闘復帰処理（1回だけ実行）**
-	static bool wasInBattle = false; // 戦闘後の復帰フラグ
+	// **戦闘復帰処理**
 	if (wasInBattle && GetNowSceneType() == eSceneType::eMap) {
 		player->SetLocation(old_location); // 戦闘前の位置に戻す
 		wasInBattle = false;			   // フラグをリセット
 	}
 
-	// プレイヤーの現在位置を取得
-	Vector2D currentPos = player->GetLocation();
-
 	// **エンカウント処理**
-	if (isEncounterEnabled &&
-		((int)currentPos.x != (int)lastPlayerPos.x || (int)currentPos.y != (int)lastPlayerPos.y)) {
+	Vector2D currentPos = player->GetLocation();
+	if (isEncounterEnabled && ((int)currentPos.x != (int)lastPlayerPos.x || (int)currentPos.y != (int)lastPlayerPos.y)) {
 		encounterStepCounter++;
 		lastPlayerPos = currentPos;
 
-		if (encounterStepCounter >= 5) {
+		if (encounterStepCounter >= 60) {
 			encounterStepCounter = 0;
-			if (rand() % 100 < 1) {
-				old_location = lastPlayerPos; // **戦闘前のプレイヤー位置を保存**
-				wasInBattle = true;			  // **戦闘状態に入ったことを記録**
+			if (rand() % 100 < 20) {
+				old_location = lastPlayerPos;		// 戦闘前のプレイヤー位置を保存
+				old_stageIndex = currentStageIndex; // 戦闘前のマップを保存
+
+				wasInBattle = true; // 戦闘フラグを立てる
+
+				// **バトルシーンを作成**
+				BattleScene* battleScene = new BattleScene();
+
+				// **プレイヤーをバトルシーンに渡す**
+				battleScene->SetPlayer(player);
+
 				return eSceneType::eBattle;
 			}
 		}
 	}
 
-
-
-	// **マップ遷移ポイントの処理**
-	for (const auto& point : transitionPoints) {
-		float distance = sqrt(pow(currentPos.x - point.x, 2) + pow(currentPos.y - point.y, 2));
-		if (distance <= 20.0f) {
-			LoadNextMap();
-			StartFadeIn();
-			break;
-		}
-	}
-
-	// **タイトル画面へ戻る処理（Pキー）**
-	if (input->GetKeyDown(KEY_INPUT_P)) {
-		return eSceneType::eTitle;
-	}
-
 	return GetNowSceneType();
 }
+
 
 
 
@@ -125,6 +126,10 @@ void Map::Draw() {
 	__super::Draw(); // 親クラスの描画処理
 	if (isFadingIn)
 		DrawFadeIn(); // フェードイン描画
+	PlayerData* pd = PlayerData::GetInstance();
+	int PlayerHp = pd->GetHp();
+
+	DrawFormatString(0, 300, GetColor(255, 255, 255), "PlayerHp　: %d", PlayerHp);
 }
 
 // 終了処理
