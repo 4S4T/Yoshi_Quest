@@ -88,3 +88,9 @@ bool Vector2D::operator==(const Vector2D& v) const {
 bool Vector2D::operator!=(const Vector2D& v) const {
 	return !(*this == v);
 }
+
+float Vector2D::DistanceTo(const Vector2D& other) const {
+	float dx = other.x - this->x;
+	float dy = other.y - this->y;
+	return sqrt(dx * dx + dy * dy);
+}

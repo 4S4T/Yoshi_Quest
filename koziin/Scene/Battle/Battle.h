@@ -14,6 +14,12 @@ private:
 	int cursor;
 	int select;
 	bool isPlayerTurn = true; // trueならプレイヤーのターン、falseなら敵のターン
+	std::string battleMessage; // 戦闘メッセージ
+	float messageTimer = 0.0f; // メッセージ表示用タイマー
+							   // BattleSceneのメンバ変数に追加
+	float battleEndTimer = -1.0f; // -1: 未設定, 0以上: カウントダウン中
+	bool isSlimeDefeated = false;
+
 
 
 public:

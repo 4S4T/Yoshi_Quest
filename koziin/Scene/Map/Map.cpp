@@ -6,6 +6,7 @@
 #include "../../Object/GameObjectManager.h"
 #include "../../Utility/ResourceManager.h"
 #include"../../Utility/PlayerData.h"
+#include"../../Utility/Vector2D.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -72,6 +73,7 @@ void Map::Initialize() {
 // 戦闘復帰処理のフラグ（戦闘開始時に設定する）
 static bool wasInBattle = false;
 
+// 更新処理
 eSceneType Map::Update(float delta_second) {
 	InputControl* input = Singleton<InputControl>::GetInstance();
 	GameManager* obj = Singleton<GameManager>::GetInstance();
@@ -114,8 +116,17 @@ eSceneType Map::Update(float delta_second) {
 		}
 	}
 
+	// **マップ遷移ポイントの確認**
+	for (const Vector2D& transitionPoint : transitionPoints) {
+		if (currentPos.DistanceTo(transitionPoint) < D_OBJECT_SIZE) { // プレイヤーと遷移ポイントの距離が近い場合
+			LoadNextMap();											  // 次のマップをロード
+			break;
+		}
+	}
+
 	return GetNowSceneType();
 }
+
 
 
 
@@ -128,8 +139,6 @@ void Map::Draw() {
 		DrawFadeIn(); // フェードイン描画
 	PlayerData* pd = PlayerData::GetInstance();
 	int PlayerHp = pd->GetHp();
-
-	DrawFormatString(0, 300, GetColor(255, 255, 255), "PlayerHp　: %d", PlayerHp);
 }
 
 // 終了処理

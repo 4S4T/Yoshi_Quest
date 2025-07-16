@@ -17,12 +17,12 @@ Slime::~Slime()
 void Slime::Initialize()
 {
 	ResourceManager* rm = ResourceManager::GetInstance();
-	image = rm->GetImages("Resource/Images/yossi.png", 1, 1, 1, 16, 16)[0];
+	image = rm->GetImages("Resource/Images/slime.png", 1, 1, 1, 16, 16)[0];
 
 
 	location = Vector2D(480, 360);
-	attack = 10;
-	hp = 30;
+	attack = 5;
+	hp = 10;
 	defense = 5;
 
 

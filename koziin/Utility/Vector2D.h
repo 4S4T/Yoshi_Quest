@@ -92,4 +92,7 @@ public:
 
 	// 2“_ŠÔ‚Ì‹——£
 	static float Distance(const Vector2D& a, const Vector2D& b);
+	float DistanceTo(const Vector2D& other) const;
+
+
 };

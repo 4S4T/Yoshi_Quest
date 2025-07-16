@@ -17,7 +17,10 @@ void GameObject::Initialize() {
 void GameObject::Update(float delta_second) {
 }
 
-void GameObject::Draw(const Vector2D& screen_offset) const {
+void GameObject::Draw(const Vector2D& screen_offset) const
+{
+
+
 	// オフセット値を基に画像の描画を行う
 	Vector2D graph_location = this->location + screen_offset;
 	Vector2D enemy_location = this->location + screen_offset;
@@ -53,11 +56,12 @@ const int GameObject::GetDefense() {
 	return defense;
 }
 
+
 void GameObject::SetDefense(const int defense) {
 	this->defense = defense;
 }
 
-const int GameObject::GetAHp() {
+const int GameObject::GetHp() {
 	return hp;
 }
 

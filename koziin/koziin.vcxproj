@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="Object\Enemy\EnemyBase.h" />
+    <ClInclude Include="Utility\AttackEffect.h" />
     <ClInclude Include="Utility\PlayerData.h" />
     <ClInclude Include="Scene\Battle\Battle.h" />
     <ClInclude Include="Object\Charactor\Player\State\Idle.h" />

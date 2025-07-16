@@ -113,7 +113,6 @@ public:
 
 	// 衝突判定（指定座標に移動可能か判定）
 	bool IsCollision(float x, float y);
-	void PrintCollisionMap();
 
 	// 現在のマップデータ
 	std::vector<std::vector<char>> mapdata;
