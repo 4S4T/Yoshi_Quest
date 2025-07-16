@@ -66,10 +66,10 @@ eSceneType TitleScene::Update(float delta_second)
 	return GetNowSceneType();
 }
 
-void TitleScene::Draw() {
-	DrawFormatString(10, 10, GetColor(255, 0, 255), "ƒ^ƒCƒgƒ‹‰æ–Ê‚Å‚·");
+void TitleScene::Draw() 
+{
 	DrawGraph(0, 0, TitleImage,TRUE);
-	DrawRotaGraph(350, 420 + menu_cursor * 50, 0.1, 0, select, TRUE);
+	DrawRotaGraph(350, 430 + menu_cursor * 50, 0.1, 0, select, TRUE);
 }
 
 void TitleScene::Finalize() {
