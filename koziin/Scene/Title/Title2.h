@@ -2,11 +2,11 @@
 
 #include "../SceneBase.h"
 
-class TitleScene : public SceneBase {
+class TitleScene2 : public SceneBase {
 private:
 public:
-	TitleScene();
-	~TitleScene();
+	TitleScene2();
+	~TitleScene2();
 
 	// ‰Šú‰»ˆ—
 	virtual void Initialize() override;
@@ -22,7 +22,7 @@ public:
 	virtual eSceneType Update(float delta_second) override;
 
 	// •`‰æˆ—
-	virtual void Draw()  override;
+	virtual void Draw() override;
 
 	// I—¹ˆ—
 	virtual void Finalize() override;

@@ -3,6 +3,7 @@
 
 enum eSceneType {
 	eTitle,
+	eTitle2,
 	eMap,
 	eResult,
 	eOption,

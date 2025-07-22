@@ -2,6 +2,7 @@
 #include "../Utility/InputControl.h"
 #include "DxLib.h"
 #include"Title/Title.h"
+#include"Title/Title2.h"
 #include"Option/Option.h"
 #include"Map/Map.h"
 #include"Battle/Battle.h"
@@ -130,6 +131,8 @@ SceneBase* SceneManager::CreateScene(eSceneType type) {
 	switch (type) {
 	case eTitle:
 		return dynamic_cast<SceneBase*>(new TitleScene());
+	case eTitle2:
+		return dynamic_cast<SceneBase*>(new TitleScene2());
 	case eMap:
 		return dynamic_cast<SceneBase*>(new Map());
 	case eOption:
