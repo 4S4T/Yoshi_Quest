@@ -4,6 +4,7 @@
 #include"Title/Title.h"
 #include"Title/Title2.h"
 #include"Option/Option.h"
+#include"Memu/MemuSene.h"
 #include"Map/Map.h"
 #include"Battle/Battle.h"
 
@@ -135,6 +136,8 @@ SceneBase* SceneManager::CreateScene(eSceneType type) {
 		return dynamic_cast<SceneBase*>(new TitleScene2());
 	case eMap:
 		return dynamic_cast<SceneBase*>(new Map());
+	case eMemu:
+		return dynamic_cast<SceneBase*>(new Memu());
 	case eOption:
 		return dynamic_cast<SceneBase*>(new Option());
 	case eBattle:

@@ -1,12 +1,13 @@
 #include "Map.h"
-#include"../Battle/Battle.h"
+#include "../Battle/Battle.h"
+#include "../Memu/MemuSene.h"
 #include "../../Utility/InputControl.h"
 #include "DxLib.h"
 #include "../SceneManager.h"
 #include "../../Object/GameObjectManager.h"
 #include "../../Utility/ResourceManager.h"
-#include"../../Utility/PlayerData.h"
-#include"../../Utility/Vector2D.h"
+#include "../../Utility/PlayerData.h"
+#include "../../Utility/Vector2D.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -17,15 +18,18 @@
 #define MAP_SQUARE_X 22	   // マップの横のマス数
 #define D_OBJECT_SIZE 24.0 // オブジェクトの基本サイズ
 
-static Vector2D old_location; // 戦闘開始時のプレイヤー位置の保存用
-static int old_stageIndex;	  // 戦闘前のステージインデックスを記録
+static Vector2D old_location; // 戦闘開始時のプレイヤー位置
+static int old_stageIndex;	  // 戦闘前のステージインデックス
 
+static bool wasInBattle = false; // 戦闘復帰フラグ
 
-
+// ▼ メニュー用追加変数
+static Vector2D menu_old_location; // メニュー開始前の位置保存
+static bool wasInMenu = false;	   // メニュー復帰フラグ
 
 // コンストラクタ
 Map::Map() : encounterStepCounter(0), lastPlayerPos(Vector2D(0, 0)), isFadingIn(false), fadeAlpha(255.0f) {
-	srand(static_cast<unsigned int>(time(nullptr))); // 乱数のシードを設定
+	srand(static_cast<unsigned int>(time(nullptr))); // 乱数シード
 }
 
 // デストラクタ
@@ -36,59 +40,56 @@ void Map::Initialize() {
 	// マップデータをロード
 	mapdata = LoadStageMapCSV(stageFiles[currentStageIndex]);
 
-	// ゲームマネージャーのインスタンス取得
 	GameManager* obj = Singleton<GameManager>::GetInstance();
 
-
-	// **プレイヤーのスポーン位置を決定**
-	if (isFirstSpawn)
-	{
+	// **プレイヤーのスポーン位置決定**
+	if (isFirstSpawn) {
 		generate_location = Vector2D(200.0f, 600.0f);
-		isFirstSpawn = false; // 初回スポーンが終わったのでフラグをオフ
+		isFirstSpawn = false;
 	}
 	else {
-		generate_location = old_location; // 戦闘後は old_location に復帰
+		generate_location = old_location; // 戦闘・メニュー後は old_location に復帰
 	}
 
 	player = obj->CreateGameObject<Player>(generate_location);
 
-	// **プレイヤーのマップデータを設定**
+	// プレイヤーのマップデータ設定
 	player->SetMapData(mapdata);
 	player->SetMapReference(this);
 
-	// **old_location の初期値を設定**
+	// old_location 初期値
 	if (isFirstSpawn) {
-		old_location = generate_location; // 初回は (200,600)
-		currentStageIndex = old_stageIndex; // **戦闘前のマップに戻す**
+		old_location = generate_location;
+		currentStageIndex = old_stageIndex;
 	}
 
 	encounterStepCounter = 0;
 	lastPlayerPos = player->GetLocation();
 
-	StartFadeIn(); // フェードイン開始
+	StartFadeIn();
 }
-
-
-// 更新処理
-// 戦闘復帰処理のフラグ（戦闘開始時に設定する）
-static bool wasInBattle = false;
 
 // 更新処理
 eSceneType Map::Update(float delta_second) {
 	InputControl* input = Singleton<InputControl>::GetInstance();
 	GameManager* obj = Singleton<GameManager>::GetInstance();
 
-	// ゲームオブジェクトの更新
 	obj->Update(delta_second);
 
-	// フェードイン処理の更新
+	// フェードイン更新
 	if (isFadingIn)
 		UpdateFadeIn(delta_second);
 
 	// **戦闘復帰処理**
 	if (wasInBattle && GetNowSceneType() == eSceneType::eMap) {
-		player->SetLocation(old_location); // 戦闘前の位置に戻す
-		wasInBattle = false;			   // フラグをリセット
+		player->SetLocation(old_location);
+		wasInBattle = false;
+	}
+
+	// **メニュー復帰処理（追加部分）**
+	if (wasInMenu && GetNowSceneType() == eSceneType::eMap) {
+		player->SetLocation(menu_old_location);
+		wasInMenu = false;
 	}
 
 	// **エンカウント処理**
@@ -100,15 +101,12 @@ eSceneType Map::Update(float delta_second) {
 		if (encounterStepCounter >= 60) {
 			encounterStepCounter = 0;
 			if (rand() % 100 < 20) {
-				old_location = lastPlayerPos;		// 戦闘前のプレイヤー位置を保存
-				old_stageIndex = currentStageIndex; // 戦闘前のマップを保存
+				old_location = lastPlayerPos;
+				old_stageIndex = currentStageIndex;
 
-				wasInBattle = true; // 戦闘フラグを立てる
+				wasInBattle = true;
 
-				// **バトルシーンを作成**
 				BattleScene* battleScene = new BattleScene();
-
-				// **プレイヤーをバトルシーンに渡す**
 				battleScene->SetPlayer(player);
 
 				return eSceneType::eBattle;
@@ -116,10 +114,17 @@ eSceneType Map::Update(float delta_second) {
 		}
 	}
 
-	// **マップ遷移ポイントの確認**
+	// **メニュー呼び出し処理（追加部分）**
+	if (input->GetKeyDown(KEY_INPUT_TAB)) {
+		menu_old_location = player->GetLocation(); // 現在位置を保存
+		wasInMenu = true;						   // 復帰フラグON
+		return eSceneType::eMemu;				   // メニューへ遷移
+	}
+
+	// **マップ遷移ポイント確認**
 	for (const Vector2D& transitionPoint : transitionPoints) {
-		if (currentPos.DistanceTo(transitionPoint) < D_OBJECT_SIZE) { // プレイヤーと遷移ポイントの距離が近い場合
-			LoadNextMap();											  // 次のマップをロード
+		if (currentPos.DistanceTo(transitionPoint) < D_OBJECT_SIZE) {
+			LoadNextMap();
 			break;
 		}
 	}
@@ -127,16 +132,14 @@ eSceneType Map::Update(float delta_second) {
 	return GetNowSceneType();
 }
 
-
-
-
-
 // 描画処理
 void Map::Draw() {
-	DrawStageMap();	 // マップの描画
-	__super::Draw(); // 親クラスの描画処理
+	DrawStageMap();
+	__super::Draw();
+
 	if (isFadingIn)
-		DrawFadeIn(); // フェードイン描画
+		DrawFadeIn();
+
 	PlayerData* pd = PlayerData::GetInstance();
 	int PlayerHp = pd->GetHp();
 }
@@ -147,12 +150,12 @@ void Map::Finalize() {
 	obj->Finalize();
 }
 
-// 現在のシーンタイプを取得
+// 現在のシーンタイプ
 eSceneType Map::GetNowSceneType() const {
 	return eSceneType::eMap;
 }
 
-// マップデータをCSVからロード
+// CSV読み込み
 std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 	std::ifstream ifs(map_name);
 	if (ifs.fail()) {
@@ -165,8 +168,6 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 
 	std::string line;
 	int rowIdx = 0;
-
-	// **エンカウント可否の設定**
 	isEncounterEnabled = (map_name != "Resource/stage2.csv");
 
 	while (std::getline(ifs, line)) {
@@ -179,8 +180,8 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 		while (std::getline(ss, cell, ',')) {
 			char c = cell[0];
 			row.push_back(c);
-			collisionRow.push_back(c == '3'); // '3'は衝突判定
-			if (c == '4') {					  // '4'はマップ遷移ポイント
+			collisionRow.push_back(c == '3');
+			if (c == '4') {
 				float x = D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * colIdx);
 				float y = D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * rowIdx);
 				transitionPoints.push_back(Vector2D(x, y));
@@ -194,8 +195,7 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 	return data;
 }
 
-
-// マップの描画
+// マップ描画
 void Map::DrawStageMap() {
 	ResourceManager* rm = ResourceManager::GetInstance();
 	for (int i = 0; i < MAP_SQUARE_Y; i++) {
@@ -211,7 +211,7 @@ void Map::DrawStageMap() {
 	}
 }
 
-// 次のマップをロード
+// 次のマップ
 void Map::LoadNextMap() {
 	currentStageIndex++;
 	if (currentStageIndex >= stageFiles.size()) {
@@ -223,13 +223,12 @@ void Map::LoadNextMap() {
 	player->SetLocation(Vector2D(200.0f, 600.0f));
 }
 
-// フェードインの開始
+// フェードイン
 void Map::StartFadeIn() {
 	isFadingIn = true;
 	fadeAlpha = 255.0f;
 }
 
-// フェードインの更新
 void Map::UpdateFadeIn(float delta_second) {
 	fadeAlpha -= fadeSpeed * delta_second;
 	fadeAlpha = clamp(fadeAlpha, 0.0f, 255.0f);
@@ -237,7 +236,6 @@ void Map::UpdateFadeIn(float delta_second) {
 		isFadingIn = false;
 }
 
-// フェードインの描画
 void Map::DrawFadeIn() {
 	if (isFadingIn) {
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, static_cast<int>(fadeAlpha));
