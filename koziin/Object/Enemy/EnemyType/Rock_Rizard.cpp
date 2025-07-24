@@ -1,16 +1,16 @@
-#include "Rock_Lizard.h"
+#include "Rock_Rizard.h"
 #include "../../../Utility/ResourceManager.h"
 #include "DxLib.h"
 #include "../../../Scene/Battle/Battle.h"
 
 
-Rock_Lizard::Rock_Lizard() {
+Rock_Rizard::Rock_Rizard() {
 }
 
-Rock_Lizard::~Rock_Lizard() {
+Rock_Rizard::~Rock_Rizard() {
 }
 
-void Rock_Lizard::Initialize() {
+void Rock_Rizard::Initialize() {
 	ResourceManager* rm = ResourceManager::GetInstance();
 	image = rm->GetImages("Resource/Images/Rock_Lizard.png", 1, 1, 1, 16, 16)[0];
 
@@ -21,16 +21,16 @@ void Rock_Lizard::Initialize() {
 	defense = 7;
 }
 
-void Rock_Lizard::Finalize() {
+void Rock_Rizard::Finalize() {
 }
 
-void Rock_Lizard::Update(float delta_second) {
+void Rock_Rizard::Update(float delta_second) {
 	if (hp <= 0) {
 		hp = 0;
 	}
 }
 
-void Rock_Lizard::Draw(const Vector2D& screen_offset) const {
+void Rock_Rizard::Draw(const Vector2D& screen_offset) const {
 	DrawFormatString(0, 200, GetColor(255, 255, 255), "�̗́@: %d", hp);
 	__super::Draw(screen_offset);
 }

@@ -1,10 +1,10 @@
 #pragma once
 #include "../EnemyBase.h"
 
-class lizard : public EnemyBase {
+class Rizard : public EnemyBase {
 public:
-	lizard();
-	~lizard();
+	Rizard();
+	~Rizard();
 
 	void Initialize() override;
 	void Finalize();
