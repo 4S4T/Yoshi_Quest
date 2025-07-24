@@ -25,7 +25,7 @@ eSceneType Option::Update(float delta_second)
 
 	if (input->GetKeyDown(KEY_INPUT_SPACE))
 	{
-		return eSceneType::eTitle;
+		return eSceneType::eTitle2;
 
 	}
 	return GetNowSceneType();
@@ -34,6 +34,7 @@ eSceneType Option::Update(float delta_second)
 void Option::Draw() 
 {
 	DrawGraph(0, 0, OptionImage, TRUE);
+	
 }
 
 void Option::Finalize() 

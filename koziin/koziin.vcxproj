@@ -133,9 +133,9 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="AppMain.cpp" />
-    <ClCompile Include="Object\Enemy\EnemyType\lizard.cpp" />
     <ClCompile Include="Object\Enemy\EnemyBase.cpp" />
-    <ClCompile Include="Object\Enemy\EnemyType\Rock_Lizard.cpp" />
+    <ClCompile Include="Scene\Memu\MemuSene.cpp" />
+    <ClCompile Include="Scene\Title\Title2.cpp" />
     <ClCompile Include="Utility\PlayerData.cpp" />
     <ClCompile Include="Scene\Battle\Battle.cpp" />
     <ClCompile Include="Object\Charactor\Player\State\Idle.cpp" />
@@ -160,9 +160,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
-    <ClInclude Include="Object\Enemy\EnemyType\lizard.h" />
     <ClInclude Include="Object\Enemy\EnemyBase.h" />
-    <ClInclude Include="Object\Enemy\EnemyType\Rock_Lizard.h" />
+    <ClInclude Include="Scene\Memu\MemuSene.h" />
+    <ClInclude Include="Scene\Title\Title2.h" />
     <ClInclude Include="Utility\AttackEffect.h" />
     <ClInclude Include="Utility\PlayerData.h" />
     <ClInclude Include="Scene\Battle\Battle.h" />

@@ -2,18 +2,15 @@
 
 #include "../SceneBase.h"
 
-class TitleScene : public SceneBase {
+class Memu : public SceneBase {
 private:
 public:
-	TitleScene();
-	~TitleScene();
+	Memu();
+	~Memu();
 
 	// ‰Šú‰»ˆ—
 	virtual void Initialize() override;
-	int TitleImage;
-	int Title_name;
-	int select;
-	int menu_cursor;
+	int OptionImage;
 
 
 	// XVˆ—
@@ -22,7 +19,7 @@ public:
 	virtual eSceneType Update(float delta_second) override;
 
 	// •`‰æˆ—
-	virtual void Draw()  override;
+	virtual void Draw() override;
 
 	// I—¹ˆ—
 	virtual void Finalize() override;
