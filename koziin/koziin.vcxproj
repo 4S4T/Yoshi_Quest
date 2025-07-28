@@ -136,6 +136,7 @@
     <ClCompile Include="Object\Enemy\EnemyBase.cpp" />
     <ClCompile Include="Object\Enemy\EnemyType\Rizard.cpp" />
     <ClCompile Include="Object\Enemy\EnemyType\Rock_Rizard.cpp" />
+    <ClCompile Include="Object\Enemy\EnemyType\peabird.cpp" />
     <ClCompile Include="Scene\Memu\MemuSene.cpp" />
     <ClCompile Include="Scene\Title\Title2.cpp" />
     <ClCompile Include="Object\Enemy\EnemyType\Taurus.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="Object\Enemy\EnemyBase.h" />
     <ClInclude Include="Object\Enemy\EnemyType\Rizard.h" />
     <ClInclude Include="Object\Enemy\EnemyType\Rock_Rizard.h" />
+    <ClInclude Include="Object\Enemy\EnemyType\peabird.h" />
     <ClInclude Include="Scene\Memu\MemuSene.h" />
     <ClInclude Include="Scene\Title\Title2.h" />
     <ClInclude Include="Object\Enemy\EnemyType\Taurus.h" />

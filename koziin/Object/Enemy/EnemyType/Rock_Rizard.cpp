@@ -16,9 +16,10 @@ void Rock_Rizard::Initialize() {
 
 
 	location = Vector2D(480, 360);
-	attack = 6;
+	attack = 4;
 	hp = 12;
 	defense = 7;
+
 }
 
 void Rock_Rizard::Finalize() {
