@@ -2,8 +2,19 @@
 
 #include "../SceneBase.h"
 
+enum class SubMenuState {
+	None,	// 何も選択されてないメニュー状態
+	Option, // オプション表示中
+	Credit	// クレジット表示中
+};
+
 class Memu : public SceneBase {
 private:
+	int currentSelection;
+	const char* menuItems[3] = { "設定", "クレジット", "マップに戻る" };
+	const int menuItemCount = 3;
+	SubMenuState subMenuState; // サブメニュー状態
+
 public:
 	Memu();
 	~Memu();
