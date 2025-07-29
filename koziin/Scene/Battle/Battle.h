@@ -3,6 +3,8 @@
 #include "../SceneBase.h"
 #include "../../Utility/Vector2D.h"
 #include"../../Object/Enemy/EnemyType/Slime.h"
+#include"../../Object/Enemy/EnemyType/peabird.h"
+#include"../../Object/Enemy/EnemyType/Taurus.h"
 #include"../Map/Map.h"
 
 
@@ -36,5 +38,7 @@ public:
 	Vector2D generate_location;
 	Vector2D player_location;
 	Slime* slime;
+	peabird* Peabird;
+	Taurus* taurus;
 	void SetPlayerPosition(const Vector2D& position); // 位置設定メソッド
 };

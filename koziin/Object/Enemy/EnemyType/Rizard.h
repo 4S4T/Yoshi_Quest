@@ -1,7 +1,8 @@
 #pragma once
 #include "../EnemyBase.h"
 
-class Rizard : public EnemyBase {
+class Rizard : public EnemyBase 
+{
 public:
 	Rizard();
 	~Rizard();

@@ -1,7 +1,10 @@
 #pragma once
 #include "../EnemyBase.h"
 
-class peabird : public EnemyBase {
+class peabird : public EnemyBase 
+{
+public:
+
 	peabird();
 	~peabird();
 

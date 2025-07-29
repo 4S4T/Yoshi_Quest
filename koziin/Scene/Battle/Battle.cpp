@@ -5,6 +5,8 @@
 #include "../../Utility/ResourceManager.h"
 #include "../../Utility/PlayerData.h"
 #include"../../Object/Enemy/EnemyType/Slime.h"
+#include"../../Object/Enemy/EnemyType/peabird.h"
+#include"../../Object/Enemy/EnemyType/Taurus.h"
 #include"../../Object/GameObjectManager.h"
 #include<string>
 
@@ -29,6 +31,7 @@ void BattleScene::Initialize()
 	generate_location = Vector2D(480.0f, 360.0f);
 	GameManager* obj = Singleton<GameManager>::GetInstance();
 	slime = obj->CreateGameObject<Slime>(generate_location);
+	/*taurus = obj->CreateGameObject<Taurus>(generate_location);*/
 	cursor = 1;
 	select = rm->GetImages("Resource/Images/select.png", 1, 1, 1, 32, 32)[0];
 	if (player == nullptr) {
