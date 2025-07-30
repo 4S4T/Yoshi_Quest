@@ -21,6 +21,7 @@ private:
 							   // BattleSceneのメンバ変数に追加
 	float battleEndTimer = -1.0f; // -1: 未設定, 0以上: カウントダウン中
 	bool isSlimeDefeated = false;
+	bool isTaurusDefeated = false;
 
 
 
