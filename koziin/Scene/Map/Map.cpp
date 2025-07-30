@@ -114,12 +114,12 @@ eSceneType Map::Update(float delta_second) {
 		}
 	}
 
-	// **メニュー呼び出し処理（追加部分）**
-	if (input->GetKeyDown(KEY_INPUT_TAB)) {
-		menu_old_location = player->GetLocation(); // 現在位置を保存
-		wasInMenu = true;						   // 復帰フラグON
-		return eSceneType::eMemu;				   // メニューへ遷移
-	}
+	//// **メニュー呼び出し処理（追加部分）**
+	//if (input->GetKeyDown(KEY_INPUT_TAB)) {
+	//	menu_old_location = player->GetLocation(); // 現在位置を保存
+	//	wasInMenu = true;						   // 復帰フラグON
+	//	return eSceneType::eMemu;				   // メニューへ遷移
+	//}
 
 	// **マップ遷移ポイント確認**
 	for (const Vector2D& transitionPoint : transitionPoints) {
@@ -129,7 +129,38 @@ eSceneType Map::Update(float delta_second) {
 		}
 	}
 
+	if (input->GetKeyDown(KEY_INPUT_TAB)) {
+		isMenuVisible = !isMenuVisible; // 表示／非表示切り替え
+	}
+
+	// メニュー表示中のときは操作を受け付ける
+	if (isMenuVisible) {
+		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+			menuSelection = (menuSelection + 1) % menuItemCount;
+		}
+		if (input->GetKeyDown(KEY_INPUT_UP)) {
+			menuSelection = (menuSelection - 1 + menuItemCount) % menuItemCount;
+		}
+		if (input->GetKeyDown(KEY_INPUT_RETURN)) {
+			switch (menuSelection) {
+			case 0:
+				// 設定選択 → 遷移したいなら別シーンを呼ぶ
+				break;
+			case 1:
+				// クレジット選択
+				break;
+			case 2:
+				// 「マップに戻る」→ メニューを閉じる
+				isMenuVisible = false;
+				break;
+			}
+		}
+
+		return eSceneType::eMap; // メニュー中はマップにとどまる
+	}
 	return GetNowSceneType();
+
+
 }
 
 // 描画処理
@@ -142,6 +173,24 @@ void Map::Draw() {
 
 	PlayerData* pd = PlayerData::GetInstance();
 	int PlayerHp = pd->GetHp();
+
+	if (isMenuVisible) {
+		int menuX = 300;
+		int menuY = 200;
+		int menuWidth = 300;
+		int menuHeight = 200;
+
+		// 背景ウィンドウ
+		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(0, 0, 0), TRUE);		  // 背景黒
+		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(255, 255, 255), FALSE); // 枠白
+
+		// メニュー項目
+		for (int i = 0; i < menuItemCount; i++) {
+			int textY = menuY + 40 + i * 40;
+			int color = (i == menuSelection) ? GetColor(255, 255, 0) : GetColor(255, 255, 255); // 選択中は黄色
+			DrawFormatString(menuX + 20, textY, color, "%s", menuItems[i]);
+		}
+	}
 }
 
 // 終了処理
@@ -207,6 +256,24 @@ void Map::DrawStageMap() {
 			DrawRotaGraphF(D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * j),
 				D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * i),
 				1.9, 0.0, MapImage, TRUE);
+		}
+	}
+
+	if (isMenuVisible) {
+		int menuX = 300;
+		int menuY = 200;
+		int menuWidth = 300;
+		int menuHeight = 200;
+
+		// 背景ウィンドウ
+		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(0, 0, 0), TRUE);		  // 背景黒
+		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(255, 255, 255), FALSE); // 枠白
+
+		// メニュー項目
+		for (int i = 0; i < menuItemCount; i++) {
+			int textY = menuY + 40 + i * 40;
+			int color = (i == menuSelection) ? GetColor(255, 255, 0) : GetColor(255, 255, 255); // 選択中は黄色
+			DrawFormatString(menuX + 20, textY, color, "%s", menuItems[i]);
 		}
 	}
 }
