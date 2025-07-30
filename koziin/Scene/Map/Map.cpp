@@ -69,12 +69,13 @@ void Map::Initialize() {
 	StartFadeIn();
 }
 
+
 // 更新処理
 eSceneType Map::Update(float delta_second) {
 	InputControl* input = Singleton<InputControl>::GetInstance();
 	GameManager* obj = Singleton<GameManager>::GetInstance();
 
-	obj->Update(delta_second);
+	/*obj->Update(delta_second);*/
 
 	// フェードイン更新
 	if (isFadingIn)
@@ -106,7 +107,7 @@ eSceneType Map::Update(float delta_second) {
 		// メニュー中はプレイヤー・バトル処理等をスキップ
 		return eSceneType::eMap;
 	}
-
+		obj->Update(delta_second);
 
 	// **戦闘復帰処理**
 	if (wasInBattle && GetNowSceneType() == eSceneType::eMap) {
@@ -166,7 +167,6 @@ eSceneType Map::Update(float delta_second) {
 	}
 	
 	return GetNowSceneType();
-
 
 }
 
