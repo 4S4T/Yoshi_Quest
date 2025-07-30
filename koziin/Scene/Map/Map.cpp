@@ -80,6 +80,34 @@ eSceneType Map::Update(float delta_second) {
 	if (isFadingIn)
 		UpdateFadeIn(delta_second);
 
+	// == = メニュー処理：最優先で処理 == =
+		if (isMenuVisible) {
+		// 入力処理のみ許可
+		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+			menuSelection = (menuSelection + 1) % menuItemCount;
+		}
+		if (input->GetKeyDown(KEY_INPUT_UP)) {
+			menuSelection = (menuSelection - 1 + menuItemCount) % menuItemCount;
+		}
+		if (input->GetKeyDown(KEY_INPUT_RETURN)) {
+			switch (menuSelection) {
+			case 0:
+				// 設定処理
+				break;
+			case 1:
+				// クレジット処理
+				break;
+			case 2:
+				// メニュー終了
+				isMenuVisible = false;
+				break;
+			}
+		}
+		// メニュー中はプレイヤー・バトル処理等をスキップ
+		return eSceneType::eMap;
+	}
+
+
 	// **戦闘復帰処理**
 	if (wasInBattle && GetNowSceneType() == eSceneType::eMap) {
 		player->SetLocation(old_location);
@@ -129,35 +157,14 @@ eSceneType Map::Update(float delta_second) {
 		}
 	}
 
+
+	// --- メニューを開く入力検出 ---
 	if (input->GetKeyDown(KEY_INPUT_TAB)) {
-		isMenuVisible = !isMenuVisible; // 表示／非表示切り替え
+		menu_old_location = player->GetLocation(); // メニュー復帰用に保存
+		isMenuVisible = true;
+		return eSceneType::eMap;
 	}
-
-	// メニュー表示中のときは操作を受け付ける
-	if (isMenuVisible) {
-		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
-			menuSelection = (menuSelection + 1) % menuItemCount;
-		}
-		if (input->GetKeyDown(KEY_INPUT_UP)) {
-			menuSelection = (menuSelection - 1 + menuItemCount) % menuItemCount;
-		}
-		if (input->GetKeyDown(KEY_INPUT_RETURN)) {
-			switch (menuSelection) {
-			case 0:
-				// 設定選択 → 遷移したいなら別シーンを呼ぶ
-				break;
-			case 1:
-				// クレジット選択
-				break;
-			case 2:
-				// 「マップに戻る」→ メニューを閉じる
-				isMenuVisible = false;
-				break;
-			}
-		}
-
-		return eSceneType::eMap; // メニュー中はマップにとどまる
-	}
+	
 	return GetNowSceneType();
 
 
