@@ -104,6 +104,26 @@ eSceneType Map::Update(float delta_second) {
 				break;
 			}
 		}
+
+		if (input->GetKeyDown(KEY_INPUT_RETURN)) {
+			switch (menuSelection) {
+			case 0:																	   // 設定
+				subMenuText = "音量: 100%\n画面サイズ: 960x720\n操作方法: キーボード"; // 必要に応じて書き換え
+				isSubMenuVisible = true;
+				break;
+			case 1:																	  // クレジット
+				subMenuText = "制作：あなたの名前\nエンジン：DxLib\nBGM：フリー素材"; // 任意で編集
+				isSubMenuVisible = true;
+				break;
+			case 2: // メニューを閉じる
+				isMenuVisible = false;
+				isSubMenuVisible = false;
+				subMenuText.clear();
+				break;
+			}
+		}
+
+
 		// メニュー中はプレイヤー・バトル処理等をスキップ
 		return eSceneType::eMap;
 	}
@@ -182,20 +202,38 @@ void Map::Draw() {
 	int PlayerHp = pd->GetHp();
 
 	if (isMenuVisible) {
-		int menuX = 300;
-		int menuY = 200;
-		int menuWidth = 300;
-		int menuHeight = 200;
+		const int menuX = 520;
+		const int menuY = 100;
+		const int menuWidth = 380;
+		const int menuHeight = 240;
 
-		// 背景ウィンドウ
-		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(0, 0, 0), TRUE);		  // 背景黒
-		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(255, 255, 255), FALSE); // 枠白
+		// メニュー＋サブメニュー 背景ボックス
+		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(30, 30, 30), TRUE);
+		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(255, 255, 255), FALSE);
 
-		// メニュー項目
-		for (int i = 0; i < menuItemCount; i++) {
-			int textY = menuY + 40 + i * 40;
-			int color = (i == menuSelection) ? GetColor(255, 255, 0) : GetColor(255, 255, 255); // 選択中は黄色
-			DrawFormatString(menuX + 20, textY, color, "%s", menuItems[i]);
+		// メニュー項目表示
+		for (int i = 0; i < 3; ++i) {
+			int y = menuY + 30 + i * 30;
+			if (i == menuSelection) {
+				DrawString(menuX + 20, y, ("＞ " + std::string(menuItems[i])).c_str(), GetColor(255, 255, 0));
+			}
+			else {
+				DrawString(menuX + 40, y, menuItems[i], GetColor(255, 255, 255));
+			}
+		}
+
+		// サブメニュー情報の描画（メニュー項目の下に表示）
+		if (isSubMenuVisible && !subMenuText.empty()) {
+			std::istringstream iss(subMenuText);
+			std::string line;
+			int lineNum = 0;
+			const int subStartY = menuY+20 ;
+			const int subStartX = menuX ;
+
+			while (std::getline(iss, line)) {
+				DrawString(menuX + 180, subStartY + lineNum * 20, line.c_str(), GetColor(200, 255, 200));
+				lineNum++;
+			}
 		}
 	}
 }
@@ -263,24 +301,6 @@ void Map::DrawStageMap() {
 			DrawRotaGraphF(D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * j),
 				D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * i),
 				1.9, 0.0, MapImage, TRUE);
-		}
-	}
-
-	if (isMenuVisible) {
-		int menuX = 300;
-		int menuY = 200;
-		int menuWidth = 300;
-		int menuHeight = 200;
-
-		// 背景ウィンドウ
-		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(0, 0, 0), TRUE);		  // 背景黒
-		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(255, 255, 255), FALSE); // 枠白
-
-		// メニュー項目
-		for (int i = 0; i < menuItemCount; i++) {
-			int textY = menuY + 40 + i * 40;
-			int color = (i == menuSelection) ? GetColor(255, 255, 0) : GetColor(255, 255, 255); // 選択中は黄色
-			DrawFormatString(menuX + 20, textY, color, "%s", menuItems[i]);
 		}
 	}
 }

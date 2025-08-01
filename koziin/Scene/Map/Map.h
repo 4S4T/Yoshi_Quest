@@ -40,6 +40,10 @@ private:
 	const char* menuItems[3] = { "設定", "クレジット", "マップに戻る" };
 	const int menuItemCount = 3;
 
+	bool isSubMenuVisible = false; // サブメニュー表示中フラグ
+	std::string subMenuText = "";  // 表示する内容
+
+
 	std::mt19937 randomEngine;								  // 乱数生成器
 	std::uniform_int_distribution<int> distribution{ 0, 99 }; // 0～99 の乱数
 
