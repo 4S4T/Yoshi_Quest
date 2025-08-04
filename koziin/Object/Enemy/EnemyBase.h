@@ -22,4 +22,9 @@ protected:
 
 	public:
 	std::vector<int> GetAttckPatten();
+	int GetDefense() const;
+	// ì_ñ≈êßå‰óp
+	bool isBlinking = false;
+	float blinkTimer = 0.0f;
+	void SetBlink(float duration);
 };
