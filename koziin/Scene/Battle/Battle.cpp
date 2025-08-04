@@ -60,7 +60,7 @@ eSceneType BattleScene::Update(float delta_second) {
 		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
 			cursor++;
 			if (cursor > 2)
-				cursor = 1; // 1:スライム, 2:タウロス
+				cursor = 1;
 		}
 		if (input->GetKeyDown(KEY_INPUT_UP)) {
 			cursor--;
@@ -68,23 +68,37 @@ eSceneType BattleScene::Update(float delta_second) {
 				cursor = 2;
 		}
 
+		// スペースキーで攻撃を実行
 		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
 			if (cursor == 1 && slime->GetHp() > 0) {
-				int damage = PlayerData::GetInstance()->GetAttack();
-				slime->SetHp(damage);
-				battleMessage = "よっしーの攻撃！スライムに " + std::to_string(damage) + " のダメージ！";
+				int rawDamage = PlayerData::GetInstance()->GetAttack();
+				int actualDamage = rawDamage - slime->GetDefense();
+				if (actualDamage < 0)
+					actualDamage = 0;
+
+				slime->SetHp(actualDamage);
+				slime->SetBlink(1.0f); // 点滅アニメーション
+				battleMessage = "よっしーの攻撃！スライムに " + std::to_string(actualDamage) + " のダメージ！";
 				messageTimer = 2.0f;
 				isPlayerTurn = false;
 			}
-			else if (cursor == 2 && taurus->GetHp() > 0) {
-				int damage = PlayerData::GetInstance()->GetAttack();
-				taurus->SetHp(damage);
-				battleMessage = "よっしーの攻撃！タウロスに " + std::to_string(damage) + " のダメージ！";
+
+			if (cursor == 2 && taurus->GetHp() > 0) {
+				int rawDamage = PlayerData::GetInstance()->GetAttack();
+				int actualDamage = rawDamage - taurus->GetDefense();
+				if (actualDamage < 0)
+					actualDamage = 0;
+
+				taurus->SetHp(actualDamage);
+				taurus->SetBlink(1.0f); // 点滅アニメーション
+				battleMessage = "よっしーの攻撃！タウロスに " + std::to_string(actualDamage) + " のダメージ！";
 				messageTimer = 2.0f;
 				isPlayerTurn = false;
 			}
 		}
 	}
+
+
 	else {
 		// 敵ターン：それぞれの敵が生きていれば攻撃
 		static float enemyWaitTime = 0.0f;

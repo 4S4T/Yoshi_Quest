@@ -26,3 +26,14 @@ std::vector<int> EnemyBase::GetAttckPatten()
 {
 	return std::vector<int>();
 }
+
+int EnemyBase::GetDefense() const {
+	return defense;
+}
+
+void EnemyBase::SetBlink(float duration) {
+	isBlinking = true;
+	blinkTimer = duration;
+}
+
+
