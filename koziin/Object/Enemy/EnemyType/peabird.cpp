@@ -24,13 +24,26 @@ void peabird::Initialize() {
 void peabird::Finalize() {
 }
 
-void peabird::Update(float delta_second) {
+void peabird::Update(float delta_second) 
+{
 	if (hp <= 0) {
 		hp = 0;
 	}
+
+	// “_–ÅŽžŠÔ‚ÌŒ¸­
+	if (isBlinking) {
+		blinkTimer -= delta_second;
+		if (blinkTimer <= 0.0f) {
+			isBlinking = false;
+		}
+	}
 }
 
-void peabird::Draw(const Vector2D& screen_offset) const {
+void peabird::Draw(const Vector2D& screen_offset) const 
+{
+	if (!isVisible)
+		return;
+
 	DrawFormatString(0, 200, GetColor(255, 255, 255), "‘Ì—Í@: %d", hp);
 	__super::Draw(screen_offset);
 }
