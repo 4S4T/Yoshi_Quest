@@ -68,7 +68,6 @@ void Map::Initialize() {
 	lastPlayerPos = player->GetLocation();
 
 	items = GenerateMapItems();
-	collectedItemNames.clear(); // 初期化
 
 
 	StartFadeIn();
@@ -87,11 +86,12 @@ eSceneType Map::Update(float delta_second) {
 		UpdateFadeIn(delta_second);
 
 	// --- アイテム取得処理 ---
+	PlayerData* pd = PlayerData::GetInstance();
 	for (const auto& item : items) {
 		if (!item->IsCollected() &&
 			player->GetLocation().DistanceTo(item->GetPosition()) < D_OBJECT_SIZE) {
-			item->Collect();							   // アイテムを取得済みに
-			collectedItemNames.push_back(item->GetName()); // 名前を記録
+			item->Collect();					   // アイテムを取得済みに
+			pd->AddCollectedItem(item->GetName()); // ★ PlayerData に記録
 		}
 	}
 
@@ -127,12 +127,15 @@ eSceneType Map::Update(float delta_second) {
 				break;
 			case 1: // アイテム
 				subMenuText = "アイテムボックス：";
-				if (collectedItemNames.empty()) {
-					subMenuText += "\n なし";
-				}
-				else {
-					for (const auto& name : collectedItemNames) {
-						subMenuText += "\n - " + name;
+				{
+					const auto& itemList = pd->GetCollectedItems();
+					if (itemList.empty()) {
+						subMenuText += "\n なし";
+					}
+					else {
+						for (const auto& name : itemList) {
+							subMenuText += "\n - " + name;
+						}
 					}
 				}
 				isSubMenuVisible = true;

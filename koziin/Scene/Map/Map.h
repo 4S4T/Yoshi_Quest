@@ -46,7 +46,7 @@ private:
 
 
 	std::vector<std::shared_ptr<Item>> items;	 // マップ上に配置されるアイテム
-	std::vector<std::string> collectedItemNames; // プレイヤーが取得したアイテム名一覧
+	//std::vector<std::string> collectedItemNames; // プレイヤーが取得したアイテム名一覧
 
 
 	std::mt19937 randomEngine;								  // 乱数生成器

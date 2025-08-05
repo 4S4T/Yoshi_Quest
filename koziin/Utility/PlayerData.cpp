@@ -62,3 +62,24 @@ int PlayerData::GetLevel() const {
 int PlayerData::GetExperienceRequiredForLevel(int currentLevel) const {
 	return currentLevel * 100; // 例: レベルアップに必要な経験値はレベル×100
 }
+
+
+//取得済みアイテムを追加
+void PlayerData::AddCollectedItem(const std::string& itemName) {
+	// 重複追加を避ける（任意）
+	for (const auto& name : collectedItems) {
+		if (name == itemName)
+			return;
+	}
+	collectedItems.push_back(itemName);
+}
+
+// 全取得済みアイテムを取得
+const std::vector<std::string>& PlayerData::GetCollectedItems() const {
+	return collectedItems;
+}
+
+// 全リストをクリアする
+void PlayerData::ClearCollectedItems() {
+	collectedItems.clear();
+}
