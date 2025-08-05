@@ -49,6 +49,9 @@ void Slime::Update(float delta_second) {
 
 void Slime::Draw(const Vector2D& screen_offset) const
 {
+	if (!isVisible)
+		return;
+
 	DrawFormatString(0, 200, GetColor(255, 255, 255), "‘Ì—Í@: %d",hp );
 	// “_–Å’†‚Í0.1•b‚²‚Æ‚É”ñ•\¦
 	if (isBlinking && static_cast<int>(blinkTimer * 10) % 2 == 0) {

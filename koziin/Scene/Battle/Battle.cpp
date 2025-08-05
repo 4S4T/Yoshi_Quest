@@ -132,12 +132,14 @@ eSceneType BattleScene::Update(float delta_second) {
 		battleMessage = "スライムを倒した！経験値を100獲得！";
 		messageTimer = 2.0f;
 		isSlimeDefeated = true;
+		slime->SetVisible(false);
 	}
 	if (taurus->GetHp() <= 0 && !isTaurusDefeated) {
 		pd->AddExperience(150);
 		battleMessage = "タウロスを倒した！経験値を150獲得！";
 		messageTimer = 2.0f;
 		isTaurusDefeated = true;
+		taurus->SetVisible(false);
 	}
 
 	// 両方倒したら終了

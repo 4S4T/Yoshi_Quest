@@ -27,4 +27,10 @@ protected:
 	bool isBlinking = false;
 	float blinkTimer = 0.0f;
 	void SetBlink(float duration);
+
+
+	bool isVisible = true;
+
+	void SetVisible(bool v) { isVisible = v; }
+	bool IsVisible() const { return isVisible; }
 };

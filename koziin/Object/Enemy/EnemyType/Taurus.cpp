@@ -38,7 +38,11 @@ void Taurus::Update(float delta_second) {
 	}
 }
 
-void Taurus::Draw(const Vector2D& screen_offset) const {
+void Taurus::Draw(const Vector2D& screen_offset) const 
+{
+	if (!isVisible)
+		return;
+
 	DrawFormatString(0, 200, GetColor(255, 255, 255), "‘Ì—Í@: %d", hp);
 
 	// “_–Å’†‚Í0.1•b‚²‚Æ‚É”ñ•\¦
