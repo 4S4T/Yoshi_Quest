@@ -69,6 +69,15 @@ void Map::Initialize() {
 
 	items = GenerateMapItems();
 
+	const auto& collectedItemNames = PlayerData::GetInstance()->GetCollectedItems();
+	for (const auto& item : items) {
+		for (const auto& name : collectedItemNames) {
+			if (item->GetName() == name) {
+				item->Collect();
+			}
+		}
+	}
+
 
 	StartFadeIn();
 }

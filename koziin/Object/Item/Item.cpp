@@ -25,6 +25,7 @@ std::vector<std::shared_ptr<Item>> GenerateMapItems() {
     std::vector<std::shared_ptr<Item>> items;
 
     items.push_back(std::make_shared<Item>("‰ñ•œ–ò", Vector2D(300, 600)));
+	items.push_back(std::make_shared<Item>("‰ñ•œ–ò", Vector2D(200, 400)));
     items.push_back(std::make_shared<Item>("–‚–@‚ÌÎ", Vector2D(500, 400)));
     // ‘¼‚É‚à’Ç‰Á‰Â”\
 
