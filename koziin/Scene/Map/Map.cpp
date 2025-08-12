@@ -1,6 +1,7 @@
 #include "Map.h"
 #include "../Battle/Battle.h"
 #include "../Memu/MemuSene.h"
+#include "../../Object/Item/Item.h"
 #include "../../Utility/InputControl.h"
 #include "DxLib.h"
 #include "../SceneManager.h"
@@ -66,6 +67,18 @@ void Map::Initialize() {
 	encounterStepCounter = 0;
 	lastPlayerPos = player->GetLocation();
 
+	items = GenerateMapItems();
+
+	const auto& collectedItemNames = PlayerData::GetInstance()->GetCollectedItems();
+	for (const auto& item : items) {
+		for (const auto& name : collectedItemNames) {
+			if (item->GetName() == name) {
+				item->Collect();
+			}
+		}
+	}
+
+
 	StartFadeIn();
 }
 
@@ -81,8 +94,18 @@ eSceneType Map::Update(float delta_second) {
 	if (isFadingIn)
 		UpdateFadeIn(delta_second);
 
+	// --- アイテム取得処理 ---
+	PlayerData* pd = PlayerData::GetInstance();
+	for (const auto& item : items) {
+		if (!item->IsCollected() &&
+			player->GetLocation().DistanceTo(item->GetPosition()) < D_OBJECT_SIZE) {
+			item->Collect();					   // アイテムを取得済みに
+			pd->AddCollectedItem(item->GetName()); // ★ PlayerData に記録
+		}
+	}
+
 	// == = メニュー処理：最優先で処理 == =
-		if (isMenuVisible) {
+	if (isMenuVisible) {
 		// 入力処理のみ許可
 		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
 			menuSelection = (menuSelection + 1) % menuItemCount;
@@ -107,12 +130,23 @@ eSceneType Map::Update(float delta_second) {
 
 		if (input->GetKeyDown(KEY_INPUT_RETURN)) {
 			switch (menuSelection) {
-			case 0:																	   // 設定
-				subMenuText = "音量: 100%\n画面サイズ: 960x720\n操作方法: キーボード"; // 必要に応じて書き換え
+			case 0: // 設定
+				subMenuText = "音量: 100%\n画面サイズ: 960x720\n操作方法: キーボード";
 				isSubMenuVisible = true;
 				break;
-			case 1:																	  // クレジット
-				subMenuText = "制作：あなたの名前\nエンジン：DxLib\nBGM：フリー素材"; // 任意で編集
+			case 1: // アイテム
+				subMenuText = "アイテムボックス：";
+				{
+					const auto& itemList = pd->GetCollectedItems();
+					if (itemList.empty()) {
+						subMenuText += "\n なし";
+					}
+					else {
+						for (const auto& name : itemList) {
+							subMenuText += "\n - " + name;
+						}
+					}
+				}
 				isSubMenuVisible = true;
 				break;
 			case 2: // メニューを閉じる
@@ -127,7 +161,7 @@ eSceneType Map::Update(float delta_second) {
 		// メニュー中はプレイヤー・バトル処理等をスキップ
 		return eSceneType::eMap;
 	}
-		obj->Update(delta_second);
+	obj->Update(delta_second);
 
 	// **戦闘復帰処理**
 	if (wasInBattle && GetNowSceneType() == eSceneType::eMap) {
@@ -164,11 +198,11 @@ eSceneType Map::Update(float delta_second) {
 	}
 
 	//// **メニュー呼び出し処理（追加部分）**
-	//if (input->GetKeyDown(KEY_INPUT_TAB)) {
+	// if (input->GetKeyDown(KEY_INPUT_TAB)) {
 	//	menu_old_location = player->GetLocation(); // 現在位置を保存
 	//	wasInMenu = true;						   // 復帰フラグON
 	//	return eSceneType::eMemu;				   // メニューへ遷移
-	//}
+	// }
 
 	// **マップ遷移ポイント確認**
 	for (const Vector2D& transitionPoint : transitionPoints) {
@@ -185,15 +219,27 @@ eSceneType Map::Update(float delta_second) {
 		isMenuVisible = true;
 		return eSceneType::eMap;
 	}
-	
-	return GetNowSceneType();
 
+	return GetNowSceneType();
 }
 
 // 描画処理
 void Map::Draw() {
 	DrawStageMap();
 	__super::Draw();
+
+	// --- アイテム描画ここに追加 ---
+	for (const auto& item : items) {
+		if (!item->IsCollected()) {
+			DrawCircle(
+				static_cast<int>(item->GetPosition().x),
+				static_cast<int>(item->GetPosition().y),
+				10,					   // 半径
+				GetColor(255, 215, 0), // 金色
+				TRUE				   // 塗りつぶし
+			);
+		}
+	}
 
 	if (isFadingIn)
 		DrawFadeIn();
@@ -227,8 +273,8 @@ void Map::Draw() {
 			std::istringstream iss(subMenuText);
 			std::string line;
 			int lineNum = 0;
-			const int subStartY = menuY+20 ;
-			const int subStartX = menuX ;
+			const int subStartY = menuY + 20;
+			const int subStartX = menuX;
 
 			while (std::getline(iss, line)) {
 				DrawString(menuX + 180, subStartY + lineNum * 20, line.c_str(), GetColor(200, 255, 200));

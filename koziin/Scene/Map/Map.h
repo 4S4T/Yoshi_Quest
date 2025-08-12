@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <random>
+#include "../../Object/Item/Item.h"
 
 class Map : public SceneBase {
 private:
@@ -30,18 +31,22 @@ private:
 	const float SCREEN_WIDTH = 800.0f;
 	const float SCREEN_HEIGHT = 600.0f;
 
-	private:
-	int encounterStepCounter = 0;			  // プレイヤーの移動ステップ数
-	Vector2D lastPlayerPos;					  // プレイヤーの最後の位置
-	const int encounterStepThreshold = 10;	  // 10歩ごとにエンカウント判定
+private:
+	int encounterStepCounter = 0;		   // プレイヤーの移動ステップ数
+	Vector2D lastPlayerPos;				   // プレイヤーの最後の位置
+	const int encounterStepThreshold = 10; // 10歩ごとにエンカウント判定
 
-	  bool isMenuVisible = false; // メニュー表示中フラグ
+	bool isMenuVisible = false; // メニュー表示中フラグ
 	int menuSelection = 0;		// 現在選択中のメニュー項目
-	const char* menuItems[3] = { "設定", "クレジット", "マップに戻る" };
+	const char* menuItems[3] = { "設定", "アイテム", "マップに戻る" };
 	const int menuItemCount = 3;
 
 	bool isSubMenuVisible = false; // サブメニュー表示中フラグ
 	std::string subMenuText = "";  // 表示する内容
+
+
+	std::vector<std::shared_ptr<Item>> items;	 // マップ上に配置されるアイテム
+	//std::vector<std::string> collectedItemNames; // プレイヤーが取得したアイテム名一覧
 
 
 	std::mt19937 randomEngine;								  // 乱数生成器
@@ -126,7 +131,7 @@ public:
 	// 現在のマップデータ
 	std::vector<std::vector<char>> mapdata;
 
-	private:
+private:
 	int savedHp;
 	int savedAttack;
 	int savedDefense;
