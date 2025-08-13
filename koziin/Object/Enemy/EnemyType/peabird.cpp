@@ -16,9 +16,9 @@ void peabird::Initialize() {
 
 
 	location = Vector2D(480, 360);
-	attack = 5;
+	attack = 10;
 	hp = 10;
-	defense = 5;
+	defense = 7;
 }
 
 void peabird::Finalize() {
