@@ -23,8 +23,9 @@ void BattleScene::Initialize() {
 	generate_location = Vector2D(480.0f, 360.0f);
 
 	// スライムとタウロスを生成して位置をずらす
-	slime = obj->CreateGameObject<Slime>(Vector2D(380.0f, 300.0f));
+	/*slime = obj->CreateGameObject<Slime>(Vector2D(380.0f, 300.0f));*/
 	taurus = obj->CreateGameObject<Taurus>(Vector2D(580.0f, 300.0f));
+	Peabird = obj->CreateGameObject<peabird>(Vector2D(380.0f, 300.0f));
 
 	// カーソル・選択画像読み込み
 	cursor = 1;
@@ -70,22 +71,35 @@ eSceneType BattleScene::Update(float delta_second) {
 
 		// スペースキーで攻撃を実行
 		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
-			if (cursor == 1 && slime->GetHp() > 0) {
-				int rawDamage = PlayerData::GetInstance()->GetAttack();
-				int actualDamage = rawDamage - slime->GetDefense();
+			//if (cursor == 1 && slime->GetHp() > 0) {
+			//	int rawDamage = PlayerData::GetInstance()->GetAttack();
+			//	int actualDamage = rawDamage - slime->GetDefense();
+			//	if (actualDamage < 0)
+			//		actualDamage = 0;
+
+			//	slime->SetHp(actualDamage);
+			//	slime->SetBlink(1.0f); // 点滅アニメーション
+			//	battleMessage = "よっしーの攻撃！スライムに " + std::to_string(actualDamage) + " のダメージ！";
+			//	messageTimer = 2.0f;
+			//	isPlayerTurn = false;
+			//}
+
+			if (cursor == 1 && Peabird->GetHp() > 0) {
+				int rawDamage = PlayerData::GetInstance()->GetAttack()/2;
+				int actualDamage = rawDamage - Peabird->GetDefense()/4;
 				if (actualDamage < 0)
 					actualDamage = 0;
 
-				slime->SetHp(actualDamage);
-				slime->SetBlink(1.0f); // 点滅アニメーション
-				battleMessage = "よっしーの攻撃！スライムに " + std::to_string(actualDamage) + " のダメージ！";
+				Peabird->SetHp(actualDamage);
+				Peabird->SetBlink(1.0f); // 点滅アニメーション
+				battleMessage = "よっしーの攻撃！とりに " + std::to_string(actualDamage) + " のダメージ！";
 				messageTimer = 2.0f;
 				isPlayerTurn = false;
 			}
 
 			if (cursor == 2 && taurus->GetHp() > 0) {
-				int rawDamage = PlayerData::GetInstance()->GetAttack();
-				int actualDamage = rawDamage - taurus->GetDefense();
+				int rawDamage = PlayerData::GetInstance()->GetAttack()/2;
+				int actualDamage = rawDamage - taurus->GetDefense()/4;
 				if (actualDamage < 0)
 					actualDamage = 0;
 
@@ -105,16 +119,25 @@ eSceneType BattleScene::Update(float delta_second) {
 		enemyWaitTime += delta_second;
 
 		if (enemyWaitTime >= 1.0f) {
-			PlayerData* pd = PlayerData::GetInstance();
+			/*PlayerData* pd = PlayerData::GetInstance();
 			if (slime->GetHp() > 0) {
 				int damage = slime->GetAttack();
 				pd->SetHp(pd->GetHp() - damage);
 				battleMessage = "スライムの攻撃！よっしーに " + std::to_string(damage) + " のダメージ！";
+			}*/
+
+			PlayerData* pd = PlayerData::GetInstance();
+			if (Peabird->GetHp() > 0) {
+				int rawDamage = Peabird->GetAttack() / 2; 
+				int actualDamage = rawDamage - pd->GetDefense() / 4;
+				pd->SetHp(pd->GetHp() - rawDamage);
+				battleMessage = "とりの攻撃！よっしーに " + std::to_string(rawDamage) + " のダメージ！";
 			}
 			else if (taurus->GetHp() > 0) {
-				int damage = taurus->GetAttack();
-				pd->SetHp(pd->GetHp() - damage);
-				battleMessage = "タウロスの攻撃！よっしーに " + std::to_string(damage) + " のダメージ！";
+				int rawDamage = Peabird->GetAttack() / 2; 
+				int actualDamage = rawDamage - pd->GetDefense() / 4;
+				pd->SetHp(pd->GetHp() - rawDamage);
+				battleMessage = "タウロスの攻撃！よっしーに " + std::to_string(rawDamage) + " のダメージ！";
 			}
 			messageTimer = 2.0f;
 			isPlayerTurn = true;
@@ -127,12 +150,20 @@ eSceneType BattleScene::Update(float delta_second) {
 
 	// 経験値と勝利処理（個別に）
 	PlayerData* pd = PlayerData::GetInstance();
-	if (slime->GetHp() <= 0 && !isSlimeDefeated) {
+	/*if (slime->GetHp() <= 0 && !isSlimeDefeated) {
 		pd->AddExperience(100);
 		battleMessage = "スライムを倒した！経験値を100獲得！";
 		messageTimer = 2.0f;
 		isSlimeDefeated = true;
 		slime->SetVisible(false);
+	}*/
+
+	if (Peabird->GetHp() <= 0 && !isSlimeDefeated) {
+		pd->AddExperience(100);
+		battleMessage = "とりを倒した！経験値を100獲得！";
+		messageTimer = 2.0f;
+		isSlimeDefeated = true;
+		Peabird->SetVisible(false);
 	}
 	if (taurus->GetHp() <= 0 && !isTaurusDefeated) {
 		pd->AddExperience(150);
@@ -169,7 +200,8 @@ void BattleScene::Draw() {
 	DrawBox(37.5, 10, 112.5, 40, GetColor(255, 255, 255), true);
 	DrawString(37.5, 20, "よっしー", GetColor(0, 0, 0));
 
-	DrawStringToHandle(50, 540, "スライムを攻撃", GetColor(255, 255, 255), LargeFont);
+	//DrawStringToHandle(50, 540, "スライムを攻撃", GetColor(255, 255, 255), LargeFont);
+	DrawStringToHandle(50, 540, "とりを攻撃", GetColor(255, 255, 255), LargeFont);
 	DrawStringToHandle(50, 580, "タウロスを攻撃", GetColor(255, 255, 255), LargeFont);
 
 	PlayerData* pd = PlayerData::GetInstance();
