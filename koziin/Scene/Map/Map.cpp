@@ -14,6 +14,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <ctime>
+#include <string>
+
 
 #define MAP_SQUARE_Y 16	   // マップの縦のマス数
 #define MAP_SQUARE_X 22	   // マップの横のマス数
@@ -69,14 +71,14 @@ void Map::Initialize() {
 
 	items = GenerateMapItems();
 
-	const auto& collectedItemNames = PlayerData::GetInstance()->GetCollectedItems();
-	for (const auto& item : items) {
-		for (const auto& name : collectedItemNames) {
-			if (item->GetName() == name) {
-				item->Collect();
-			}
+
+	const auto& collectedItemsById = PlayerData::GetInstance()->GetCollectedItemsById();
+	for (auto& item : items) {
+		if (PlayerData::GetInstance()->IsCollected(item->GetId())) {
+			item->Collect();
 		}
 	}
+
 
 
 	StartFadeIn();
@@ -99,10 +101,11 @@ eSceneType Map::Update(float delta_second) {
 	for (const auto& item : items) {
 		if (!item->IsCollected() &&
 			player->GetLocation().DistanceTo(item->GetPosition()) < D_OBJECT_SIZE) {
-			item->Collect();					   // アイテムを取得済みに
-			pd->AddCollectedItem(item->GetName()); // ★ PlayerData に記録
+			item->Collect();									  // アイテムを取得済みに
+			pd->AddCollectedItem(item->GetId(), item->GetName()); // IDと名前で記録
 		}
 	}
+
 
 	// == = メニュー処理：最優先で処理 == =
 	if (isMenuVisible) {
@@ -137,18 +140,19 @@ eSceneType Map::Update(float delta_second) {
 			case 1: // アイテム
 				subMenuText = "アイテムボックス：";
 				{
-					const auto& itemList = pd->GetCollectedItems();
-					if (itemList.empty()) {
+					const auto& itemCounts = PlayerData::GetInstance()->GetCollectedItemCounts();
+					if (itemCounts.empty()) {
 						subMenuText += "\n なし";
 					}
 					else {
-						for (const auto& name : itemList) {
-							subMenuText += "\n - " + name;
+						for (const auto& pair : itemCounts) {
+							subMenuText += "\n - " + pair.first + " ×" + std::to_string(pair.second);
 						}
 					}
 				}
 				isSubMenuVisible = true;
 				break;
+
 			case 2: // メニューを閉じる
 				isMenuVisible = false;
 				isSubMenuVisible = false;
@@ -196,13 +200,6 @@ eSceneType Map::Update(float delta_second) {
 			}
 		}
 	}
-
-	//// **メニュー呼び出し処理（追加部分）**
-	// if (input->GetKeyDown(KEY_INPUT_TAB)) {
-	//	menu_old_location = player->GetLocation(); // 現在位置を保存
-	//	wasInMenu = true;						   // 復帰フラグON
-	//	return eSceneType::eMemu;				   // メニューへ遷移
-	// }
 
 	// **マップ遷移ポイント確認**
 	for (const Vector2D& transitionPoint : transitionPoints) {
