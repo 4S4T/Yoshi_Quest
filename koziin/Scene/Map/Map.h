@@ -38,8 +38,8 @@ private:
 
 	bool isMenuVisible = false; // メニュー表示中フラグ
 	int menuSelection = 0;		// 現在選択中のメニュー項目
-	const char* menuItems[3] = { "設定", "アイテム", "マップに戻る" };
-	const int menuItemCount = 3;
+	const char* menuItems[4] = { "どうぐ", "そうび", "つよさ", "もどる" };
+	const int menuItemCount = 4;
 
 	bool isSubMenuVisible = false; // サブメニュー表示中フラグ
 	std::string subMenuText = "";  // 表示する内容

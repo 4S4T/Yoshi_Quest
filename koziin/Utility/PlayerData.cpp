@@ -1,7 +1,7 @@
 ﻿#include "PlayerData.h"
 
 PlayerData::PlayerData()
-	: hp(30), attack(10), defense(5), experience(0), level(1) {} // デフォルト値を設定（経験値とレベルも含む）
+	: hp(30), attack(100), defense(5), experience(0), level(1) {} // デフォルト値を設定（経験値とレベルも含む）
 
 PlayerData::~PlayerData() {}
 
@@ -64,22 +64,34 @@ int PlayerData::GetExperienceRequiredForLevel(int currentLevel) const {
 }
 
 
-//取得済みアイテムを追加
-void PlayerData::AddCollectedItem(const std::string& itemName) {
-	// 重複追加を避ける（任意）
-	for (const auto& name : collectedItems) {
-		if (name == itemName)
-			return;
+// アイテム取得登録
+void PlayerData::AddCollectedItem(int id, const std::string& name) {
+    collectedItemsById[id] = std::make_pair(name, true);
+}
+
+// 取得済み判定
+bool PlayerData::IsCollected(int id) const {
+    auto it = collectedItemsById.find(id);
+    return it != collectedItemsById.end() && it->second.second;
+}
+
+// 取得済みアイテム一覧取得（ID → (名前, 取得済みフラグ)）
+const std::map<int, std::pair<std::string, bool>>& PlayerData::GetCollectedItemsById() const {
+    return collectedItemsById;
+}
+
+// 名前ごとの個数を集計
+std::map<std::string, int> PlayerData::GetCollectedItemCounts() const {
+	std::map<std::string, int> counts;
+	for (const auto& kv : collectedItemsById) {
+		const auto& pair = kv.second;
+		if (pair.second) {
+			counts[pair.first]++;
+		}
 	}
-	collectedItems.push_back(itemName);
+	return counts;
 }
 
-// 全取得済みアイテムを取得
-const std::vector<std::string>& PlayerData::GetCollectedItems() const {
-	return collectedItems;
-}
-
-// 全リストをクリアする
 void PlayerData::ClearCollectedItems() {
-	collectedItems.clear();
+    collectedItemsById.clear();
 }
