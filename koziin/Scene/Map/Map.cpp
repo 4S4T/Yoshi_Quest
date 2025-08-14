@@ -144,7 +144,7 @@ eSceneType Map::Update(float delta_second) {
 				PlayerData* pd = PlayerData::GetInstance();
 				subMenuText = "プレイヤー情報";
 				subMenuText += "\n レベル: " + std::to_string(pd->GetLevel());
-				subMenuText += "\n HP: " + std::to_string(pd->GetHp());
+				subMenuText += "\n HP: " + std::to_string(pd->GetHp()) + " / " + std::to_string(pd->GetMaxHp());
 				subMenuText += "\n 攻撃力: " + std::to_string(pd->GetAttack());
 				subMenuText += "\n 防御力: " + std::to_string(pd->GetDefense());
 				//subMenuText += "\n 経験値: " + std::to_string(pd->GetExperience()) + " / " + std::to_string(pd->GetLevel() * 100); // 必要経験値表示

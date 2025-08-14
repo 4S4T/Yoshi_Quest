@@ -1,7 +1,7 @@
 ﻿#include "PlayerData.h"
 
 PlayerData::PlayerData()
-	: hp(30), attack(100), defense(5), experience(0), level(1) {} // デフォルト値を設定（経験値とレベルも含む）
+	: hp(30), maxHp(30), attack(10), defense(5), experience(0), level(1) {} // デフォルト値を設定（経験値とレベルも含む）
 
 PlayerData::~PlayerData() {}
 
@@ -10,10 +10,9 @@ void PlayerData::SetAttack(int value) {
 }
 
 void PlayerData::SetHp(int value) {
-	hp = value;
-	if (hp <= 0) {
-		hp = 0;
-	}
+	   hp = value;
+    if (hp > maxHp) hp = maxHp;
+    if (hp <= 0) hp = 0;
 }
 
 void PlayerData::SetDefense(int value) {
@@ -35,6 +34,7 @@ void PlayerData::LevelUp() {
 	++level;
 	attack += 5;  // レベルアップ時に攻撃力を上げる例
 	hp += 10;	  // レベルアップ時にHPを上げる例
+	hp = maxHp;	  // レベルアップで HP を全回復
 	defense += 3; // レベルアップ時に防御力を上げる例
 }
 
@@ -56,6 +56,10 @@ int PlayerData::GetExperience() const {
 
 int PlayerData::GetLevel() const {
 	return level;
+}
+
+int PlayerData::GetMaxHp() const
+{ return maxHp; 
 }
 
 // レベルアップに必要な経験値を計算する補助メソッド

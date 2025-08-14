@@ -23,6 +23,8 @@ public:
 	int GetExperience() const; // 経験値のゲッター
 	int GetLevel() const;	   // レベルのゲッター
 
+	int GetMaxHp() const;
+
 	    // --- アイテム管理 ---
 	void AddCollectedItem(int id, const std::string& name);
 	bool IsCollected(int id) const;
@@ -40,6 +42,7 @@ public:
 private:
 	int attack;
 	int hp;
+	int maxHp; 
 	int defense;
 	int experience; // 経験値
 	int level;		// レベル
