@@ -2,7 +2,8 @@
 
 #include "../Singleton.h"
 #include <string>
-#include <vector>
+#include<vector>
+#include <map>
 
 // プレイヤーのデータ保存クラス
 class PlayerData : public Singleton<PlayerData> {
@@ -22,21 +23,32 @@ public:
 	int GetExperience() const; // 経験値のゲッター
 	int GetLevel() const;	   // レベルのゲッター
 
-	// 取得済みアイテムを追加
-	void AddCollectedItem(const std::string& itemName);
-	// 全取得済みアイテムを取得
-	const std::vector<std::string>& GetCollectedItems() const;
-	// 全リストをクリアする（必要な場合）
+	int GetMaxHp() const;
+
+	    // --- アイテム管理 ---
+	void AddCollectedItem(int id, const std::string& name);
+	bool IsCollected(int id) const;
+
+	// 取得済みアイテムIDと名前のマップ取得（読み取り専用）
+	const std::map<int, std::pair<std::string, bool>>& GetCollectedItemsById() const;
+
+	// 名前ごとの取得個数を集計して返す
+	std::map<std::string, int> GetCollectedItemCounts() const;
+
+	// クリア
 	void ClearCollectedItems();
 
 
 private:
 	int attack;
 	int hp;
+	int maxHp; 
 	int defense;
 	int experience; // 経験値
 	int level;		// レベル
 
 	int GetExperienceRequiredForLevel(int currentLevel) const; // 経験値を計算するメソッド
-	std::vector<std::string> collectedItems;				   // ★ 取得済みアイテム名リスト
+
+	// アイテム名 → 個数
+	std::map<int, std::pair<std::string, bool>> collectedItemsById;
 };

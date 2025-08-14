@@ -14,6 +14,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <ctime>
+#include <string>
+
 
 #define MAP_SQUARE_Y 16	   // マップの縦のマス数
 #define MAP_SQUARE_X 22	   // マップの横のマス数
@@ -69,14 +71,14 @@ void Map::Initialize() {
 
 	items = GenerateMapItems();
 
-	const auto& collectedItemNames = PlayerData::GetInstance()->GetCollectedItems();
-	for (const auto& item : items) {
-		for (const auto& name : collectedItemNames) {
-			if (item->GetName() == name) {
-				item->Collect();
-			}
+
+	const auto& collectedItemsById = PlayerData::GetInstance()->GetCollectedItemsById();
+	for (auto& item : items) {
+		if (PlayerData::GetInstance()->IsCollected(item->GetId())) {
+			item->Collect();
 		}
 	}
+
 
 
 	StartFadeIn();
@@ -99,12 +101,12 @@ eSceneType Map::Update(float delta_second) {
 	for (const auto& item : items) {
 		if (!item->IsCollected() &&
 			player->GetLocation().DistanceTo(item->GetPosition()) < D_OBJECT_SIZE) {
-			item->Collect();					   // アイテムを取得済みに
-			pd->AddCollectedItem(item->GetName()); // ★ PlayerData に記録
+			item->Collect();									  // アイテムを取得済みに
+			pd->AddCollectedItem(item->GetId(), item->GetName()); // IDと名前で記録
 		}
 	}
 
-	// == = メニュー処理：最優先で処理 == =
+		// === メニュー処理：最優先で処理 ===
 	if (isMenuVisible) {
 		// 入力処理のみ許可
 		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
@@ -113,43 +115,44 @@ eSceneType Map::Update(float delta_second) {
 		if (input->GetKeyDown(KEY_INPUT_UP)) {
 			menuSelection = (menuSelection - 1 + menuItemCount) % menuItemCount;
 		}
-		if (input->GetKeyDown(KEY_INPUT_RETURN)) {
-			switch (menuSelection) {
-			case 0:
-				// 設定処理
-				break;
-			case 1:
-				// クレジット処理
-				break;
-			case 2:
-				// メニュー終了
-				isMenuVisible = false;
-				break;
-			}
-		}
 
 		if (input->GetKeyDown(KEY_INPUT_RETURN)) {
 			switch (menuSelection) {
-			case 0: // 設定
-				subMenuText = "音量: 100%\n画面サイズ: 960x720\n操作方法: キーボード";
-				isSubMenuVisible = true;
-				break;
-			case 1: // アイテム
+			case 0: // どうぐ
 				subMenuText = "アイテムボックス：";
 				{
-					const auto& itemList = pd->GetCollectedItems();
-					if (itemList.empty()) {
+					const auto& itemCounts = PlayerData::GetInstance()->GetCollectedItemCounts();
+					if (itemCounts.empty()) {
 						subMenuText += "\n なし";
 					}
 					else {
-						for (const auto& name : itemList) {
-							subMenuText += "\n - " + name;
+						for (const auto& pair : itemCounts) {
+							subMenuText += "\n - " + pair.first + " ×" + std::to_string(pair.second);
 						}
 					}
 				}
 				isSubMenuVisible = true;
 				break;
-			case 2: // メニューを閉じる
+
+			case 1: // そうび
+				subMenuText = "装備一覧";
+				isSubMenuVisible = true;
+				break;
+
+			case 2: // つよさ
+			{
+				PlayerData* pd = PlayerData::GetInstance();
+				subMenuText = "プレイヤー情報";
+				subMenuText += "\n レベル: " + std::to_string(pd->GetLevel());
+				subMenuText += "\n HP: " + std::to_string(pd->GetHp()) + " / " + std::to_string(pd->GetMaxHp());
+				subMenuText += "\n 攻撃力: " + std::to_string(pd->GetAttack());
+				subMenuText += "\n 防御力: " + std::to_string(pd->GetDefense());
+				//subMenuText += "\n 経験値: " + std::to_string(pd->GetExperience()) + " / " + std::to_string(pd->GetLevel() * 100); // 必要経験値表示
+				isSubMenuVisible = true;
+			} break;
+
+
+			case 3: // もどる
 				isMenuVisible = false;
 				isSubMenuVisible = false;
 				subMenuText.clear();
@@ -157,10 +160,10 @@ eSceneType Map::Update(float delta_second) {
 			}
 		}
 
-
 		// メニュー中はプレイヤー・バトル処理等をスキップ
 		return eSceneType::eMap;
 	}
+
 	obj->Update(delta_second);
 
 	// **戦闘復帰処理**
@@ -197,13 +200,6 @@ eSceneType Map::Update(float delta_second) {
 		}
 	}
 
-	//// **メニュー呼び出し処理（追加部分）**
-	// if (input->GetKeyDown(KEY_INPUT_TAB)) {
-	//	menu_old_location = player->GetLocation(); // 現在位置を保存
-	//	wasInMenu = true;						   // 復帰フラグON
-	//	return eSceneType::eMemu;				   // メニューへ遷移
-	// }
-
 	// **マップ遷移ポイント確認**
 	for (const Vector2D& transitionPoint : transitionPoints) {
 		if (currentPos.DistanceTo(transitionPoint) < D_OBJECT_SIZE) {
@@ -211,7 +207,6 @@ eSceneType Map::Update(float delta_second) {
 			break;
 		}
 	}
-
 
 	// --- メニューを開く入力検出 ---
 	if (input->GetKeyDown(KEY_INPUT_TAB)) {
@@ -247,6 +242,7 @@ void Map::Draw() {
 	PlayerData* pd = PlayerData::GetInstance();
 	int PlayerHp = pd->GetHp();
 
+	//メニュー画面
 	if (isMenuVisible) {
 		const int menuX = 520;
 		const int menuY = 100;
@@ -258,7 +254,7 @@ void Map::Draw() {
 		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(255, 255, 255), FALSE);
 
 		// メニュー項目表示
-		for (int i = 0; i < 3; ++i) {
+		for (int i = 0; i < 4; ++i) {
 			int y = menuY + 30 + i * 30;
 			if (i == menuSelection) {
 				DrawString(menuX + 20, y, ("＞ " + std::string(menuItems[i])).c_str(), GetColor(255, 255, 0));
