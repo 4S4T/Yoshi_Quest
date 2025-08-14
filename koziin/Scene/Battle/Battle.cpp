@@ -134,7 +134,7 @@ eSceneType BattleScene::Update(float delta_second) {
 				battleMessage = "とりの攻撃！よっしーに " + std::to_string(rawDamage) + " のダメージ！";
 			}
 			else if (taurus->GetHp() > 0) {
-				int rawDamage = Peabird->GetAttack() / 2; 
+				int rawDamage = taurus->GetAttack() / 2; 
 				int actualDamage = rawDamage - pd->GetDefense() / 4;
 				pd->SetHp(pd->GetHp() - rawDamage);
 				battleMessage = "タウロスの攻撃！よっしーに " + std::to_string(rawDamage) + " のダメージ！";
