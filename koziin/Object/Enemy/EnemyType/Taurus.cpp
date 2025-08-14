@@ -16,7 +16,7 @@ void Taurus::Initialize() {
 
 
 	location = Vector2D(480, 360);
-	attack = 100;
+	attack = 12;
 	hp = 15;
 	defense = 9;
 }
