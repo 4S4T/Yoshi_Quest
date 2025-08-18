@@ -57,10 +57,15 @@ private:
 	std::map<int, Item> ownedItems;
 
 	// 装備中アイテムID
-	int equippedWeaponId;
-	int equippedShieldId;
-	int equippedArmorId;
-	int equippedHelmetId;
+	int equippedWeaponId;//武器
+	int equippedShieldId;//盾
+	int equippedArmorId;//道具
+	int equippedHelmetId;//頭
+
+	  // ★装備補正の合算ヘルパー
+	int GetEquipAttackBonus() const;  // 攻撃力の装備補正（加算）合計
+	int GetEquipDefenseBonus() const; // 防御力の装備補正（加算）合計
+	int GetEquipHpBonus() const;	  // 最大HPの装備補正（加算）合計
 
 	// レベルアップに必要な経験値計算
 	int GetExperienceRequiredForLevel(int currentLevel) const;

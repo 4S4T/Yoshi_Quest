@@ -63,16 +63,18 @@ std::vector<std::shared_ptr<Item>> GenerateMapItems() {
 	std::vector<std::shared_ptr<Item>> items;
 
 	// Á”ïƒAƒCƒeƒ€
-	items.push_back(std::make_shared<Item>(1, "‰ñ•œ–ò", Vector2D(300, 600),ItemType::Consumable, EquipCategory::None,0, 0, 0, 20));
+	items.push_back(std::make_shared<Item>(1, "‰ñ•œ–ò", Vector2D(500, 600),ItemType::Consumable, EquipCategory::None,0, 0, 0, 20));
 
+
+	// Item( id,   –¼‘O,     ˆÊ’u,               í—Ş,               ‘•”õí•Ê,							UŒ‚•â³, –hŒä•â³, HP•â³, ‰ñ•œ—Ê )
 	// ‘•”õƒAƒCƒeƒ€
-	items.push_back(std::make_shared<Item>(2, "“ú—Ö“DX", Vector2D(500, 400),ItemType::Equipment, EquipCategory::Weapon,5, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(2, "“ú—Ö“DX", Vector2D(300, 600),ItemType::Equipment, EquipCategory::Weapon,1000000, 0, 0, 0));
 
 	items.push_back(std::make_shared<Item>(3, "‚", Vector2D(550, 420),ItemType::Equipment, EquipCategory::Shield,0, 3, 0, 0));
 
 	items.push_back(std::make_shared<Item>(4, "ŠZ", Vector2D(580, 450),ItemType::Equipment, EquipCategory::Armor,0, 0, 10, 0));
 
-	items.push_back(std::make_shared<Item>(5, "“S‚Ìƒwƒ‹ƒƒbƒg", Vector2D(600, 480),ItemType::Equipment, EquipCategory::Helmet,0, 2, 5, 0));
+	items.push_back(std::make_shared<Item>(5, "“S‚Ìƒwƒ‹ƒƒbƒg", Vector2D(600, 480),ItemType::Equipment, EquipCategory::Helmet,0, 2, 0, 0));
 
 	return items;
 }

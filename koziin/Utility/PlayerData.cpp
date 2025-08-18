@@ -67,11 +67,58 @@ void PlayerData::LevelUp()
 
 // ステータス取得
 int PlayerData::GetHp() const { return hp; }
-int PlayerData::GetAttack() const { return attack; }
-int PlayerData::GetDefense() const { return defense; }
+int PlayerData::GetAttack() const {return attack + GetEquipAttackBonus();}
+int PlayerData::GetDefense() const {return defense + GetEquipDefenseBonus();}
 int PlayerData::GetExperience() const { return experience; }
 int PlayerData::GetLevel() const { return level; }
-int PlayerData::GetMaxHp() const { return maxHp; }
+int PlayerData::GetMaxHp() const {return maxHp+GetEquipHpBonus();}
+
+
+// ★装備補正の合算（攻撃）
+int PlayerData::GetEquipAttackBonus() const 
+{
+	int bonus = 0;
+	auto add = [&](int id) {
+		auto it = ownedItems.find(id);
+		if (it != ownedItems.end())
+			bonus += it->second.GetAttackAddValue();
+	};
+	add(equippedWeaponId);
+	add(equippedShieldId);
+	add(equippedArmorId);
+	add(equippedHelmetId);
+	return bonus;
+}
+
+// ★装備補正の合算（防御）
+int PlayerData::GetEquipDefenseBonus() const {
+	int bonus = 0;
+	auto add = [&](int id) {
+		auto it = ownedItems.find(id);
+		if (it != ownedItems.end())
+			bonus += it->second.GetDefenseAddValue();
+	};
+	add(equippedWeaponId);
+	add(equippedShieldId);
+	add(equippedArmorId);
+	add(equippedHelmetId);
+	return bonus;
+}
+
+// ★装備補正の合算（最大HP）
+int PlayerData::GetEquipHpBonus() const {
+	int bonus = 0;
+	auto add = [&](int id) {
+		auto it = ownedItems.find(id);
+		if (it != ownedItems.end())
+			bonus += it->second.GetHpAddValue();
+	};
+	add(equippedWeaponId);
+	add(equippedShieldId);
+	add(equippedArmorId);
+	add(equippedHelmetId);
+	return bonus;
+}
 
 // 必要経験値計算
 int PlayerData::GetExperienceRequiredForLevel(int currentLevel) const 
@@ -96,8 +143,6 @@ bool PlayerData::IsCollected(int id) const
 {
 	return ownedItems.find(id) != ownedItems.end();
 }
-
-
 
 // 「消費アイテム」の所持数を名前ごとに集計して返す
 std::map<std::string, int> PlayerData::GetConsumableCounts() const 
