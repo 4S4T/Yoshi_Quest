@@ -5,26 +5,50 @@ PlayerData::PlayerData()
 	: hp(30), maxHp(30), attack(10), defense(5),
 	  experience(0), level(1),
 	  equippedWeaponId(-1), equippedShieldId(-1),
-	  equippedArmorId(-1), equippedHelmetId(-1) {}
+	  equippedArmorId(-1), equippedHelmetId(-1)
+{
 
-PlayerData::~PlayerData() {}
 
-// ステータス設定
-void PlayerData::SetAttack(int value) { attack = value; }
-void PlayerData::SetHp(int value) {
+}
+
+PlayerData::~PlayerData()
+{
+
+}
+
+// =========================
+// ステータス設定／取得
+// =========================
+
+// 攻撃力を設定
+void PlayerData::SetAttack(int value) 
+{ 
+	attack = value;
+}
+
+// HPを設定
+void PlayerData::SetHp(int value) 
+{
 	hp = value;
 	if (hp > maxHp)
 		hp = maxHp;
 	if (hp < 0)
 		hp = 0;
 }
-void PlayerData::SetDefense(int value) { defense = value; }
+
+// 防御力を設定
+void PlayerData::SetDefense(int value)
+{
+	defense = value;
+}
 
 // 経験値追加
-void PlayerData::AddExperience(int exp) {
+void PlayerData::AddExperience(int exp) 
+{
 	if (exp > 0) {
 		experience += exp;
-		while (experience >= GetExperienceRequiredForLevel(level)) {
+		while (experience >= GetExperienceRequiredForLevel(level)) 
+		{
 			experience -= GetExperienceRequiredForLevel(level);
 			LevelUp();
 		}
@@ -32,7 +56,8 @@ void PlayerData::AddExperience(int exp) {
 }
 
 // レベルアップ
-void PlayerData::LevelUp() {
+void PlayerData::LevelUp() 
+{
 	++level;
 	attack += 5;
 	defense += 3;
@@ -49,32 +74,47 @@ int PlayerData::GetLevel() const { return level; }
 int PlayerData::GetMaxHp() const { return maxHp; }
 
 // 必要経験値計算
-int PlayerData::GetExperienceRequiredForLevel(int currentLevel) const {
+int PlayerData::GetExperienceRequiredForLevel(int currentLevel) const 
+{
 	return currentLevel * 100;
 }
 
-// ===== アイテム管理 =====
-void PlayerData::AddItem(const Item& item) {
+// =========================
+// アイテム管理
+// =========================
+
+// 所持品にアイテムを追加
+void PlayerData::AddItem(const Item& item) 
+{
 	// 既存IDがあれば追加失敗して上書きしない運用（そのままでOK）
 	// 上書きしたいなら: ownedItems[item.GetId()] = item;
 	ownedItems.insert({ item.GetId(), item });
 }
 
-bool PlayerData::IsCollected(int id) const {
+// IDで所持判定
+bool PlayerData::IsCollected(int id) const 
+{
 	return ownedItems.find(id) != ownedItems.end();
 }
 
-std::map<std::string, int> PlayerData::GetConsumableCounts() const {
+
+
+// 「消費アイテム」の所持数を名前ごとに集計して返す
+std::map<std::string, int> PlayerData::GetConsumableCounts() const 
+{
 	std::map<std::string, int> counts;
 	for (auto& kv : ownedItems) {
-		if (kv.second.GetType() == ItemType::Consumable) {
+		if (kv.second.GetType() == ItemType::Consumable)
+		{
 			counts[kv.second.GetName()]++;
 		}
 	}
 	return counts;
 }
 
-std::map<std::string, int> PlayerData::GetAllItemCounts() const {
+// 全アイテムの所持数を名前ごとに集計して返す
+std::map<std::string, int> PlayerData::GetAllItemCounts() const
+{
 	std::map<std::string, int> counts;
 	for (auto& kv : ownedItems) {
 		counts[kv.second.GetName()]++;
@@ -82,45 +122,56 @@ std::map<std::string, int> PlayerData::GetAllItemCounts() const {
 	return counts;
 }
 
-const std::map<int, Item>& PlayerData::GetOwnedItems() const {
+// ID→アイテム本体の連想配列を参照返し（描画や装備選択に利用）
+const std::map<int, Item>& PlayerData::GetOwnedItems() const
+{
 	return ownedItems;
 }
 
-// ===== 装備管理 =====
-void PlayerData::EquipItem(EquipCategory category, int itemId) {
+// =========================
+// 装備管理
+// =========================
+
+
+// 指定カテゴリの装備を itemId に差し替える（所持していないIDは無視）
+void PlayerData::EquipItem(EquipCategory category, int itemId) 
+{
 	if (!IsCollected(itemId))
 		return;
-	switch (category) {
-	case EquipCategory::Weapon:
-		equippedWeaponId = itemId;
+	switch (category) 
+	{
+	case EquipCategory::Weapon://武器
+		 equippedWeaponId = itemId;
 		break;
-	case EquipCategory::Shield:
-		equippedShieldId = itemId;
+	case EquipCategory::Shield://盾
+		 equippedShieldId = itemId;
 		break;
-	case EquipCategory::Armor:
-		equippedArmorId = itemId;
+	case EquipCategory::Armor://防具
+		 equippedArmorId = itemId;
 		break;
-	case EquipCategory::Helmet:
-		equippedHelmetId = itemId;
+	case EquipCategory::Helmet://頭
+		 equippedHelmetId = itemId;
 		break;
 	default:
 		break;
 	}
 }
 
-std::string PlayerData::GetEquippedName(EquipCategory category) const {
+// 指定カテゴリの「装備名」を返す（未装備なら「なし」）
+std::string PlayerData::GetEquippedName(EquipCategory category) const
+{
 	int id = -1;
 	switch (category) {
-	case EquipCategory::Weapon:
+	case EquipCategory::Weapon://武器
 		id = equippedWeaponId;
 		break;
-	case EquipCategory::Shield:
+	case EquipCategory::Shield://盾
 		id = equippedShieldId;
 		break;
-	case EquipCategory::Armor:
+	case EquipCategory::Armor://防具
 		id = equippedArmorId;
 		break;
-	case EquipCategory::Helmet:
+	case EquipCategory::Helmet://頭
 		id = equippedHelmetId;
 		break;
 	default:
@@ -130,22 +181,28 @@ std::string PlayerData::GetEquippedName(EquipCategory category) const {
 	return (it != ownedItems.end()) ? it->second.GetName() : "なし";
 }
 
-// ===== 所持品クリア =====
-void PlayerData::ClearCollectedItems() {
+// =========================
+// 所持品クリア
+// =========================
+
+// 所持リストを全消去し、すべて未装備状態にする
+void PlayerData::ClearCollectedItems() 
+{
 	ownedItems.clear();
 	equippedWeaponId = equippedShieldId = equippedArmorId = equippedHelmetId = -1;
 }
 
-
-int PlayerData::GetEquippedId(EquipCategory category) const {
+// 指定カテゴリの装備IDを返す（未装備は -1）
+int PlayerData::GetEquippedId(EquipCategory category) const
+{
 	switch (category) {
-	case EquipCategory::Weapon:
+	case EquipCategory::Weapon://武器
 		return equippedWeaponId;
-	case EquipCategory::Shield:
+	case EquipCategory::Shield://盾
 		return equippedShieldId;
-	case EquipCategory::Armor:
+	case EquipCategory::Armor://防具
 		return equippedArmorId;
-	case EquipCategory::Helmet:
+	case EquipCategory::Helmet://頭
 		return equippedHelmetId;
 	default:
 		return -1;
