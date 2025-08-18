@@ -51,6 +51,13 @@ eSceneType BattleScene::Update(float delta_second) {
 	gm->Update(delta_second);
 
 	InputControl* input = Singleton<InputControl>::GetInstance();
+	
+
+	static int earnedExp = 0;//バトル終了時経験値加算
+	static std::vector<std::pair<std::string, int>> defeatedEnemies; // 倒した敵と経験値
+	static size_t messageIndex = 0;									 // メッセージ表示用インデックス
+
+
 
 	if (messageTimer > 0.0f) {
 		messageTimer -= delta_second;
@@ -92,7 +99,7 @@ eSceneType BattleScene::Update(float delta_second) {
 
 				Peabird->SetHp(actualDamage);
 				Peabird->SetBlink(1.0f); // 点滅アニメーション
-				battleMessage = "よっしーの攻撃！とりに " + std::to_string(actualDamage) + " のダメージ！";
+				battleMessage = "よっしーの攻撃！トリッピーに " + std::to_string(actualDamage) + " のダメージ！";
 				messageTimer = 2.0f;
 				isPlayerTurn = false;
 			}
@@ -131,10 +138,10 @@ eSceneType BattleScene::Update(float delta_second) {
 				int rawDamage = Peabird->GetAttack() / 2; 
 				int actualDamage = rawDamage - pd->GetDefense() / 4;
 				pd->SetHp(pd->GetHp() - rawDamage);
-				battleMessage = "とりの攻撃！よっしーに " + std::to_string(rawDamage) + " のダメージ！";
+				battleMessage = "トリッピーの攻撃！よっしーに " + std::to_string(rawDamage) + " のダメージ！";
 			}
 			else if (taurus->GetHp() > 0) {
-				int rawDamage = Peabird->GetAttack() / 2; 
+				int rawDamage = taurus->GetAttack() / 2; 
 				int actualDamage = rawDamage - pd->GetDefense() / 4;
 				pd->SetHp(pd->GetHp() - rawDamage);
 				battleMessage = "タウロスの攻撃！よっしーに " + std::to_string(rawDamage) + " のダメージ！";
@@ -148,8 +155,12 @@ eSceneType BattleScene::Update(float delta_second) {
 		}
 	}
 
+
 	// 経験値と勝利処理（個別に）
 	PlayerData* pd = PlayerData::GetInstance();
+
+	//↓消すかも
+
 	/*if (slime->GetHp() <= 0 && !isSlimeDefeated) {
 		pd->AddExperience(100);
 		battleMessage = "スライムを倒した！経験値を100獲得！";
@@ -158,9 +169,9 @@ eSceneType BattleScene::Update(float delta_second) {
 		slime->SetVisible(false);
 	}*/
 
-	if (Peabird->GetHp() <= 0 && !isSlimeDefeated) {
+	/*if (Peabird->GetHp() <= 0 && !isSlimeDefeated) {
 		pd->AddExperience(100);
-		battleMessage = "とりを倒した！経験値を100獲得！";
+		battleMessage = "トリッピーを倒した！経験値を100獲得！";
 		messageTimer = 2.0f;
 		isSlimeDefeated = true;
 		Peabird->SetVisible(false);
@@ -171,17 +182,66 @@ eSceneType BattleScene::Update(float delta_second) {
 		messageTimer = 2.0f;
 		isTaurusDefeated = true;
 		taurus->SetVisible(false);
+	}*/
+
+
+
+	
+    // 倒れた敵をチェックして vector に登録
+	if (Peabird->GetHp() <= 0 && !isSlimeDefeated) {
+		isSlimeDefeated = true;
+		Peabird->SetVisible(false);
+		defeatedEnemies.push_back({ "トリッピー", 100 });
+	}
+	if (taurus->GetHp() <= 0 && !isTaurusDefeated) {
+		isTaurusDefeated = true;
+		taurus->SetVisible(false);
+		defeatedEnemies.push_back({ "タウロス", 150 });
 	}
 
-	// 両方倒したら終了
+	 // 両方倒したらバトル終了タイマー開始
 	if (isSlimeDefeated && isTaurusDefeated && battleEndTimer < 0.0f) {
 		battleEndTimer = 2.0f;
+		messageIndex = 0;
 	}
+
+
+	 // バトル終了処理（メッセージ順に表示）
 	if (battleEndTimer > 0.0f) {
 		battleEndTimer -= delta_second;
-		if (battleEndTimer <= 0.0f && messageTimer <= 0.0f)
+
+
+		// メッセージ表示
+		if (!defeatedEnemies.empty() && messageIndex < defeatedEnemies.size() && messageTimer <= 0.0f) {
+			auto& e = defeatedEnemies[messageIndex];
+			battleMessage = e.first + "を倒した！経験値" + std::to_string(e.second) + "獲得！";
+			earnedExp += e.second;
+			messageTimer = 2.0f;
+			messageIndex++;
+		}
+
+	// 最後のメッセージが終わったら経験値を加算
+		if (battleEndTimer <= 0.0f && messageTimer <= 0.0f) {
+			PlayerData* pd = PlayerData::GetInstance();
+			pd->AddExperience(earnedExp);
+			earnedExp = 0;
+			defeatedEnemies.clear();
 			return eSceneType::eMap;
+		}
 	}
+
+
+	//↓消すかも
+
+	//// 両方倒したら終了
+	//if (isSlimeDefeated && isTaurusDefeated && battleEndTimer < 0.0f) {
+	//	battleEndTimer = 2.0f;
+	//}
+	//if (battleEndTimer > 0.0f) {
+	//	battleEndTimer -= delta_second;
+	//	if (battleEndTimer <= 0.0f && messageTimer <= 0.0f)
+	//		return eSceneType::eMap;
+	//}
 
 	Draw();
 	return GetNowSceneType();
@@ -201,7 +261,7 @@ void BattleScene::Draw() {
 	DrawString(37.5, 20, "よっしー", GetColor(0, 0, 0));
 
 	//DrawStringToHandle(50, 540, "スライムを攻撃", GetColor(255, 255, 255), LargeFont);
-	DrawStringToHandle(50, 540, "とりを攻撃", GetColor(255, 255, 255), LargeFont);
+	DrawStringToHandle(50, 540, "トリッピーを攻撃", GetColor(255, 255, 255), LargeFont);
 	DrawStringToHandle(50, 580, "タウロスを攻撃", GetColor(255, 255, 255), LargeFont);
 
 	PlayerData* pd = PlayerData::GetInstance();
