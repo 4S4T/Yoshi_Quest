@@ -72,7 +72,6 @@ void Map::Initialize() {
 	items = GenerateMapItems();
 
 
-	const auto& collectedItemsById = PlayerData::GetInstance()->GetCollectedItemsById();
 	for (auto& item : items) {
 		if (PlayerData::GetInstance()->IsCollected(item->GetId())) {
 			item->Collect();
@@ -96,74 +95,130 @@ eSceneType Map::Update(float delta_second) {
 	if (isFadingIn)
 		UpdateFadeIn(delta_second);
 
-	// --- アイテム取得処理 ---
+	 // ===== アイテム拾得 =====
 	PlayerData* pd = PlayerData::GetInstance();
-	for (const auto& item : items) {
-		if (!item->IsCollected() &&
-			player->GetLocation().DistanceTo(item->GetPosition()) < D_OBJECT_SIZE) {
-			item->Collect();									  // アイテムを取得済みに
-			pd->AddCollectedItem(item->GetId(), item->GetName()); // IDと名前で記録
+	for (const auto& it : items) {
+		if (!it->IsCollected() &&
+			player->GetLocation().DistanceTo(it->GetPosition()) < D_OBJECT_SIZE) {
+			it->Collect();
+			pd->AddItem(*it); // アイテムボックスへ
 		}
 	}
 
-		// === メニュー処理：最優先で処理 ===
+	// ===== メニュー =====
 	if (isMenuVisible) {
-		// 入力処理のみ許可
-		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
-			menuSelection = (menuSelection + 1) % menuItemCount;
-		}
-		if (input->GetKeyDown(KEY_INPUT_UP)) {
-			menuSelection = (menuSelection - 1 + menuItemCount) % menuItemCount;
-		}
-
-		if (input->GetKeyDown(KEY_INPUT_RETURN)) {
-			switch (menuSelection) {
-			case 0: // どうぐ
-				subMenuText = "アイテムボックス：";
-				{
-					const auto& itemCounts = PlayerData::GetInstance()->GetCollectedItemCounts();
-					if (itemCounts.empty()) {
-						subMenuText += "\n なし";
-					}
-					else {
-						for (const auto& pair : itemCounts) {
-							subMenuText += "\n - " + pair.first + " ×" + std::to_string(pair.second);
-						}
-					}
-				}
-				isSubMenuVisible = true;
-				break;
-
-			case 1: // そうび
-				subMenuText = "装備一覧";
-				isSubMenuVisible = true;
-				break;
-
-			case 2: // つよさ
-			{
-				PlayerData* pd = PlayerData::GetInstance();
-				subMenuText = "プレイヤー情報";
-				subMenuText += "\n レベル: " + std::to_string(pd->GetLevel());
-				subMenuText += "\n HP: " + std::to_string(pd->GetHp()) + " / " + std::to_string(pd->GetMaxHp());
-				subMenuText += "\n 攻撃力: " + std::to_string(pd->GetAttack());
-				subMenuText += "\n 防御力: " + std::to_string(pd->GetDefense());
-				//subMenuText += "\n 経験値: " + std::to_string(pd->GetExperience()) + " / " + std::to_string(pd->GetLevel() * 100); // 必要経験値表示
-				isSubMenuVisible = true;
-			} break;
-
-
-			case 3: // もどる
-				isMenuVisible = false;
+		// トップメニューのカーソルはサブメニュー操作中は動かさない
+		if (!(isSubMenuVisible && isItemListActive)) {
+			if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+				menuSelection = (menuSelection + 1) % menuItemCount;
+			}
+			if (input->GetKeyDown(KEY_INPUT_UP)) {
+				menuSelection = (menuSelection - 1 + menuItemCount) % menuItemCount;
+			}
+			// 「もどる」を指している間はサブメニューを即クリア（何も描画しない）
+			if (menuSelection == 3) { // もどる
 				isSubMenuVisible = false;
+				isItemListActive = false;
 				subMenuText.clear();
-				break;
+				subMenuItemIds.clear();
 			}
 		}
+
+
+		// サブメニュー（どうぐ一覧）の操作
+		if (isSubMenuVisible && isItemListActive && !subMenuItemIds.empty()) {
+			if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+				subMenuSelection = (subMenuSelection + 1) % static_cast<int>(subMenuItemIds.size());
+			}
+			if (input->GetKeyDown(KEY_INPUT_UP)) {
+				subMenuSelection = (subMenuSelection - 1 + static_cast<int>(subMenuItemIds.size())) % static_cast<int>(subMenuItemIds.size());
+			}
+			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
+				int id = subMenuItemIds[subMenuSelection];
+				const auto& owned = PlayerData::GetInstance()->GetOwnedItems();
+				auto it = owned.find(id);
+				if (it != owned.end()) {
+					const Item& selected = it->second;
+					if (selected.GetType() == ItemType::Equipment && selected.GetCategory() != EquipCategory::None) {
+						PlayerData::GetInstance()->EquipItem(selected.GetCategory(), id);
+						subMenuText = "装備しました：\n " + selected.GetName();
+					}
+					else {
+						subMenuText = "このアイテムは装備できません：\n " + selected.GetName();
+					}
+				}
+			}
+			// Esc / Backspace で一覧を閉じる
+			if (input->GetKeyDown(KEY_INPUT_ESCAPE) || input->GetKeyDown(KEY_INPUT_SPACE)) {
+				isItemListActive = false;
+				isSubMenuVisible = false;
+				subMenuItemIds.clear();
+				subMenuText.clear();
+			}
+		}
+
+		// トップメニューのEnterはサブメニュー操作中は無効
+		if (!(isSubMenuVisible && isItemListActive)) {
+			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
+				switch (menuSelection) {
+				case 0: {						// どうぐ
+					subMenuText = "   ";
+					subMenuItemIds.clear();
+					const auto& owned = PlayerData::GetInstance()->GetOwnedItems();
+					for (const auto& kv : owned)
+						subMenuItemIds.push_back(kv.first);
+					if (subMenuItemIds.empty()) {
+						subMenuText += "\n なし";
+						isItemListActive = false;
+					}
+					else {
+						subMenuSelection = 0;
+						isItemListActive = true;
+					}
+					isSubMenuVisible = true;
+				} break;
+
+				case 1: { // そうび
+					PlayerData* pd = PlayerData::GetInstance();
+					subMenuText = "装備一覧";
+					subMenuText += "\n 武器: " + pd->GetEquippedName(EquipCategory::Weapon);
+					subMenuText += "\n 盾:   " + pd->GetEquippedName(EquipCategory::Shield);
+					subMenuText += "\n 防具: " + pd->GetEquippedName(EquipCategory::Armor);
+					subMenuText += "\n 頭: " + pd->GetEquippedName(EquipCategory::Helmet);
+					isItemListActive = false;
+					subMenuItemIds.clear();
+					isSubMenuVisible = true;
+				} break;
+
+				case 2: { // つよさ
+					PlayerData* pd = PlayerData::GetInstance();
+					subMenuText = "プレイヤー情報";
+					subMenuText += "\n レベル: " + std::to_string(pd->GetLevel());
+					subMenuText += "\n HP: " + std::to_string(pd->GetHp()) + " / " + std::to_string(pd->GetMaxHp());
+					subMenuText += "\n 攻撃力: " + std::to_string(pd->GetAttack());
+					subMenuText += "\n 防御力: " + std::to_string(pd->GetDefense());
+					isItemListActive = false;
+					subMenuItemIds.clear();
+					isSubMenuVisible = true;
+				} break;
+
+				case 3: // もどる
+					isMenuVisible = false;
+					isSubMenuVisible = false;
+					isItemListActive = false;
+					subMenuItemIds.clear();
+					subMenuText.clear();
+					break;
+				}
+			}
+		}
+
 
 		// メニュー中はプレイヤー・バトル処理等をスキップ
 		return eSceneType::eMap;
 	}
 
+	// 通常更新
 	obj->Update(delta_second);
 
 	// **戦闘復帰処理**
@@ -208,83 +263,139 @@ eSceneType Map::Update(float delta_second) {
 		}
 	}
 
-	// --- メニューを開く入力検出 ---
+	// メニューを開く
 	if (input->GetKeyDown(KEY_INPUT_TAB)) {
-		menu_old_location = player->GetLocation(); // メニュー復帰用に保存
 		isMenuVisible = true;
+		isSubMenuVisible = false;
+		isItemListActive = false;
+		subMenuItemIds.clear();
+		subMenuText.clear();
 		return eSceneType::eMap;
 	}
 
 	return GetNowSceneType();
 }
 
-// 描画処理
 void Map::Draw() {
 	DrawStageMap();
 	__super::Draw();
 
-	// --- アイテム描画ここに追加 ---
-	for (const auto& item : items) {
-		if (!item->IsCollected()) {
+	 // 未取得アイテムを描画
+	for (const auto& it : items) {
+		if (!it->IsCollected()) {
 			DrawCircle(
-				static_cast<int>(item->GetPosition().x),
-				static_cast<int>(item->GetPosition().y),
-				10,					   // 半径
-				GetColor(255, 215, 0), // 金色
-				TRUE				   // 塗りつぶし
-			);
+				static_cast<int>(it->GetPosition().x),
+				static_cast<int>(it->GetPosition().y),
+				10,
+				GetColor(255, 215, 0),
+				TRUE);
 		}
 	}
 
 	if (isFadingIn)
 		DrawFadeIn();
 
-	PlayerData* pd = PlayerData::GetInstance();
-	int PlayerHp = pd->GetHp();
-
-	//メニュー画面
+	// メニュー描画
 	if (isMenuVisible) {
 		const int menuX = 520;
 		const int menuY = 100;
 		const int menuWidth = 380;
-		const int menuHeight = 240;
+		const int menuHeight = 260;
 
-		// メニュー＋サブメニュー 背景ボックス
+		// 背景
 		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(30, 30, 30), TRUE);
 		DrawBox(menuX, menuY, menuX + menuWidth, menuY + menuHeight, GetColor(255, 255, 255), FALSE);
 
-		// メニュー項目表示
+		// 左列：メニュー項目
 		for (int i = 0; i < 4; ++i) {
 			int y = menuY + 30 + i * 30;
-			if (i == menuSelection) {
+			if (i == menuSelection)
 				DrawString(menuX + 20, y, ("＞ " + std::string(menuItems[i])).c_str(), GetColor(255, 255, 0));
-			}
-			else {
+			else
 				DrawString(menuX + 40, y, menuItems[i], GetColor(255, 255, 255));
-			}
 		}
 
-		// サブメニュー情報の描画（メニュー項目の下に表示）
-		if (isSubMenuVisible && !subMenuText.empty()) {
+		// サブメニュー情報の描画（「どうぐ」一覧中は左下／それ以外は右上。※「もどる」選択中は描かない）
+		if (isSubMenuVisible && menuSelection != 3 && !subMenuText.empty()) {
 			std::istringstream iss(subMenuText);
 			std::string line;
 			int lineNum = 0;
-			const int subStartY = menuY + 20;
-			const int subStartX = menuX;
+
+			// どうぐ一覧のときは右側リストと被るので左下へ、それ以外は右上へ
+			const bool showBottomLeft = (menuSelection == 0 && isItemListActive);
+			const int textX = showBottomLeft ? (menuX + 20) : (menuX + 200);
+			const int textY = showBottomLeft ? (menuY + 150) : (menuY + 20);
 
 			while (std::getline(iss, line)) {
-				DrawString(menuX + 180, subStartY + lineNum * 20, line.c_str(), GetColor(200, 255, 200));
+				DrawString(textX, textY + lineNum * 20, line.c_str(), GetColor(200, 255, 200));
 				lineNum++;
+			}
+		}
+
+
+		// 右列：「どうぐ」一覧（カーソル＋装備マーク）※「どうぐ」選択時のみ
+		if (isSubMenuVisible && menuSelection == 0 && isItemListActive && !subMenuItemIds.empty()) {
+			const int listX = menuX + 200; // 右側
+			const int listY = menuY + 20;
+			const int lineH = 20;
+
+			PlayerData* pd = PlayerData::GetInstance();
+			const auto& owned = pd->GetOwnedItems();
+
+			for (int i = 0; i < static_cast<int>(subMenuItemIds.size()); ++i) {
+				int id = subMenuItemIds[i];
+				auto it = owned.find(id);
+				if (it == owned.end())
+					continue;
+
+				const Item& obj = it->second;
+
+				// カテゴリ記号
+				std::string label;
+				switch (obj.GetCategory()) {
+				case EquipCategory::Weapon:
+					label = "[武] ";
+					break;
+				case EquipCategory::Shield:
+					label = "[盾] ";
+					break;
+				case EquipCategory::Armor:
+					label = "[鎧] ";
+					break;
+				case EquipCategory::Helmet:
+					label = "[頭] ";
+					break;
+				default:
+					label = "     ";
+					break;
+				}
+				label += obj.GetName();
+
+				// 装備中なら★
+				int eqId = pd->GetEquippedId(obj.GetCategory());
+				if (eqId == id && obj.GetCategory() != EquipCategory::None) {
+					label = "★ " + label;
+				}
+
+				// カーソル
+				if (i == subMenuSelection) {
+					DrawString(listX - 20, listY + i * lineH, "＞", GetColor(255, 255, 0));
+				}
+
+				// ラベル
+				DrawString(listX, listY + i * lineH, label.c_str(), GetColor(220, 255, 220));
 			}
 		}
 	}
 }
+
 
 // 終了処理
 void Map::Finalize() {
 	GameManager* obj = Singleton<GameManager>::GetInstance();
 	obj->Finalize();
 }
+
 
 // 現在のシーンタイプ
 eSceneType Map::GetNowSceneType() const {

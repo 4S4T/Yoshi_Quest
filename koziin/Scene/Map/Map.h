@@ -44,9 +44,15 @@ private:
 	bool isSubMenuVisible = false; // サブメニュー表示中フラグ
 	std::string subMenuText = "";  // 表示する内容
 
-
 	std::vector<std::shared_ptr<Item>> items;	 // マップ上に配置されるアイテム
 	//std::vector<std::string> collectedItemNames; // プレイヤーが取得したアイテム名一覧
+
+	// 「どうぐ」一覧の選択制御（追加）
+	int subMenuSelection = 0;		 // 一覧内カーソル
+	std::vector<int> subMenuItemIds; // 一覧に並べる ItemID
+	bool isItemListActive = false;	 // 一覧操作中フラグ
+
+
 
 
 	std::mt19937 randomEngine;								  // 乱数生成器
