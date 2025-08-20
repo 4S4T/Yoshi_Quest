@@ -27,14 +27,16 @@ void PlayerData::SetAttack(int value)
 }
 
 // HPを設定
-void PlayerData::SetHp(int value) 
+void PlayerData::SetHp(int value)
 {
 	hp = value;
-	if (hp > maxHp)
-		hp = maxHp;
+	int cap = GetMaxHp(); // 装備補正込み
+	if (hp > cap)
+		hp = cap;
 	if (hp < 0)
 		hp = 0;
 }
+
 
 // 防御力を設定
 void PlayerData::SetDefense(int value)
@@ -172,6 +174,27 @@ const std::map<int, Item>& PlayerData::GetOwnedItems() const
 {
 	return ownedItems;
 }
+
+// 消費アイテムを使用
+bool PlayerData::UseItem(int itemId) {
+	auto it = ownedItems.find(itemId);
+	if (it == ownedItems.end())
+		return false; // 所持してない
+
+	Item& item = it->second;
+	if (item.GetType() != ItemType::Consumable)
+		return false; // 消費アイテムじゃない
+
+	int heal = item.GetHealAmount();
+	if (heal > 0 && hp < GetMaxHp()) {
+		SetHp(hp + heal);	  // HPを回復
+		ownedItems.erase(it); // 一度きり使用可能にする場合は削除
+		return true;
+	}
+	return false;
+}
+
+
 
 // =========================
 // 装備管理

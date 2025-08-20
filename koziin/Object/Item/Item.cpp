@@ -74,7 +74,7 @@ std::vector<std::shared_ptr<Item>> GenerateMapItems() {
 
 	items.push_back(std::make_shared<Item>(4, "ŠZ", Vector2D(580, 450),ItemType::Equipment, EquipCategory::Armor,0, 0, 10, 0));
 
-	items.push_back(std::make_shared<Item>(5, "“S‚Ìƒwƒ‹ƒƒbƒg", Vector2D(600, 480),ItemType::Equipment, EquipCategory::Helmet,0, 2, 0, 0));
+	items.push_back(std::make_shared<Item>(5, "ƒwƒ‹ƒƒbƒg+20", Vector2D(600, 480),ItemType::Equipment, EquipCategory::Helmet,0, 2, 0, 0));
 
 	return items;
 }
