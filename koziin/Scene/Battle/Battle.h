@@ -32,6 +32,8 @@ public:
 
 	void Initialize() override;
 	eSceneType Update(float delta_second) override;
+	void OnEnemyDefeated(const std::string& name, int exp);
+
 	void Draw() override;
 	void Finalize() override;
 	eSceneType GetNowSceneType() const override;

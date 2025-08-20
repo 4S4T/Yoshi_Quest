@@ -213,9 +213,9 @@ eSceneType BattleScene::Update(float delta_second) {
 
 		// メッセージ表示
 		if (!defeatedEnemies.empty() && messageIndex < defeatedEnemies.size() && messageTimer <= 0.0f) {
-			auto& e = defeatedEnemies[messageIndex];
+			std::pair<std::string, int>& e = defeatedEnemies[messageIndex];
 			battleMessage = e.first + "を倒した！経験値" + std::to_string(e.second) + "獲得！";
-			earnedExp += e.second;
+			/*earnedExp += e.second;*/
 			messageTimer = 2.0f;
 			messageIndex++;
 		}
@@ -226,6 +226,7 @@ eSceneType BattleScene::Update(float delta_second) {
 			pd->AddExperience(earnedExp);
 			earnedExp = 0;
 			defeatedEnemies.clear();
+			messageIndex = 0;
 			return eSceneType::eMap;
 		}
 	}
