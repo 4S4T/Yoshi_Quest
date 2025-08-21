@@ -51,7 +51,8 @@ private:
 	int subMenuSelection = 0;		 // 一覧内カーソル
 	std::vector<int> subMenuItemIds; // 一覧に並べる ItemID
 	bool isItemListActive = false;	 // 一覧操作中フラグ
-
+									
+	void RebuildItemList(); // どうぐ一覧の再構築（消費した直後などに呼ぶ）
 
 
 

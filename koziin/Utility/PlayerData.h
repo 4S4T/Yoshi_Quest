@@ -31,6 +31,8 @@ public:
 	  // アイテム管理
 	void AddItem(const Item& item);							// 所持品に追加
 	bool IsCollected(int id) const;							// 所持確認
+	bool UseItem(int itemId);								// 消費アイテムを使用
+
 	std::map<std::string, int> GetConsumableCounts() const; // 消費アイテムの所持数
 	std::map<std::string, int> GetAllItemCounts() const;	// 全アイテムの所持数（同名集計）
 

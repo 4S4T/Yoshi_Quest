@@ -30,6 +30,27 @@ static bool wasInBattle = false; // 戦闘復帰フラグ
 static Vector2D menu_old_location; // メニュー開始前の位置保存
 static bool wasInMenu = false;	   // メニュー復帰フラグ
 
+
+// どうぐ一覧の再構築（PlayerData の所持アイテムから ID を並べ直す）
+void Map::RebuildItemList() {
+	subMenuItemIds.clear();
+	const auto& owned = PlayerData::GetInstance()->GetOwnedItems();
+	for (const auto& kv : owned) {
+		subMenuItemIds.push_back(kv.first);
+	}
+	// カーソル補正
+	if (subMenuItemIds.empty()) {
+		isItemListActive = false;
+		subMenuSelection = 0;
+	}
+	else {
+		if (subMenuSelection >= (int)subMenuItemIds.size()) {
+			subMenuSelection = (int)subMenuItemIds.size() - 1;
+		}
+	}
+}
+
+
 // コンストラクタ
 Map::Map() : encounterStepCounter(0), lastPlayerPos(Vector2D(0, 0)), isFadingIn(false), fadeAlpha(255.0f) {
 	srand(static_cast<unsigned int>(time(nullptr))); // 乱数シード
@@ -89,13 +110,11 @@ eSceneType Map::Update(float delta_second) {
 	InputControl* input = Singleton<InputControl>::GetInstance();
 	GameManager* obj = Singleton<GameManager>::GetInstance();
 
-	/*obj->Update(delta_second);*/
-
 	// フェードイン更新
 	if (isFadingIn)
 		UpdateFadeIn(delta_second);
 
-	 // ===== アイテム拾得 =====
+	// ===== アイテム拾得 =====
 	PlayerData* pd = PlayerData::GetInstance();
 	for (const auto& it : items) {
 		if (!it->IsCollected() &&
@@ -105,7 +124,7 @@ eSceneType Map::Update(float delta_second) {
 		}
 	}
 
-	// ===== メニュー =====
+	// ===== メニュー処理 =====
 	if (isMenuVisible) {
 		// トップメニューのカーソルはサブメニュー操作中は動かさない
 		if (!(isSubMenuVisible && isItemListActive)) {
@@ -115,15 +134,14 @@ eSceneType Map::Update(float delta_second) {
 			if (input->GetKeyDown(KEY_INPUT_UP)) {
 				menuSelection = (menuSelection - 1 + menuItemCount) % menuItemCount;
 			}
-			// 「もどる」を指している間はサブメニューを即クリア（何も描画しない）
-			if (menuSelection == 3) { // もどる
+			// 「もどる」を指している間はサブメニューを即クリア
+			if (menuSelection == 3) {
 				isSubMenuVisible = false;
 				isItemListActive = false;
 				subMenuText.clear();
 				subMenuItemIds.clear();
 			}
 		}
-
 
 		// サブメニュー（どうぐ一覧）の操作
 		if (isSubMenuVisible && isItemListActive && !subMenuItemIds.empty()) {
@@ -135,20 +153,38 @@ eSceneType Map::Update(float delta_second) {
 			}
 			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
 				int id = subMenuItemIds[subMenuSelection];
+
+				// 所持テーブルから参照
 				const auto& owned = PlayerData::GetInstance()->GetOwnedItems();
 				auto it = owned.find(id);
 				if (it != owned.end()) {
 					const Item& selected = it->second;
+
 					if (selected.GetType() == ItemType::Equipment && selected.GetCategory() != EquipCategory::None) {
 						PlayerData::GetInstance()->EquipItem(selected.GetCategory(), id);
 						subMenuText = "装備しました：\n " + selected.GetName();
 					}
+					else if (selected.GetType() == ItemType::Consumable) {
+						// ★ 値コピーしておく（erase されても安全）
+						const std::string name = selected.GetName();
+						const int heal = selected.GetHealAmount();
+
+						const bool used = PlayerData::GetInstance()->UseItem(id);
+						if (used) {
+							subMenuText = "使用しました：\n " + name + "（+" + std::to_string(heal) + " HP）";
+							RebuildItemList();
+						}
+						else {
+							subMenuText = "使用できません：\n " + name;
+						}
+					}
 					else {
-						subMenuText = "このアイテムは装備できません：\n " + selected.GetName();
+						subMenuText = "このアイテムは使用できません：\n " + selected.GetName();
 					}
 				}
+
 			}
-			// Esc / Backspace で一覧を閉じる
+			// Esc / Space で一覧を閉じる
 			if (input->GetKeyDown(KEY_INPUT_ESCAPE) || input->GetKeyDown(KEY_INPUT_SPACE)) {
 				isItemListActive = false;
 				isSubMenuVisible = false;
@@ -161,12 +197,9 @@ eSceneType Map::Update(float delta_second) {
 		if (!(isSubMenuVisible && isItemListActive)) {
 			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
 				switch (menuSelection) {
-				case 0: {						// どうぐ
-					subMenuText = "   ";
-					subMenuItemIds.clear();
-					const auto& owned = PlayerData::GetInstance()->GetOwnedItems();
-					for (const auto& kv : owned)
-						subMenuItemIds.push_back(kv.first);
+				case 0: { // どうぐ
+					subMenuText = " ";
+					RebuildItemList();
 					if (subMenuItemIds.empty()) {
 						subMenuText += "\n なし";
 						isItemListActive = false;
@@ -184,7 +217,7 @@ eSceneType Map::Update(float delta_second) {
 					subMenuText += "\n 武器: " + pd->GetEquippedName(EquipCategory::Weapon);
 					subMenuText += "\n 盾:   " + pd->GetEquippedName(EquipCategory::Shield);
 					subMenuText += "\n 防具: " + pd->GetEquippedName(EquipCategory::Armor);
-					subMenuText += "\n 頭: " + pd->GetEquippedName(EquipCategory::Helmet);
+					subMenuText += "\n 頭:   " + pd->GetEquippedName(EquipCategory::Helmet);
 					isItemListActive = false;
 					subMenuItemIds.clear();
 					isSubMenuVisible = true;
@@ -280,7 +313,8 @@ void Map::Draw() {
 	DrawStageMap();
 	__super::Draw();
 
-	 // 未取得アイテムを描画
+
+	 // 未取得アイテムを描画(落ちているアイテム)
 	for (const auto& it : items) {
 		if (!it->IsCollected()) {
 			DrawCircle(
@@ -297,9 +331,9 @@ void Map::Draw() {
 
 	// メニュー描画
 	if (isMenuVisible) {
-		const int menuX = 520;
-		const int menuY = 100;
-		const int menuWidth = 380;
+		const int menuX = 50;
+		const int menuY = 50;
+		const int menuWidth = 400;
 		const int menuHeight = 260;
 
 		// 背景
