@@ -206,29 +206,32 @@ eSceneType BattleScene::Update(float delta_second) {
 	}
 
 
-	 // バトル終了処理（メッセージ順に表示）
+	 // バトル終了処理
 	if (battleEndTimer > 0.0f) {
 		battleEndTimer -= delta_second;
 
 
-		// メッセージ表示
-		if (!defeatedEnemies.empty() && messageIndex < defeatedEnemies.size() && messageTimer <= 0.0f) {
-			std::pair<std::string, int>& e = defeatedEnemies[messageIndex];
-			battleMessage = e.first + "を倒した！経験値" + std::to_string(e.second) + "獲得！";
-			/*earnedExp += e.second;*/
-			messageTimer = 2.0f;
-			messageIndex++;
+		// バトル終了処理
+		if (!defeatedEnemies.empty()) {
+			if (messageIndex < defeatedEnemies.size() && messageTimer <= 0.0f) {
+				auto& e = defeatedEnemies[messageIndex];
+				battleMessage = e.first + "を倒した！経験値" + std::to_string(e.second) + "獲得！";
+				earnedExp += e.second;
+				messageTimer = 2.0f;
+				messageIndex++;
+			}
+
+			// 全部のメッセージを出し終わったら経験値を加算
+			else if (messageIndex >= defeatedEnemies.size() && messageTimer <= 0.0f) {
+				PlayerData* pd = PlayerData::GetInstance();
+				pd->AddExperience(earnedExp);
+				earnedExp = 0;
+				defeatedEnemies.clear();
+				messageIndex = 0;
+				return eSceneType::eMap;
+			}
 		}
 
-	// 最後のメッセージが終わったら経験値を加算
-		if (battleEndTimer <= 0.0f && messageTimer <= 0.0f) {
-			PlayerData* pd = PlayerData::GetInstance();
-			pd->AddExperience(earnedExp);
-			earnedExp = 0;
-			defeatedEnemies.clear();
-			messageIndex = 0;
-			return eSceneType::eMap;
-		}
 	}
 
 
