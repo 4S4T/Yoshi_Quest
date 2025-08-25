@@ -6,6 +6,7 @@
 #include "DxLib.h"
 #include "../SceneManager.h"
 #include "../../Object/GameObjectManager.h"
+#include "../../Object/NPC/NPC.h"
 #include "../../Utility/ResourceManager.h"
 #include "../../Utility/PlayerData.h"
 #include "../../Utility/Vector2D.h"
@@ -90,16 +91,33 @@ void Map::Initialize() {
 	encounterStepCounter = 0;
 	lastPlayerPos = player->GetLocation();
 
-	items = GenerateMapItems();
+	/*items = GenerateMapItems();
 
 
 	for (auto& item : items) {
 		if (PlayerData::GetInstance()->IsCollected(item->GetId())) {
 			item->Collect();
 		}
+	}*/
+
+	items.clear();
+	if (isEncounterEnabled) { // = stage2 以外
+		items = GenerateMapItems();
+		for (auto& item : items) {
+			if (PlayerData::GetInstance()->IsCollected(item->GetId())) {
+				item->Collect();
+			}
+		}
 	}
 
-
+	ncps.clear();
+	if (!isEncounterEnabled) { // = Resource/stage2.csv
+		std::vector<std::string> lines;
+		lines.push_back("ここは安全地帯だ。");
+		lines.push_back("旅の準備はできているかい？");
+		lines.push_back("Zキーで会話を進められるよ。");
+		ncps.push_back(std::make_shared<NCP>(Vector2D(320.0f, 600.0f), "村の長老", lines));
+	}
 
 	StartFadeIn();
 }
@@ -115,14 +133,17 @@ eSceneType Map::Update(float delta_second) {
 		UpdateFadeIn(delta_second);
 
 	// ===== アイテム拾得 =====
-	PlayerData* pd = PlayerData::GetInstance();
-	for (const auto& it : items) {
-		if (!it->IsCollected() &&
-			player->GetLocation().DistanceTo(it->GetPosition()) < D_OBJECT_SIZE) {
-			it->Collect();
-			pd->AddItem(*it); // アイテムボックスへ
+	if (isEncounterEnabled) {
+		PlayerData* pd = PlayerData::GetInstance();
+		for (const auto& it : items) {
+			if (!it->IsCollected() &&
+				player->GetLocation().DistanceTo(it->GetPosition()) < D_OBJECT_SIZE) {
+				it->Collect();
+				pd->AddItem(*it);
+			}
 		}
 	}
+
 
 	// ===== メニュー処理 =====
 	if (isMenuVisible) {
@@ -251,6 +272,38 @@ eSceneType Map::Update(float delta_second) {
 		return eSceneType::eMap;
 	}
 
+	//=====================
+	// NCP 会話処理（ステージ2のみ）
+	// =====================
+	if (!ncps.empty()) {
+		// すでに会話中なら、Z/Enterで送り続ける（他の更新は止める）
+		bool someTalking = false;
+		for (auto& npc : ncps)
+			if (npc->IsTalking()) {
+				someTalking = true;
+				break;
+			}
+
+		if (someTalking) {
+			if (input->GetKeyDown(KEY_INPUT_Z) || input->GetKeyDown(KEY_INPUT_RETURN)) {
+				for (auto& npc : ncps)
+					if (npc->IsTalking())
+						npc->AdvanceTalk();
+			}
+			return eSceneType::eMap; // 会話中は止める
+		}
+
+		// 会話開始判定（近づいてZ/Enter）
+		for (auto& npc : ncps) {
+			if (npc->IsPlayerInRange(player->GetLocation(), 40.0f)) {
+				if (input->GetKeyDown(KEY_INPUT_Z) || input->GetKeyDown(KEY_INPUT_RETURN)) {
+					npc->BeginTalk();
+					return eSceneType::eMap;
+				}
+			}
+		}
+	}
+
 	// 通常更新
 	obj->Update(delta_second);
 
@@ -315,16 +368,24 @@ void Map::Draw() {
 
 
 	 // 未取得アイテムを描画(落ちているアイテム)
-	for (const auto& it : items) {
-		if (!it->IsCollected()) {
-			DrawCircle(
-				static_cast<int>(it->GetPosition().x),
-				static_cast<int>(it->GetPosition().y),
-				10,
-				GetColor(255, 215, 0),
-				TRUE);
+	if (isEncounterEnabled) {
+		for (const auto& it : items) {
+			if (!it->IsCollected()) {
+				DrawCircle(
+					(int)it->GetPosition().x,
+					(int)it->GetPosition().y,
+					10,
+					GetColor(255, 215, 0),
+					TRUE);
+			}
 		}
 	}
+
+	// NCP（常に描画。ステージ2でだけベクタに入っている）
+	for (const auto& npc : ncps) {
+		npc->Draw();
+	}
+
 
 	if (isFadingIn)
 		DrawFadeIn();
@@ -400,7 +461,7 @@ void Map::Draw() {
 					label = "[頭] ";
 					break;
 				default:
-					label = "     ";
+					label = "[薬] ";
 					break;
 				}
 				label += obj.GetName();
@@ -462,6 +523,7 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 			char c = cell[0];
 			row.push_back(c);
 			collisionRow.push_back(c == '3');
+			collisionRow.push_back(c == '6');
 			if (c == '4') {
 				float x = D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * colIdx);
 				float y = D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * rowIdx);
@@ -498,11 +560,38 @@ void Map::LoadNextMap() {
 	if (currentStageIndex >= stageFiles.size()) {
 		currentStageIndex = 0;
 	}
+
 	transitionPoints.clear();
+
 	mapdata = LoadStageMapCSV(stageFiles[currentStageIndex]);
 	player->SetMapData(mapdata);
 	player->SetLocation(Vector2D(200.0f, 600.0f));
+
+
+	// ---NCP （stage2だけ配置）---
+	ncps.clear();
+	if (!isEncounterEnabled) // = Resource/stage2.csv
+	{ 
+		std::vector<std::string> lines
+		{
+			"ここは安全地帯だ。", "旅の準備はできているかい？"
+		};
+		ncps.push_back(std::make_shared<NCP>(Vector2D(320.0f, 600.0f), "村の長老", lines));
+	}
+
+	if (!isEncounterEnabled) // = Resource/stage2.csv
+	{ 
+		std::vector<std::string> lines
+		{
+			"よっしー！！"
+		};
+		ncps.push_back(std::make_shared<NCP>(Vector2D(220.0f, 300.0f), "村人A", lines));
+	
+		}
+
+
 }
+
 
 // フェードイン
 void Map::StartFadeIn() {

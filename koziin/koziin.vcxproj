@@ -138,6 +138,7 @@
     <ClCompile Include="Object\Enemy\EnemyType\Rock_Rizard.cpp" />
     <ClCompile Include="Object\Enemy\EnemyType\peabird.cpp" />
     <ClCompile Include="Object\Item\Item.cpp" />
+    <ClCompile Include="Object\NPC\NPC.cpp" />
     <ClCompile Include="Scene\Memu\MemuSene.cpp" />
     <ClCompile Include="Scene\Title\Title2.cpp" />
     <ClCompile Include="Object\Enemy\EnemyType\Taurus.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="Object\Enemy\EnemyType\Rock_Rizard.h" />
     <ClInclude Include="Object\Enemy\EnemyType\peabird.h" />
     <ClInclude Include="Object\Item\Item.h" />
+    <ClInclude Include="Object\NPC\NPC.h" />
     <ClInclude Include="Scene\Memu\MemuSene.h" />
     <ClInclude Include="Scene\Title\Title2.h" />
     <ClInclude Include="Object\Enemy\EnemyType\Taurus.h" />

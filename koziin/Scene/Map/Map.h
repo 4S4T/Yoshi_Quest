@@ -3,6 +3,8 @@
 #include "../SceneBase.h"
 #include "../../Utility/Vector2D.h"
 #include "../../Object/Charactor/Player/Player.h"
+#include "../../Object/NPC/NPC.h"
+#include <memory>
 #include <string>
 #include <vector>
 #include <random>
@@ -15,6 +17,10 @@ private:
 
 	// 衝突判定マップ（true: 衝突あり, false: 衝突なし）
 	std::vector<std::vector<bool>> collisionMap;
+
+	// ステージ2専用 NCP 群
+	std::vector<std::shared_ptr<NCP>> ncps;
+
 
 	// ステージデータファイルのリスト
 	std::vector<std::string> stageFiles = {
