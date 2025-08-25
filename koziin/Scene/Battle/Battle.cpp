@@ -44,6 +44,8 @@ void BattleScene::Initialize() {
 	battleEndTimer = -1.0f;
 	isSlimeDefeated = false;
 	isTaurusDefeated = false;
+
+	commandState = PlayerCommandState::MainCommand; //コマンド選択のやつ
 }
 
 eSceneType BattleScene::Update(float delta_second) {
