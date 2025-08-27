@@ -8,8 +8,9 @@ enum class ePlayerState : unsigned char
 };
 
 enum class PlayerCommandState {
-	MainCommand, // 戦う・逃げる等を選ぶ
-	EnemySelect	 // 敵を選ぶ
+	MainCommand, // 「たたかう」「にげる」など
+	AttackTarget // 敵を選んで攻撃
 };
+
 
 PlayerCommandState commandState;

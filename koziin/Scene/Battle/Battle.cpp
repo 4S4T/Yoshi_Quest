@@ -66,96 +66,139 @@ eSceneType BattleScene::Update(float delta_second) {
 		return GetNowSceneType();
 	}
 
-	if (isPlayerTurn) {
-		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
-			cursor++;
-			if (cursor > 2)
-				cursor = 1;
-		}
-		if (input->GetKeyDown(KEY_INPUT_UP)) {
-			cursor--;
-			if (cursor < 1)
-				cursor = 2;
-		}
 
-		// スペースキーで攻撃を実行
-		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
-			//if (cursor == 1 && slime->GetHp() > 0) {
-			//	int rawDamage = PlayerData::GetInstance()->GetAttack();
-			//	int actualDamage = rawDamage - slime->GetDefense();
-			//	if (actualDamage < 0)
-			//		actualDamage = 0;
+	//if (isPlayerTurn) {
+	//	switch (commandState) {
+	//	case PlayerCommandState::MainCommand:
+	//		// メインコマンドの上下移動
+	//		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+	//			cursor++;
+	//			if (cursor > 2)
+	//				cursor = 1; // 例: 1=たたかう, 2=にげる
+	//		}
+	//		if (input->GetKeyDown(KEY_INPUT_UP)) {
+	//			cursor--;
+	//			if (cursor < 1)
+	//				cursor = 2;
+	//		}
+	//		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
+	//			if (cursor == 1) {
+	//				// 「たたかう」を選んだら攻撃対象選択へ
+	//				commandState = PlayerCommandState::AttackTarget;
+	//				cursor = 1; // 敵選択カーソルを初期化
+	//			}
+	//			else if (cursor == 2) {
+	//				// 「にげる」を選んだら戦闘終了
+	//				return eSceneType::eMap;
+	//			}
+	//		}
+	//		break;
 
-			//	slime->SetHp(actualDamage);
-			//	slime->SetBlink(1.0f); // 点滅アニメーション
-			//	battleMessage = "よっしーの攻撃！スライムに " + std::to_string(actualDamage) + " のダメージ！";
-			//	messageTimer = 2.0f;
-			//	isPlayerTurn = false;
-			//}
-
-			if (cursor == 1 && Peabird->GetHp() > 0) {
-				int rawDamage = PlayerData::GetInstance()->GetAttack()/2;
-				int actualDamage = rawDamage - Peabird->GetDefense()/4;
-				if (actualDamage < 0)
-					actualDamage = 0;
-
-				Peabird->SetHp(actualDamage);
-				Peabird->SetBlink(1.0f); // 点滅アニメーション
-				battleMessage = "よっしーの攻撃！トリッピーに " + std::to_string(actualDamage) + " のダメージ！";
-				messageTimer = 2.0f;
-				isPlayerTurn = false;
-			}
-
-			if (cursor == 2 && taurus->GetHp() > 0) {
-				int rawDamage = PlayerData::GetInstance()->GetAttack()/2;
-				int actualDamage = rawDamage - taurus->GetDefense()/4;
-				if (actualDamage < 0)
-					actualDamage = 0;
-
-				taurus->SetHp(actualDamage);
-				taurus->SetBlink(1.0f); // 点滅アニメーション
-				battleMessage = "よっしーの攻撃！タウロスに " + std::to_string(actualDamage) + " のダメージ！";
-				messageTimer = 2.0f;
-				isPlayerTurn = false;
-			}
-		}
-	}
+	//		 case PlayerCommandState::AttackTarget:
+	//		// 攻撃対象の上下移動
+	//		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+	//			cursor++;
+	//			if (cursor > 2)
+	//				cursor = 1; // 1=トリッピー, 2=タウロス
+	//		}
+	//		if (input->GetKeyDown(KEY_INPUT_UP)) {
+	//			cursor--;
+	//			if (cursor < 1)
+	//				cursor = 2;
+	//		}
+	//	/*if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+	//		cursor++;
+	//		if (cursor > 2)
+	//			cursor = 1;
+	//	}
+	//	if (input->GetKeyDown(KEY_INPUT_UP)) {
+	//		cursor--;
+	//		if (cursor < 1)
+	//			cursor = 2;
+	//	}*/
 
 
-	else {
-		// 敵ターン：それぞれの敵が生きていれば攻撃
-		static float enemyWaitTime = 0.0f;
-		enemyWaitTime += delta_second;
+	//	// スペースキーで攻撃を実行
+	//	if (input->GetKeyDown(KEY_INPUT_SPACE)) {
+	//		//if (cursor == 1 && slime->GetHp() > 0) {
+	//		//	int rawDamage = PlayerData::GetInstance()->GetAttack();
+	//		//	int actualDamage = rawDamage - slime->GetDefense();
+	//		//	if (actualDamage < 0)
+	//		//		actualDamage = 0;
 
-		if (enemyWaitTime >= 1.0f) {
-			/*PlayerData* pd = PlayerData::GetInstance();
-			if (slime->GetHp() > 0) {
-				int damage = slime->GetAttack();
-				pd->SetHp(pd->GetHp() - damage);
-				battleMessage = "スライムの攻撃！よっしーに " + std::to_string(damage) + " のダメージ！";
-			}*/
+	//		//	slime->SetHp(actualDamage);
+	//		//	slime->SetBlink(1.0f); // 点滅アニメーション
+	//		//	battleMessage = "よっしーの攻撃！スライムに " + std::to_string(actualDamage) + " のダメージ！";
+	//		//	messageTimer = 2.0f;
+	//		//	isPlayerTurn = false;
+	//		//}
 
-			PlayerData* pd = PlayerData::GetInstance();
-			if (Peabird->GetHp() > 0) {
-				int rawDamage = Peabird->GetAttack() / 2; 
-				int actualDamage = rawDamage - pd->GetDefense() / 4;
-				pd->SetHp(pd->GetHp() - rawDamage);
-				battleMessage = "トリッピーの攻撃！よっしーに " + std::to_string(rawDamage) + " のダメージ！";
-			}
-			else if (taurus->GetHp() > 0) {
-				int rawDamage = taurus->GetAttack() / 2; 
-				int actualDamage = rawDamage - pd->GetDefense() / 4;
-				pd->SetHp(pd->GetHp() - rawDamage);
-				battleMessage = "タウロスの攻撃！よっしーに " + std::to_string(rawDamage) + " のダメージ！";
-			}
-			messageTimer = 2.0f;
-			isPlayerTurn = true;
-			enemyWaitTime = 0.0f;
+	//		 if (input->GetKeyDown(KEY_INPUT_SPACE)) {
+	//			if (cursor == 1 && Peabird->GetHp() > 0) {
+	//				int rawDamage = PlayerData::GetInstance()->GetAttack() / 2;
+	//				int actualDamage = rawDamage - Peabird->GetDefense() / 4;
+	//				if (actualDamage < 0)
+	//					actualDamage = 0;
+	//				Peabird->SetHp(actualDamage);
+	//				Peabird->SetBlink(1.0f);
+	//				battleMessage = "よっしーの攻撃！トリッピーに " + std::to_string(actualDamage) + " のダメージ！";
+	//				messageTimer = 2.0f;
+	//				isPlayerTurn = false;
+	//				commandState = PlayerCommandState::MainCommand; // 戻す
+	//			}
 
-			if (pd->GetHp() <= 0)
-				return eSceneType::eEnd;
-		}
-	}
+	//			 if (cursor == 2 && taurus->GetHp() > 0) {
+	//				int rawDamage = PlayerData::GetInstance()->GetAttack() / 2;
+	//				int actualDamage = rawDamage - taurus->GetDefense() / 4;
+	//				if (actualDamage < 0)
+	//					actualDamage = 0;
+	//				taurus->SetHp(actualDamage);
+	//				taurus->SetBlink(1.0f);
+	//				battleMessage = "よっしーの攻撃！タウロスに " + std::to_string(actualDamage) + " のダメージ！";
+	//				messageTimer = 2.0f;
+	//				isPlayerTurn = false;
+	//				commandState = PlayerCommandState::MainCommand; // 戻す
+	//			}
+	//		}
+	//		break;
+
+
+	//else {
+	//	// 敵ターン：それぞれの敵が生きていれば攻撃
+	//	static float enemyWaitTime = 0.0f;
+	//	enemyWaitTime += delta_second;
+
+	//	if (enemyWaitTime >= 1.0f) {
+	//		/*PlayerData* pd = PlayerData::GetInstance();
+	//		if (slime->GetHp() > 0) {
+	//			int damage = slime->GetAttack();
+	//			pd->SetHp(pd->GetHp() - damage);
+	//			battleMessage = "スライムの攻撃！よっしーに " + std::to_string(damage) + " のダメージ！";
+	//		}*/
+
+	//		PlayerData* pd = PlayerData::GetInstance();
+	//		if (Peabird->GetHp() > 0) {
+	//			int rawDamage = Peabird->GetAttack() / 2; 
+	//			int actualDamage = rawDamage - pd->GetDefense() / 4;
+	//			pd->SetHp(pd->GetHp() - rawDamage);
+	//			battleMessage = "トリッピーの攻撃！よっしーに " + std::to_string(rawDamage) + " のダメージ！";
+	//		}
+	//		else if (taurus->GetHp() > 0) {
+	//			int rawDamage = taurus->GetAttack() / 2; 
+	//			int actualDamage = rawDamage - pd->GetDefense() / 4;
+	//			pd->SetHp(pd->GetHp() - rawDamage);
+	//			battleMessage = "タウロスの攻撃！よっしーに " + std::to_string(rawDamage) + " のダメージ！";
+	//		}
+	//		messageTimer = 2.0f;
+	//		isPlayerTurn = true;
+	//		enemyWaitTime = 0.0f;
+
+	//		if (pd->GetHp() <= 0)
+	//			return eSceneType::eEnd;
+	//	}
+	//}
+
+
 
 
 	// 経験値と勝利処理（個別に）
@@ -266,9 +309,21 @@ void BattleScene::Draw() {
 	DrawBox(37.5, 10, 112.5, 40, GetColor(255, 255, 255), true);
 	DrawString(37.5, 20, "よっしー", GetColor(0, 0, 0));
 
+
+	if (commandState == PlayerCommandState::MainCommand) {
+		DrawStringToHandle(50, 540, "たたかう", GetColor(255, 255, 255), LargeFont);
+		DrawStringToHandle(50, 580, "にげる", GetColor(255, 255, 255), LargeFont);
+		DrawRotaGraph(40, 555 + (cursor - 1) * 40, 0.05, 0, select, TRUE);
+	}
+	else if (commandState == PlayerCommandState::AttackTarget) {
+		DrawStringToHandle(50, 540, "トリッピーを攻撃", GetColor(255, 255, 255), LargeFont);
+		DrawStringToHandle(50, 580, "タウロスを攻撃", GetColor(255, 255, 255), LargeFont);
+		DrawRotaGraph(40, 555 + (cursor - 1) * 40, 0.05, 0, select, TRUE);
+	}
+
 	//DrawStringToHandle(50, 540, "スライムを攻撃", GetColor(255, 255, 255), LargeFont);
-	DrawStringToHandle(50, 540, "トリッピーを攻撃", GetColor(255, 255, 255), LargeFont);
-	DrawStringToHandle(50, 580, "タウロスを攻撃", GetColor(255, 255, 255), LargeFont);
+	/*DrawStringToHandle(50, 540, "トリッピーを攻撃", GetColor(255, 255, 255), LargeFont);
+	DrawStringToHandle(50, 580, "タウロスを攻撃", GetColor(255, 255, 255), LargeFont);*/
 
 	PlayerData* pd = PlayerData::GetInstance();
 	DrawFormatStringToHandle(5, 50, GetColor(255, 255, 255), LargeFont, "Lv　:  %d", pd->GetLevel());

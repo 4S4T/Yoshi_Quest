@@ -47,5 +47,12 @@ void Rock_Rizard::Draw(const Vector2D& screen_offset) const
 		return;
 
 	DrawFormatString(0, 200, GetColor(255, 255, 255), "体力　: %d", hp);
+
+	// 点滅中は0.1秒ごとに非表示
+	if (isBlinking && static_cast<int>(blinkTimer * 10) % 2 == 0) {
+		// 何も描画しない（点滅）
+		return;
+	}
+
 	__super::Draw(screen_offset);
 }
