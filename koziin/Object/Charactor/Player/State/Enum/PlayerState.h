@@ -13,4 +13,4 @@ enum class PlayerCommandState {
 };
 
 
-PlayerCommandState commandState;
+extern PlayerCommandState commandState;
