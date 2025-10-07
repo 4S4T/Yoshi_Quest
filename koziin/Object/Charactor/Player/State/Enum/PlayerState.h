@@ -6,3 +6,11 @@ enum class ePlayerState : unsigned char
 	RUN,	  // 移動状態
 	NONE // 何もない
 };
+
+enum class PlayerCommandState {
+	MainCommand, // 「たたかう」「にげる」など
+	AttackTarget // 敵を選んで攻撃
+};
+
+
+extern PlayerCommandState commandState;
