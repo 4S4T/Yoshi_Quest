@@ -577,17 +577,18 @@ void Map::LoadNextMap() {
 			"ここは安全地帯だ。", "旅の準備はできているかい？"
 		};
 		ncps.push_back(std::make_shared<NCP>(Vector2D(320.0f, 600.0f), "村の長老", lines));
+		ncps.back()->SetImage("Resource/Images/peabird.png");
 	}
 
 	if (!isEncounterEnabled) // = Resource/stage2.csv
 	{ 
 		std::vector<std::string> lines
 		{
-			"よっしー！！"
+			"僕よっしー！！"
 		};
 		ncps.push_back(std::make_shared<NCP>(Vector2D(220.0f, 300.0f), "村人A", lines));
-	
-		}
+		ncps.back()->SetImage("Resource/Images/yossi_ikiri.png");
+	}
 
 
 }
