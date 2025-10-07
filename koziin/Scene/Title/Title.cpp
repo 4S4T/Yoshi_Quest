@@ -69,8 +69,7 @@ void TitleScene::Draw()
 	DrawRotaGraph(350, 430 + menu_cursor * 50, 0.1, 0, select, TRUE);
 	DrawFormatString(380, 470, GetColor(255, 255, 255), "énÇﬂÇÈ");
 	SetFontSize(16);
-	DrawFormatString(380, 520, GetColor(255, 255, 255), "èIÇÌÇÈ");
-	SetFontSize(16);
+	
 }
 
 void TitleScene::Finalize() {

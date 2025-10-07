@@ -78,15 +78,47 @@ void TitleScene2::Draw() {
 	DrawGraph(0, 0, TitleImage, TRUE);
 	DrawRotaGraph(500, 250, 0.5f, 0.0, Title_name, TRUE);
 	DrawRotaGraph(350, 430 + menu_cursor * 50, 0.1, 0, select, TRUE);
-	DrawFormatString(380, 470, GetColor(255, 255, 255), "冒険を始める");
+
+	// 現在の経過時間（ミリ秒）
+	int time = GetNowCount();
+
+	//点滅（0.5秒ON、0.5秒OFF）
+	bool blink = (time / 500) % 2 == 0;
+
 	SetFontSize(16);
-	DrawFormatString(380, 520, GetColor(255, 255, 255), "チュートリアル");
-	SetFontSize(16);
-	DrawFormatString(380, 570, GetColor(255, 255, 255), "オプション");
-	SetFontSize(16);
-	DrawFormatString(380, 620, GetColor(255, 255, 255), "冒険を終わる");
-	SetFontSize(16);
+
+	// 各メニュー項目を描画
+	for (int i = 1; i <= 4; i++) {
+		int y = 470 + (i - 1) * 50;
+		const char* text = "";
+
+		switch (i) {
+		case 1:
+			text = "冒険を始める";
+			break;
+		case 2:
+			text = "チュートリアル";
+			break;
+		case 3:
+			text = "オプション";
+			break;
+		case 4:
+			text = "冒険を終わる";
+			break;
+		}
+
+		// 選択中の項目を点滅させる
+		if (i == menu_cursor) {
+			if (blink) {
+				DrawFormatString(380, y, GetColor(255, 255, 0), text); // 黄色で点滅
+			}
+		}
+		else {
+			DrawFormatString(380, y, GetColor(255, 255, 255), text);
+		}
+	}
 }
+
 
 void TitleScene2::Finalize() {
 }
