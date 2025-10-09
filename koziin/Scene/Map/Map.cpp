@@ -16,7 +16,6 @@
 #include <ctime>
 #include <string>
 
-
 #define MAP_SQUARE_Y 16	   // マップの縦のマス数
 #define MAP_SQUARE_X 22	   // マップの横のマス数
 #define D_OBJECT_SIZE 24.0 // オブジェクトの基本サイズ
@@ -29,7 +28,6 @@ static bool wasInBattle = false; // 戦闘復帰フラグ
 // ▼ メニュー用追加変数
 static Vector2D menu_old_location; // メニュー開始前の位置保存
 static bool wasInMenu = false;	   // メニュー復帰フラグ
-
 
 // どうぐ一覧の再構築（PlayerData の所持アイテムから ID を並べ直す）
 void Map::RebuildItemList() {
@@ -49,7 +47,6 @@ void Map::RebuildItemList() {
 		}
 	}
 }
-
 
 // コンストラクタ
 Map::Map() : encounterStepCounter(0), lastPlayerPos(Vector2D(0, 0)), isFadingIn(false), fadeAlpha(255.0f) {
@@ -92,18 +89,14 @@ void Map::Initialize() {
 
 	items = GenerateMapItems();
 
-
 	for (auto& item : items) {
 		if (PlayerData::GetInstance()->IsCollected(item->GetId())) {
 			item->Collect();
 		}
 	}
 
-
-
 	StartFadeIn();
 }
-
 
 // 更新処理
 eSceneType Map::Update(float delta_second) {
@@ -182,7 +175,6 @@ eSceneType Map::Update(float delta_second) {
 						subMenuText = "このアイテムは使用できません：\n " + selected.GetName();
 					}
 				}
-
 			}
 			// Esc / Space で一覧を閉じる
 			if (input->GetKeyDown(KEY_INPUT_ESCAPE) || input->GetKeyDown(KEY_INPUT_SPACE)) {
@@ -246,7 +238,6 @@ eSceneType Map::Update(float delta_second) {
 			}
 		}
 
-
 		// メニュー中はプレイヤー・バトル処理等をスキップ
 		return eSceneType::eMap;
 	}
@@ -258,6 +249,12 @@ eSceneType Map::Update(float delta_second) {
 	if (wasInBattle && GetNowSceneType() == eSceneType::eMap) {
 		player->SetLocation(old_location);
 		wasInBattle = false;
+
+		// ★戦闘後リセット＆クールタイム開始（即時エンカ回避）
+		encounterStepCounter = 0;
+		encounterCooldownTimer = encounterCooldown; // Map.h 既定: 2.0f
+		isAfterBattle = true;
+		lastPlayerPos = player->GetLocation(); // 位置同期
 	}
 
 	// **メニュー復帰処理（追加部分）**
@@ -268,7 +265,13 @@ eSceneType Map::Update(float delta_second) {
 
 	// **エンカウント処理**
 	Vector2D currentPos = player->GetLocation();
-	if (isEncounterEnabled && ((int)currentPos.x != (int)lastPlayerPos.x || (int)currentPos.y != (int)lastPlayerPos.y)) {
+
+	// ★クールタイム中は判定を消化するだけ（位置同期して歩数を貯めない）
+	if (encounterCooldownTimer > 0.0f) {
+		encounterCooldownTimer -= delta_second;
+		lastPlayerPos = currentPos;
+	}
+	else if (isEncounterEnabled && ((int)currentPos.x != (int)lastPlayerPos.x || (int)currentPos.y != (int)lastPlayerPos.y)) {
 		encounterStepCounter++;
 		lastPlayerPos = currentPos;
 
@@ -313,8 +316,7 @@ void Map::Draw() {
 	DrawStageMap();
 	__super::Draw();
 
-
-	 // 未取得アイテムを描画(落ちているアイテム)
+	// 未取得アイテムを描画(落ちているアイテム)
 	for (const auto& it : items) {
 		if (!it->IsCollected()) {
 			DrawCircle(
@@ -365,7 +367,6 @@ void Map::Draw() {
 				lineNum++;
 			}
 		}
-
 
 		// 右列：「どうぐ」一覧（カーソル＋装備マーク）※「どうぐ」選択時のみ
 		if (isSubMenuVisible && menuSelection == 0 && isItemListActive && !subMenuItemIds.empty()) {
@@ -423,13 +424,11 @@ void Map::Draw() {
 	}
 }
 
-
 // 終了処理
 void Map::Finalize() {
 	GameManager* obj = Singleton<GameManager>::GetInstance();
 	obj->Finalize();
 }
-
 
 // 現在のシーンタイプ
 eSceneType Map::GetNowSceneType() const {
@@ -485,7 +484,8 @@ void Map::DrawStageMap() {
 			std::string path = "Resource/Images/Block/" + std::to_string(c - '0') + ".png";
 			MapImage = rm->GetImages(path, 1, 1, 1, 16, 16)[0];
 
-			DrawRotaGraphF(D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * j),
+			DrawRotaGraphF(
+				D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * j),
 				D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * i),
 				1.9, 0.0, MapImage, TRUE);
 		}
