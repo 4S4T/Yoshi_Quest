@@ -24,7 +24,7 @@ eSceneType TitleScene::Update(float delta_second)
 	// 入力機能の取得
 	InputControl* input = Singleton<InputControl>::GetInstance();
 
-	if (input->GetKeyDown(KEY_INPUT_DOWN))
+	/*if (input->GetKeyDown(KEY_INPUT_DOWN))
 	{
 		menu_cursor++;
 
@@ -41,7 +41,7 @@ eSceneType TitleScene::Update(float delta_second)
 		{
 			menu_cursor = 2;
 		}
-	}
+	}*/
 
 	if (input->GetKeyDown(KEY_INPUT_SPACE))
 	{
@@ -50,10 +50,10 @@ eSceneType TitleScene::Update(float delta_second)
 			return eSceneType::eTitle2;
 		}
 
-		if (menu_cursor == 2)
+		/*if (menu_cursor == 2)
 		{
 			return eSceneType::eEnd;
-		}
+		}*/
 
 		
 		
@@ -67,8 +67,20 @@ void TitleScene::Draw()
 	DrawGraph(0, 0, TitleImage,TRUE);
 	DrawRotaGraph(500, 250, 0.5f, 0.0, Title_name, TRUE);
 	DrawRotaGraph(350, 430 + menu_cursor * 50, 0.1, 0, select, TRUE);
-	DrawFormatString(380, 470, GetColor(255, 255, 255), "始める");
-	SetFontSize(16);
+	SetFontSize(30);
+
+
+	// 現在の経過時間（ミリ秒）
+	int time = GetNowCount();
+
+	// 0.5秒ごとにON/OFF切り替え
+	bool blink = (time / 500) % 2 == 0;
+
+	// 点滅色を切り替え（黄色⇔白）
+	int color = blink ? GetColor(255, 255, 0) : GetColor(255, 255, 255);
+
+	// 点滅描画
+	DrawFormatString(380, 470, color, "STATE");
 	
 }
 

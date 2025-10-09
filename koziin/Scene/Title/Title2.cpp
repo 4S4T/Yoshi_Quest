@@ -19,7 +19,7 @@ void TitleScene2::Initialize() {
 
 	int x = 380;
 	int y = 620;
-	const char* text = "冒険を終わる";
+	const char* text = "End";
 
 	// 縁の色（黒）
 	int edgeColor = GetColor(0, 0, 0);
@@ -44,7 +44,7 @@ eSceneType TitleScene2::Update(float delta_second) {
 	if (input->GetKeyDown(KEY_INPUT_DOWN)) {
 		menu_cursor++;
 
-		if (menu_cursor > 4) {
+		if (menu_cursor > 3) {
 			menu_cursor = 1;
 		}
 	}
@@ -53,7 +53,7 @@ eSceneType TitleScene2::Update(float delta_second) {
 		menu_cursor--;
 
 		if (menu_cursor < 1) {
-			menu_cursor = 4;
+			menu_cursor = 3;
 		}
 	}
 
@@ -62,11 +62,11 @@ eSceneType TitleScene2::Update(float delta_second) {
 			return eSceneType::eMap;
 		}
 
-		if (menu_cursor == 3) {
+		if (menu_cursor == 2) {
 			return eSceneType::eOption;
 		}
 
-		if (menu_cursor == 4) {
+		if (menu_cursor == 3) {
 			return eSceneType::eEnd;
 		}
 	}
@@ -85,37 +85,36 @@ void TitleScene2::Draw() {
 	//点滅（0.5秒ON、0.5秒OFF）
 	bool blink = (time / 500) % 2 == 0;
 
-	SetFontSize(16);
+	SetFontSize(30);
 
 	// 各メニュー項目を描画
-	for (int i = 1; i <= 4; i++) {
+	for (int i = 1; i <= 3; i++) {
 		int y = 470 + (i - 1) * 50;
 		const char* text = "";
 
 		switch (i) {
 		case 1:
-			text = "冒険を始める";
+			text = "STATE";
 			break;
 		case 2:
-			text = "チュートリアル";
+			text = "OPTION";
 			break;
+			
 		case 3:
-			text = "オプション";
+			text = "EXIT";
 			break;
-		case 4:
-			text = "冒険を終わる";
-			break;
+			
 		}
 
 		// 選択中の項目を点滅させる
 		if (i == menu_cursor) {
-			if (blink) {
-				DrawFormatString(380, y, GetColor(255, 255, 0), text); // 黄色で点滅
-			}
+			int color = blink ? GetColor(255, 255, 0) : GetColor(255, 255, 255); // 黄色と白を交互
+			DrawFormatString(380, y, color, text);
 		}
 		else {
 			DrawFormatString(380, y, GetColor(255, 255, 255), text);
 		}
+
 	}
 }
 
