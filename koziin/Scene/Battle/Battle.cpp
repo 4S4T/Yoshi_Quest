@@ -11,6 +11,7 @@
 static const int SCREEN_W = 960;
 static const int SCREEN_H = 720;
 
+
 // --- std::max 代用（int専用の軽量版）---
 static inline int IMAX(int a, int b) { return (a > b) ? a : b; }
 
@@ -30,6 +31,7 @@ void BattleScene::beginMessages(BattleState nextState) {
 	messageNextState = nextState;
 	battleState = BattleState::Message;
 	currentMessage.clear();
+	
 }
 
 void BattleScene::pumpMessageManual() {

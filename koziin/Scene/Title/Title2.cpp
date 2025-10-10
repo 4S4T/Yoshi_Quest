@@ -120,6 +120,7 @@ void TitleScene2::Draw() {
 
 
 void TitleScene2::Finalize() {
+	SetFontSize(19);
 }
 
 eSceneType TitleScene2::GetNowSceneType() const {
