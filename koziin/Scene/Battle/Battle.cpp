@@ -239,8 +239,12 @@ void BattleScene::attemptEscape() {
 	int r = GetRand(99);
 	if (r < rate || escapePity >= 2) {
 		escapePity = 0;
+		// ★逃走成功：リザルトを使わず、メッセージ後に即マップへ戻す
+		escapedSuccessfully = true;
 		enqueueMessage("よっしーは にげだした！");
-		beginMessages(BattleState::Result);
+		// メッセージ送りを終えたら PlayerCommand に戻るが、
+		// Update の早期リターンで eMap へ抜ける
+		beginMessages(BattleState::PlayerCommand);
 	}
 	else {
 		escapePity += 1;
@@ -484,6 +488,9 @@ void BattleScene::Initialize() {
 
 	totalEarnedExp = 0;
 	escapePity = 0;
+
+	// ★逃走成功フラグを毎回リセット
+	escapedSuccessfully = false;
 
 	// エフェクト初期化
 	hitFlashTimer = 0.0f;
@@ -1016,7 +1023,7 @@ eSceneType BattleScene::Update(float delta_second) {
 
 	case BattleState::Result: {
 		updateResult(delta_second);
-		// 全行消化かつ付与済みならマップへ
+		// ★（勝利時のみ使用）全行消化かつ付与済みならマップへ
 		if (resultGrantDone && resultLineIndex >= (int)resultLines.size()) {
 			return eSceneType::eMap;
 		}
@@ -1042,6 +1049,13 @@ eSceneType BattleScene::Update(float delta_second) {
 
 	// 敵HP表示の追従
 	updateEnemyHpDisplays(delta_second);
+
+	// ★逃走成功：メッセージ（Message）を抜けたら即マップへ戻る
+	//    → pumpMessageManual() により Message が終わると nextState（PlayerCommand）へ
+	//    → そのフレームでここを通ると eMap を返す
+	if (escapedSuccessfully && battleState != BattleState::Message) {
+		return eSceneType::eMap;
+	}
 
 	Draw();
 	return GetNowSceneType();
