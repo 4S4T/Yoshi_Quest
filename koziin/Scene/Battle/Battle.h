@@ -104,6 +104,9 @@ private:
 	// 逃走：連続失敗救済
 	int escapePity = 0;
 
+	// ★追加：逃走成功したかどうか（リザルトを出さず戻る用）
+	bool escapedSuccessfully = false;
+
 	// 被ダメ演出
 	float hitFlashTimer = 0.0f;
 	float hitFlashDuration = 0.18f;
