@@ -23,6 +23,16 @@ enum class EquipCategory {
 	Helmet	// ヘルメット（頭装備）
 };
 
+// ------------- 追加: 取得済みアイテムの永続ユーティリティ -------------
+namespace ItemPersistence {
+	// そのIDのアイテムが既に取得済みか？
+	bool IsCollected(int id);
+
+	// そのIDのアイテムを取得済みに記録
+	void MarkCollected(int id);
+}
+// --------------------------------------------------------------
+
 // ===============================
 // Itemクラス
 // ===============================
@@ -37,7 +47,6 @@ public:
 	Item(int id_, const std::string& name, const Vector2D& pos,
 		ItemType type_, EquipCategory category_,
 		int atkAddValue = 0, int defAddValue = 0, int hpAddValue = 0, int healAmount = 0);
-
 
 	// 基本情報取得
 	int GetId() const;
