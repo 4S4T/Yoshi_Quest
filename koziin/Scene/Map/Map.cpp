@@ -240,17 +240,21 @@ eSceneType Map::Update(float delta_second) {
 					isSubMenuVisible = true;
 				} break;
 
+				// （Map::Update 内のメニュー処理、case 2 のブロックを丸ごと置き換え）
 				case 2: { // つよさ
 					PlayerData* pd = PlayerData::GetInstance();
 					subMenuText = "プレイヤー情報";
 					subMenuText += "\n レベル: " + std::to_string(pd->GetLevel());
 					subMenuText += "\n HP: " + std::to_string(pd->GetHp()) + " / " + std::to_string(pd->GetMaxHp());
+					// ★ 追加：MP 表示
+					subMenuText += "\n MP: " + std::to_string(pd->GetMp()) + " / " + std::to_string(pd->GetMaxMp());
 					subMenuText += "\n 攻撃力: " + std::to_string(pd->GetAttack());
 					subMenuText += "\n 防御力: " + std::to_string(pd->GetDefense());
 					isItemListActive = false;
 					subMenuItemIds.clear();
 					isSubMenuVisible = true;
 				} break;
+
 
 				case 3: // もどる
 					isMenuVisible = false;
@@ -606,7 +610,8 @@ void Map::StartFadeIn() {
 	fadeAlpha = 255.0f;
 }
 
-void Map::UpdateFadeIn(float delta_second) {
+void Map::UpdateFadeIn(float delta_second)
+{
 	fadeAlpha -= fadeSpeed * delta_second;
 	fadeAlpha = clamp(fadeAlpha, 0.0f, 255.0f);
 	if (fadeAlpha <= 0.0f)

@@ -537,6 +537,13 @@ void BattleScene::Initialize() {
 	defeatCharIndex = 0;
 	defeatTypeTimer = 0.0f;
 	defeatDarkT = 0.0f;
+
+	// ★ じゅもんメニュー初期化
+	magicCursor = 0;
+	availableMagics = PlayerData::GetInstance()->GetLearnedMagics();
+
+	// ★ 保留中魔法の初期化（ヘッダでデフォルト化しているなら不要）
+	// pendingMagic = PlayerData::MagicType::Fire;
 }
 
 //--------------------------------------
@@ -588,6 +595,8 @@ void BattleScene::initResultScreen() {
 
 	victoryTimer = 1.0f;
 	finishZoomT = 0.0001f;
+
+	// ※魔法メニュー初期化は Initialize() で行う
 
 	battleState = BattleState::Result;
 }
@@ -877,12 +886,173 @@ eSceneType BattleScene::Update(float delta_second) {
 	}
 
 	case BattleState::MagicMenu: {
-		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
+		if (availableMagics.empty()) {
 			enqueueMessage("しかし まだ なにも おぼえていない！");
 			beginMessages(BattleState::PlayerCommand);
+			break;
 		}
-		if (input->GetKeyDown(KEY_INPUT_ESCAPE)) {
+
+		if (input->GetKeyDown(KEY_INPUT_DOWN))
+			magicCursor = (magicCursor + 1) % availableMagics.size();
+		if (input->GetKeyDown(KEY_INPUT_UP))
+			magicCursor = (magicCursor + availableMagics.size() - 1) % availableMagics.size();
+
+		if (input->GetKeyDown(KEY_INPUT_ESCAPE))
 			battleState = BattleState::PlayerCommand;
+
+		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
+			auto magic = availableMagics[magicCursor];
+			pendingMagic = magic; // ★あとで撃つ魔法を保存
+			PlayerData* pd = PlayerData::GetInstance();
+
+			// コストとダメ計算（回復は別処理）
+			int cost = 0;
+			switch (magic) {
+			case PlayerData::MagicType::Fire:
+				cost = 3;
+				break;
+			case PlayerData::MagicType::Flare:
+				cost = 6;
+				break;
+			case PlayerData::MagicType::Thunder:
+				cost = 5;
+				break;
+			case PlayerData::MagicType::Ice:
+				cost = 4;
+				break;
+			case PlayerData::MagicType::Heal:
+				cost = 4;
+				break;
+			}
+
+			// 回復魔法なら即時実行
+			if (magic == PlayerData::MagicType::Heal) {
+				if (!pd->HasMp(cost)) {
+					enqueueMessage("MPが たりない！");
+					beginMessages(BattleState::PlayerCommand);
+					break;
+				}
+				pd->ConsumeMp(cost);
+				enqueueMessage("MPを " + std::to_string(cost) + " しょうひした！");
+				enqueueMessage("よっしーは ホイミを となえた！");
+				pd->SetHp(pd->GetHp() + pd->GetLevel() * 6);
+				enqueueMessage("HPが かいふくした！");
+				beginMessages(BattleState::EnemyTurn);
+				break;
+			}
+
+			// 攻撃魔法 → 敵選択へ
+			if (livingEnemyCount() <= 0) {
+				initResultScreen();
+				break;
+			}
+			int firstIdx = firstLivingIndex();
+			if (firstIdx < 0)
+				firstIdx = 0;
+			targetCursor = firstIdx;
+			battleState = BattleState::MagicTarget;
+		}
+		break;
+	}
+
+	case BattleState::MagicTarget: {
+		// 敵ターゲット選択（上下キー）
+		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+			int next = nextLivingIndex(targetCursor, +1);
+			if (next >= 0)
+				targetCursor = next;
+		}
+		if (input->GetKeyDown(KEY_INPUT_UP)) {
+			int prev = nextLivingIndex(targetCursor, -1);
+			if (prev >= 0)
+				targetCursor = prev;
+		}
+		// キャンセルで魔法メニューへ
+		if (input->GetKeyDown(KEY_INPUT_ESCAPE)) {
+			battleState = BattleState::MagicMenu;
+			break;
+		}
+		// 決定で詠唱
+		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
+			PlayerData* pd = PlayerData::GetInstance();
+
+			// コスト＆威力
+			int cost = 0;
+			int dmg = 0;
+			std::string magicName;
+			switch (pendingMagic) {
+			case PlayerData::MagicType::Fire:
+				magicName = "メラ";
+				cost = 3;
+				dmg = (int)(pd->GetAttack() * 1.2f);
+				break;
+			case PlayerData::MagicType::Flare:
+				magicName = "メラゾーマ";
+				cost = 6;
+				dmg = (int)(pd->GetAttack() * 1.5f);
+				break;
+			case PlayerData::MagicType::Thunder:
+				magicName = "ギラ";
+				cost = 5;
+				dmg = (int)(pd->GetAttack() * 1.4f);
+				break;
+			case PlayerData::MagicType::Ice:
+				magicName = "ヒャド";
+				cost = 4;
+				dmg = (int)(pd->GetAttack() * 1.3f);
+				break;
+			case PlayerData::MagicType::Heal:
+				// ここには来ない想定（MagicMenu側で即処理）
+				break;
+			}
+
+			if (!pd->HasMp(cost)) {
+				enqueueMessage("MPが たりない！");
+				beginMessages(BattleState::PlayerCommand);
+				break;
+			}
+			pd->ConsumeMp(cost);
+			enqueueMessage("MPを " + std::to_string(cost) + " しょうひした！");
+			enqueueMessage("よっしーは " + magicName + "を となえた！");
+
+			// 全体魔法：Flare
+			if (pendingMagic == PlayerData::MagicType::Flare) {
+				for (auto& en : enemies) {
+					if (en.defeated || en.getHp() <= 0)
+						continue;
+					int actual = dmg - (en.getDef() / 4);
+					if (actual < 1)
+						actual = 1;
+					en.applyDamage(actual);
+					enqueueMessage(en.displayName + "に " + std::to_string(actual) + " の ダメージ！");
+					if (en.getHp() <= 0)
+						onEnemyDefeated(en);
+				}
+				// 演出
+				startAttackEffect();
+				effectPos = Vector2D(600.0f, 340.0f);
+				beginMessages(BattleState::EnemyTurn);
+				break;
+			}
+
+			// 単体魔法
+			if (targetCursor < 0 || targetCursor >= (int)enemies.size())
+				targetCursor = firstLivingIndex();
+			if (targetCursor >= 0) {
+				auto& e = enemies[targetCursor];
+				int actual = dmg - (e.getDef() / 4);
+				if (actual < 1)
+					actual = 1;
+				e.applyDamage(actual);
+				enqueueMessage(e.displayName + "に " + std::to_string(actual) + " の ダメージ！");
+				if (e.getHp() <= 0)
+					onEnemyDefeated(e);
+
+				// 演出
+				startAttackEffect();
+				effectPos = Vector2D((float)e.x, (float)(e.y - 10.0f));
+			}
+			beginMessages(BattleState::EnemyTurn);
 		}
 		break;
 	}
@@ -1053,8 +1223,6 @@ eSceneType BattleScene::Update(float delta_second) {
 	updateEnemyHpDisplays(delta_second);
 
 	// ★逃走成功：メッセージ（Message）を抜けたら即マップへ戻る
-	//    → pumpMessageManual() により Message が終わると nextState（PlayerCommand）へ
-	//    → そのフレームでここを通ると eMap を返す
 	if (escapedSuccessfully && battleState != BattleState::Message) {
 		return eSceneType::eMap;
 	}
@@ -1108,7 +1276,7 @@ void BattleScene::Draw() {
 			continue;
 
 		// ターゲット赤枠（点滅）
-		if (battleState == BattleState::AttackSelect && i == targetCursor) {
+		if ((battleState == BattleState::AttackSelect || battleState == BattleState::MagicTarget) && i == targetCursor) {
 			float s = (sinf(blinkClock * 8.0f) * 0.5f + 0.5f);
 			int a = (int)(120 + 120 * s);
 			if (a > 255)
@@ -1165,8 +1333,8 @@ void BattleScene::Draw() {
 		drawDefeat();
 	}
 	else {
-		// 左上：ステータス枠
-		drawWindow(20 + uiOx, 20 + uiOy, 180, 150, 0, 0, 64);
+		// 左上：ステータス枠（★高さを190に拡張）
+		drawWindow(20 + uiOx, 20 + uiOy, 180, 190, 0, 0, 64);
 		{
 			bool dangerBlink = (hitFlashTimer > 0.0f);
 			int plateColor = dangerBlink ? GetColor(160, 32, 32) : GetColor(255, 255, 255);
@@ -1176,8 +1344,38 @@ void BattleScene::Draw() {
 			PlayerData* pd = PlayerData::GetInstance();
 			DrawFormatStringToHandle(30 + uiOx, 60 + uiOy, GetColor(255, 255, 255), LargeFont, "Lv  : %d", pd->GetLevel());
 			DrawFormatStringToHandle(30 + uiOx, 90 + uiOy, GetColor(255, 255, 255), LargeFont, "HP  : %d", pd->GetHp());
+
+			// ★ MP 表示（数値）
+			DrawFormatStringToHandle(30 + uiOx, 120 + uiOy, GetColor(180, 220, 255), LargeFont, "MP  : %d/%d", pd->GetMp(), pd->GetMaxMp());
+
+			// ★ MP バー
+			{
+				const int bx = 30 + uiOx;
+				const int by = 150 + uiOy;
+				const int bw = 120;
+				const int bh = 8;
+				float mpr = 0.0f;
+				const int maxmp = pd->GetMaxMp();
+				if (maxmp > 0) {
+					mpr = (float)pd->GetMp() / (float)maxmp;
+					if (mpr < 0.0f)
+						mpr = 0.0f;
+					if (mpr > 1.0f)
+						mpr = 1.0f;
+				}
+				int fill = (int)(bw * mpr);
+				if (fill < 0)
+					fill = 0;
+				if (fill > bw)
+					fill = bw;
+
+				DrawBox(bx, by, bx + bw, by + bh, GetColor(40, 60, 90), TRUE);	   // 背景
+				DrawBox(bx, by, bx + fill, by + bh, GetColor(80, 160, 255), TRUE); // 充填
+				DrawBox(bx, by, bx + bw, by + bh, GetColor(255, 255, 255), FALSE); // 枠線
+			}
+
 			if (isPlayerDefending) {
-				DrawStringToHandle(30 + uiOx, 120 + uiOy, "ぼうぎょ中", GetColor(200, 200, 255), LargeFont);
+				DrawStringToHandle(30 + uiOx, 170 + uiOy, "ぼうぎょ中", GetColor(200, 200, 255), LargeFont);
 			}
 		}
 
@@ -1211,8 +1409,86 @@ void BattleScene::Draw() {
 				}
 			}
 			else if (battleState == BattleState::MagicMenu) {
-				DrawStringToHandle(50 + uiOx, 540 + uiOy, "じゅもんは まだ つかえない。", GetColor(200, 200, 255), LargeFont);
-				DrawStringToHandle(50 + uiOx, 580 + uiOy, "SPACE: 決定 / ESC: もどる", GetColor(180, 180, 180), LargeFont);
+				PlayerData* pd = PlayerData::GetInstance();
+
+				// ★ ヘッダ（MP表示）
+				char mpbuf[64];
+#if defined(_MSC_VER)
+				sprintf_s(mpbuf, "MP: %d / %d", pd->GetMp(), pd->GetMaxMp());
+#else
+				snprintf(mpbuf, sizeof(mpbuf), "MP: %d / %d", pd->GetMp(), pd->GetMaxMp());
+#endif
+				DrawStringToHandle(50 + uiOx, 540 + uiOy, "じゅもんを えらんでください。  SPACE: 決定 / ESC: もどる", GetColor(200, 200, 200), LargeFont);
+				DrawStringToHandle(50 + uiOx + 520, 540 + uiOy, mpbuf, GetColor(180, 220, 255), LargeFont);
+
+				int x = 50 + uiOx;
+				int y = 580 + uiOy;
+				int lineH = 28;
+
+				if (availableMagics.empty()) {
+					DrawStringToHandle(x, y, "しかし まだ なにも おぼえていない！", GetColor(200, 200, 255), LargeFont);
+				}
+				else {
+					for (int i = 0; i < (int)availableMagics.size(); ++i) {
+						PlayerData::MagicType t = availableMagics[i];
+
+						const char* name = "？？？";
+						int cost = 0;
+						switch (t) {
+						case PlayerData::MagicType::Fire:
+							name = "メラ";
+							cost = 3;
+							break;
+						case PlayerData::MagicType::Heal:
+							name = "ホイミ";
+							cost = 4;
+							break;
+						case PlayerData::MagicType::Flare:
+							name = "メラゾーマ";
+							cost = 6;
+							break;
+						case PlayerData::MagicType::Thunder:
+							name = "ギラ";
+							cost = 5;
+							break;
+						case PlayerData::MagicType::Ice:
+							name = "ヒャド";
+							cost = 4;
+							break;
+						}
+						char line[128];
+#if defined(_MSC_VER)
+						sprintf_s(line, "%s  (%dMP)", name, cost);
+#else
+						snprintf(line, sizeof(line), "%s  (%dMP)", name, cost);
+#endif
+						int color = GetColor(255, 255, 255);
+						if (i == magicCursor) {
+							color = GetColor(255, 255, 0);
+						}
+						else if (!pd->HasMp(cost)) {
+							color = GetColor(160, 160, 160);
+						}
+						DrawStringToHandle(x + 20, y + i * lineH, line, color, LargeFont);
+						if (i == magicCursor && selectImg >= 0) {
+							DrawRotaGraph(x, y + i * lineH + 12, 0.05, 0, selectImg, TRUE);
+						}
+					}
+				}
+			}
+			else if (battleState == BattleState::MagicTarget) {
+				int y = 540;
+				for (int i = 0; i < (int)enemies.size(); ++i) {
+					const auto& e = enemies[i];
+					if (e.defeated || e.getHp() <= 0)
+						continue;
+					DrawStringToHandle(50 + uiOx, y + uiOy, (e.displayName + " に じゅもん").c_str(), GetColor(255, 255, 255), LargeFont);
+					if (i == targetCursor && selectImg >= 0) {
+						DrawRotaGraph(30 + uiOx, y + 12 + uiOy, 0.05, 0, selectImg, TRUE);
+					}
+					y += 40;
+				}
+				DrawStringToHandle(50 + uiOx, 670 + uiOy, "SPACE: けってい / ESC: もどる", GetColor(200, 200, 200), LargeFont);
 			}
 			else if (battleState == BattleState::ItemMenu) {
 				DrawStringToHandle(50 + uiOx, 540 + uiOy, "どうぐは まだ ない。", GetColor(200, 200, 255), LargeFont);

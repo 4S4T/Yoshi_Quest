@@ -22,6 +22,7 @@ enum class BattleState {
 	EnemyTurn, // 敵はキューで1体ずつ行動
 	Message,   // 手動送りメッセージ
 	Result,	   // 勝利リザルト（タイプライタ）
+	MagicTarget,
 	Defeat	   // ★敗北リザルト（タイプライタ）
 };
 
@@ -246,4 +247,9 @@ public:
 	Vector2D player_location;
 
 	void SetPlayerPosition(const Vector2D& position);
+
+	// BattleScene のメンバー変数（Battle.h内の private に追加）
+	int magicCursor = 0;								// 選択中の魔法インデックス
+	std::vector<PlayerData::MagicType> availableMagics; // プレイヤーが覚えている魔法一覧
+	PlayerData::MagicType pendingMagic = PlayerData::MagicType::Fire; // 現在選択している魔法
 };
