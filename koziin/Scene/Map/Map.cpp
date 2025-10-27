@@ -599,7 +599,7 @@ void Map::DrawStatusPanel(int x, int y, int w, int h) {
 	DrawBox(x, y, x + w, y + h, GetColor(30, 30, 40), TRUE);
 	DrawBox(x, y, x + w, y + h, GetColor(200, 200, 200), FALSE);
 	PlayerData* pd = PlayerData::GetInstance();
-	std::string txt = "Lv " + std::to_string(pd->GetLevel()) + "   HP " + std::to_string(pd->GetHp()) + "/" + std::to_string(pd->GetMaxHp()) + "   U " + std::to_string(pd->GetAttack()) + "   –h " + std::to_string(pd->GetDefense());
+	std::string txt = "—EŽÒ‚æ‚Á‚µ[@Lv " + std::to_string(pd->GetLevel()) + "   /HP " + std::to_string(pd->GetHp());
 	DrawString(x + 12, y + 10, txt.c_str(), GetColor(240, 240, 240));
 }
 
