@@ -286,3 +286,23 @@ int PlayerData::GetEquippedId(EquipCategory category) const {
 		return -1;
 	}
 }
+
+//装備外し
+void PlayerData::Unequip(EquipCategory category) {
+	switch (category) {
+	case EquipCategory::Weapon:
+		equippedWeaponId = -1;
+		break;
+	case EquipCategory::Shield:
+		equippedShieldId = -1;
+		break;
+	case EquipCategory::Armor:
+		equippedArmorId = -1;
+		break;
+	case EquipCategory::Helmet:
+		equippedHelmetId = -1;
+		break;
+	default:
+		break;
+	}
+}

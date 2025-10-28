@@ -59,6 +59,7 @@ private:
 	int listScrollOffset = 0;
 	static constexpr int VISIBLE_ROWS = 8;
 
+	 
 	void RebuildItemList();
 	void RebuildItemListGrouped();
 
@@ -105,6 +106,8 @@ public:
 	void DrawStageMap();
 	void LoadNextMap();
 	bool IsCollision(float x, float y);
+
+
 
 	int MapImage;
 	Vector2D generate_location;

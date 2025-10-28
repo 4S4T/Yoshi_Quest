@@ -217,6 +217,7 @@ eSceneType Map::Update(float delta_second) {
 		bool listActive = (menuSelection == 0 && isSubMenuVisible && !groupedItems.empty());
 
 		// ---------- 左メニュー操作（フォーカス無し） ----------
+
 		if (!listActive) {
 			int before = menuSelection;
 
@@ -227,14 +228,15 @@ eSceneType Map::Update(float delta_second) {
 
 			if (menuSelection != before) {
 				subMenuText.clear();
-				// どうぐに来たらフォーカスON、他へ動いたらOFF
+
 				if (menuSelection == 0) {
-					isSubMenuVisible = true;
+					// どうぐに来たときはリストは用意するが、フォーカスは左に置く
 					if (groupedItems.empty()) {
 						RebuildItemList();
 						subMenuSelection = 0;
 						listScrollOffset = 0;
 					}
+					isSubMenuVisible = false; // ★ ここがポイント（右に入らない）
 				}
 				else {
 					isSubMenuVisible = false;
@@ -244,26 +246,20 @@ eSceneType Map::Update(float delta_second) {
 			// Enter：どうぐ以外の決定
 			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
 				switch (menuSelection) {
-				case 1: { // そうび
-					PlayerData* pd = PlayerData::GetInstance();
-					subMenuText = "装備一覧";
-					subMenuText += "\n 武器: " + pd->GetEquippedName(EquipCategory::Weapon);
-					subMenuText += "\n 盾:   " + pd->GetEquippedName(EquipCategory::Shield);
-					subMenuText += "\n 防具: " + pd->GetEquippedName(EquipCategory::Armor);
-					subMenuText += "\n 頭:   " + pd->GetEquippedName(EquipCategory::Helmet);
-					isSubMenuVisible = false;
-					groupedItems.clear();
+				case 0: {						// どうぐ：右リストに入る（フォーカスを移す）
+					if (groupedItems.empty()) { // 念のため
+						RebuildItemList();
+						subMenuSelection = 0;
+						listScrollOffset = 0;
+					}
+					isSubMenuVisible = true; // 右フォーカスに切り替え
 				} break;
-				case 2: { // つよさ
-					PlayerData* pd = PlayerData::GetInstance();
-					subMenuText = "プレイヤー情報";
-					subMenuText += "\n レベル: " + std::to_string(pd->GetLevel());
-					subMenuText += "\n HP: " + std::to_string(pd->GetHp()) + " / " + std::to_string(pd->GetMaxHp());
-					subMenuText += "\n 攻撃力: " + std::to_string(pd->GetAttack());
-					subMenuText += "\n 防御力: " + std::to_string(pd->GetDefense());
-					isSubMenuVisible = false;
-					groupedItems.clear();
-				} break;
+
+				case 1: // そうび
+				case 2: // つよさ
+					// 何もしない
+					break;
+
 				case 3: // もどる
 					isMenuVisible = false;
 					isSubMenuVisible = false;
@@ -273,84 +269,105 @@ eSceneType Map::Update(float delta_second) {
 				}
 			}
 
+
 			return eSceneType::eMap; // メニュー表示継続
 		}
 
 		// ---------- 右：どうぐリスト操作（フォーカス有り） ----------
-		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
-			subMenuSelection = (subMenuSelection + 1) % (int)groupedItems.size();
-			if (subMenuSelection >= listScrollOffset + VISIBLE_ROWS)
-				listScrollOffset = subMenuSelection - (VISIBLE_ROWS - 1);
-		}
-		if (input->GetKeyDown(KEY_INPUT_UP)) {
-			subMenuSelection = (subMenuSelection - 1 + (int)groupedItems.size()) % (int)groupedItems.size();
-			if (subMenuSelection < listScrollOffset)
-				listScrollOffset = subMenuSelection;
-		}
-		// ページ送り
-		if (input->GetKeyDown(KEY_INPUT_A) || input->GetKeyDown(KEY_INPUT_PGUP)) {
-			subMenuSelection = std::max(0, subMenuSelection - VISIBLE_ROWS);
-			listScrollOffset = std::max(0, listScrollOffset - VISIBLE_ROWS);
-		}
-		if (input->GetKeyDown(KEY_INPUT_D) || input->GetKeyDown(KEY_INPUT_PGDN)) {
-			subMenuSelection = std::min((int)groupedItems.size() - 1, subMenuSelection + VISIBLE_ROWS);
-			listScrollOffset = std::min(std::max(0, (int)groupedItems.size() - VISIBLE_ROWS), listScrollOffset + VISIBLE_ROWS);
-		}
-
-		// Enter：装備 / 使用
-		if (input->GetKeyDown(KEY_INPUT_RETURN)) {
-			const MenuEntry& entry = groupedItems[subMenuSelection];
-			const auto& owned = PlayerData::GetInstance()->GetOwnedItems();
-
-			auto it = owned.find(entry.representativeId);
-			if (it != owned.end()) {
-				const Item& selected = it->second;
-				if (entry.type == ItemType::Equipment && selected.GetCategory() != EquipCategory::None) {
-					PlayerData::GetInstance()->EquipItem(selected.GetCategory(), entry.representativeId);
-					subMenuText = "装備しました：\n " + selected.GetName();
+		if (listActive) {
+			// ↑↓ 移動
+			if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+				subMenuSelection = (subMenuSelection + 1) % (int)groupedItems.size();
+				if (subMenuSelection >= listScrollOffset + VISIBLE_ROWS) {
+					listScrollOffset = subMenuSelection - (VISIBLE_ROWS - 1);
 				}
-				else if (entry.type == ItemType::Consumable) {
-					const std::string name = selected.GetName();
-					const int heal = selected.GetHealAmount();
-					if (PlayerData::GetInstance()->UseItem(entry.representativeId)) {
-						subMenuText = "使用しました：\n " + name + "（+" + std::to_string(heal) + " HP）";
+			}
+			if (input->GetKeyDown(KEY_INPUT_UP)) {
+				subMenuSelection = (subMenuSelection - 1 + (int)groupedItems.size()) % (int)groupedItems.size();
+				if (subMenuSelection < listScrollOffset) {
+					listScrollOffset = subMenuSelection;
+				}
+			}
+
+			// ページ送り（A/PgUp, D/PgDn）
+			if (input->GetKeyDown(KEY_INPUT_A) || input->GetKeyDown(KEY_INPUT_PGUP)) {
+				subMenuSelection = std::max(0, subMenuSelection - VISIBLE_ROWS);
+				listScrollOffset = std::max(0, listScrollOffset - VISIBLE_ROWS);
+			}
+			if (input->GetKeyDown(KEY_INPUT_D) || input->GetKeyDown(KEY_INPUT_PGDN)) {
+				subMenuSelection = std::min((int)groupedItems.size() - 1, subMenuSelection + VISIBLE_ROWS);
+				listScrollOffset = std::min(std::max(0, (int)groupedItems.size() - VISIBLE_ROWS),
+					listScrollOffset + VISIBLE_ROWS);
+			}
+
+			// Enter：装備 / 使用（トグル対応）
+			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
+				const MenuEntry& entry = groupedItems[subMenuSelection];
+				const auto& owned = PlayerData::GetInstance()->GetOwnedItems();
+				auto it = owned.find(entry.representativeId);
+
+				if (it != owned.end()) {
+					const Item& selected = it->second;
+					auto* pd = PlayerData::GetInstance();
+
+					if (entry.type == ItemType::Equipment && selected.GetCategory() != EquipCategory::None) {
+						EquipCategory cat = selected.GetCategory();
+						int cur = pd->GetEquippedId(cat);
+
+						if (cur == entry.representativeId) {
+							// ★ すでにその装備を付けている → 外す
+							pd->Unequip(cat);
+							subMenuText = "外しました：" + selected.GetName();
+						}
+						else {
+							// ★ 付けていない → 装備する
+							pd->EquipItem(cat, entry.representativeId);
+							subMenuText = "装備しました：" + selected.GetName();
+						}
+					}
+					else if (entry.type == ItemType::Consumable) {
+						const std::string name = selected.GetName();
+						const int heal = selected.GetHealAmount();
+						if (pd->UseItem(entry.representativeId)) {
+							subMenuText = "使用しました： " + name + "（+" + std::to_string(heal) + " HP）";
+						}
+						else {
+							subMenuText = "使用できません： " + name;
+						}
 					}
 					else {
-						subMenuText = "使用できません：\n " + name;
+						subMenuText = "このアイテムは使用できません：\n " + selected.GetName();
 					}
 				}
+
+				// 反映（個数減少や★更新）
+				RebuildItemList();
+
+				// 自動では左へ戻らない。空になった場合のみ戻す。
+				if (groupedItems.empty()) {
+					isSubMenuVisible = false; // 左メニューへフォーカス
+					subMenuSelection = 0;
+					listScrollOffset = 0;
+				}
 				else {
-					subMenuText = "このアイテムは使用できません：\n " + selected.GetName();
+					// 選択位置を可能な限り維持（画面内補正）
+					subMenuSelection = std::min(subMenuSelection, (int)groupedItems.size() - 1);
+					if (subMenuSelection < listScrollOffset)
+						listScrollOffset = subMenuSelection;
+					if (subMenuSelection >= listScrollOffset + VISIBLE_ROWS)
+						listScrollOffset = std::max(0, subMenuSelection - (VISIBLE_ROWS - 1));
 				}
 			}
 
-			// 反映（個数減少や★更新）
-			RebuildItemList();
-
-			// 自動では左へ戻らない。空になった場合のみ戻す。
-			if (groupedItems.empty()) {
-				isSubMenuVisible = false; // 左メニューへフォーカス
-				subMenuSelection = 0;
-				listScrollOffset = 0;
+			// Space / Esc：任意のタイミングで左メニューへ戻る
+			if (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetKeyDown(KEY_INPUT_ESCAPE)) {
+				isSubMenuVisible = false;
+				// subMenuText は残す/消すは好みで
+				// subMenuText.clear();
 			}
-			else {
-				// 選択位置を可能な限り維持（画面内補正）
-				subMenuSelection = std::min(subMenuSelection, (int)groupedItems.size() - 1);
-				if (subMenuSelection < listScrollOffset)
-					listScrollOffset = subMenuSelection;
-				if (subMenuSelection >= listScrollOffset + VISIBLE_ROWS)
-					listScrollOffset = std::max(0, subMenuSelection - (VISIBLE_ROWS - 1));
-			}
-		}
 
-		// Space / Esc：任意のタイミングで左メニューへ戻る
-		if (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetKeyDown(KEY_INPUT_ESCAPE)) {
-			isSubMenuVisible = false;
-			// subMenuText は残す/消すは好みで
-			// subMenuText.clear();
+			return eSceneType::eMap; // メニュー表示継続
 		}
-
-		return eSceneType::eMap; // メニュー表示継続
 	}
 	// ================== メニュー以外 ==================
 
@@ -487,12 +504,23 @@ void Map::Draw() {
 		const int leftH = menuH - 90;
 		DrawBox(leftX, leftY, leftX + leftW, leftY + leftH, GetColor(30, 30, 40), TRUE);
 		DrawBox(leftX, leftY, leftX + leftW, leftY + leftH, GetColor(200, 200, 200), FALSE);
+
+		// ★ 右リストにフォーカス中か？（＝どうぐ & isSubMenuVisible）
+		const bool rightFocused = (menuSelection == 0 && isSubMenuVisible && !groupedItems.empty());
+
 		for (int i = 0; i < 4; ++i) {
 			int y = leftY + 16 + i * 26;
-			if (i == menuSelection)
+			// 矢印を出すのは「選択中 かつ 右フォーカスでない時」
+			const bool showArrow = (i == menuSelection) && !(i == 0 && rightFocused);
+
+			if (showArrow) {
 				DrawString(leftX + 12, y, ("＞ " + std::string(menuItems[i])).c_str(), GetColor(255, 255, 0));
-			else
-				DrawString(leftX + 28, y, menuItems[i], GetColor(235, 235, 235));
+			}
+			else {
+				// 右フォーカスで どうぐ 行なら少し強調（色だけ）してもOK
+				int col = (i == menuSelection) ? 255 : 235;
+				DrawString(leftX + 28, y, menuItems[i], GetColor(col, col, col));
+			}
 		}
 
 		// 右：どうぐリスト or 情報
@@ -518,10 +546,10 @@ void Map::Draw() {
 				// サブメニューを開いていない：左メニュー選択だけで右を即更新
 				switch (menuSelection) {
 				case 0: {
-						  // どうぐ：テキストは出さない（プレビュー見出しを消す）
-						 // リストはこのあと別処理で常時描画されるのでここは空でOK
-						info.clear();
-					
+					// どうぐ：テキストは出さない（プレビュー見出しを消す）
+					// リストはこのあと別処理で常時描画されるのでここは空でOK
+					info.clear();
+
 				} break;
 				case 1: { // そうび：装備一覧を即表示
 					PlayerData* pd = PlayerData::GetInstance();
@@ -545,12 +573,13 @@ void Map::Draw() {
 				}
 			}
 
-			// 直前の操作結果メッセージがあれば、プレビューの下に併記
-			if (!subMenuText.empty()) {
+			// どうぐだけ中身を描画
+			if (menuSelection == 0 && !subMenuText.empty()) {
 				if (!info.empty())
 					info += "\n----------------\n";
 				info += subMenuText;
 			}
+
 			if (!info.empty()) {
 				std::istringstream iss(info);
 				std::string line;
@@ -645,8 +674,10 @@ void Map::DrawItemListPanel(int x, int y, int w, int h) {
 		if (e.equipped)
 			label = "★ " + label;
 
+
+		const bool rightFocused = (menuSelection == 0 && isSubMenuVisible && !groupedItems.empty());
 		// カーソル
-		if (idx == subMenuSelection) {
+		if (idx == subMenuSelection && rightFocused) {
 			DrawString(x + 8, y + 6 + i * lineH, "＞", GetColor(255, 255, 0));
 		}
 		DrawString(x + 28, y + 6 + i * lineH, label.c_str(), GetColor(220, 255, 220));
@@ -751,7 +782,7 @@ void Map::DrawStageMap() {
 			DrawRotaGraphF(
 				D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * j),
 				D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * i),
-				1.9, 0.0, MapImage, TRUE);
+				1.9f, 0.0f, MapImage, TRUE);
 		}
 	}
 }

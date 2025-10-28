@@ -59,6 +59,10 @@ public:
 	void EquipItem(EquipCategory category, int itemId);		   // 装備を変更
 	std::string GetEquippedName(EquipCategory category) const; // 装備中アイテム名取得
 
+	// 装備を外す
+	void Unequip(EquipCategory category);
+
+
 	// 所持アイテム一覧（読み取り専用）取得
 	const std::map<int, Item>& GetOwnedItems() const;
 
