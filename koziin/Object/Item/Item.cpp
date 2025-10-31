@@ -87,16 +87,24 @@ std::vector<std::shared_ptr<Item>> GenerateMapItems() {
 	items.push_back(std::make_shared<Item>(2, "日輪刀DX", Vector2D(300, 600),ItemType::Equipment, EquipCategory::Weapon,1000000, 0, 0, 0));
 
 	//テスト用
-	/*items.push_back(std::make_shared<Item>(3, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(3, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
 	items.push_back(std::make_shared<Item>(4, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
 	items.push_back(std::make_shared<Item>(34, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
 	items.push_back(std::make_shared<Item>(37, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
 	items.push_back(std::make_shared<Item>(38, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
 	items.push_back(std::make_shared<Item>(35, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(366, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(374, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(322, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(366, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));*/
+	items.push_back(std::make_shared<Item>(3616, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(3714, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(3212, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(3166, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(31, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(41, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(341, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(371, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(381, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
+
+
+
 
 
 
@@ -108,14 +116,14 @@ std::vector<std::shared_ptr<Item>> GenerateMapItems() {
 
 	items.push_back(std::make_shared<Item>(5, "ヘルメット+20", Vector2D(600, 480),ItemType::Equipment, EquipCategory::Helmet,0, 2, 0, 0));
 
-	// --------- 追加: 取得済みIDを除外して復活を防止 ---------
+
 	items.erase(
 		std::remove_if(items.begin(), items.end(),
 			[](const std::shared_ptr<Item>& it) {
 				return ItemPersistence::IsCollected(it->GetId());
 			}),
 		items.end());
-	// -------------------------------------------------------
+	
 
 	return items;
 }

@@ -92,6 +92,27 @@ private:
 	float encounterCooldownTimer = 0.0f;
 	bool isAfterBattle = false;
 
+	// 既存のメニュー系メンバの近くに追記
+	enum class RightMode { None,
+		Items,
+		EquipSlots,
+		EquipItemList };
+
+	RightMode rightMode = RightMode::None;
+
+	// そうび用
+	int equipSlotSelection = 0;			  // 0:武器 1:盾 2:防具 3:頭
+	std::vector<MenuEntry> equipFiltered; // 選んだ部位の候補
+	int equipItemSelection = 0;			  // 候補リスト用カーソル
+	int equipItemScrollOffset = 0;		  // 候補リスト用スクロール
+
+	// ヘルパ
+	void BuildEquipFilteredList(EquipCategory cat);
+	void DrawEquipSlotsPanel(int x, int y, int w, int h);
+	void DrawEquipItemListPanel(int x, int y, int w, int h);
+
+
+
 public:
 	Map();
 	~Map();
