@@ -393,6 +393,18 @@ eSceneType Map::Update(float delta_second) {
 			return eSceneType::eMap;
 		}
 
+		// ---------- 右：どうぐ（Items：空のときの戻る処理） ----------
+		else if (rightMode == RightMode::Items && menuSelection == 0 && groupedItems.empty()) {
+			if (input->GetKeyDown(KEY_INPUT_SPACE) ||
+				input->GetKeyDown(KEY_INPUT_ESCAPE) ||
+				input->GetKeyDown(KEY_INPUT_TAB)) {
+				isSubMenuVisible = false;
+				rightMode = RightMode::None;
+				subMenuText.clear();
+			}
+			return eSceneType::eMap;
+		}
+
 		// ---------- 右：そうび（EquipSlots：部位一覧） ----------
 		if (rightMode == RightMode::EquipSlots && menuSelection == 1) {
 			if (input->GetKeyDown(KEY_INPUT_DOWN))
@@ -420,9 +432,19 @@ eSceneType Map::Update(float delta_second) {
 		}
 
 		// ---------- 右：そうび（EquipItemList：候補一覧） ----------
-		if (rightMode == RightMode::EquipItemList && menuSelection == 1 && !equipFiltered.empty()) {
+		if (rightMode == RightMode::EquipItemList && menuSelection == 1) {
 
-			// ↓：ページ最下段で次ページ先頭へ。末尾で先頭ページ先頭にラップ。
+			// ★ 空のとき：Space/Esc/Tab/Enter のどれでも部位一覧へ戻す
+			if (equipFiltered.empty()) {
+				if (input->GetKeyDown(KEY_INPUT_SPACE) ||
+					input->GetKeyDown(KEY_INPUT_ESCAPE) ||
+					input->GetKeyDown(KEY_INPUT_TAB)) {
+					rightMode = RightMode::EquipSlots;
+				}
+				return eSceneType::eMap;
+			}
+
+			// ↓：ページ最下段で次ページ先頭へ。末尾で先頭ページへラップ。
 			if (input->GetKeyDown(KEY_INPUT_DOWN)) {
 				int rel = equipItemSelection - equipItemScrollOffset;
 				if (equipItemSelection + 1 < (int)equipFiltered.size()) {
@@ -464,8 +486,8 @@ eSceneType Map::Update(float delta_second) {
 				}
 			}
 
-			// Enter：装備 / 外す（候補で操作）
-			if (input->GetKeyDown(KEY_INPUT_RETURN) && !equipFiltered.empty()) {
+			// Enter：装備 / 外す
+			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
 				const MenuEntry& entry = equipFiltered[equipItemSelection];
 				auto* pd = PlayerData::GetInstance();
 				EquipCategory cat = entry.category;
@@ -482,8 +504,7 @@ eSceneType Map::Update(float delta_second) {
 
 				// 直近操作IDを保持 → 再構築後に同位置へ戻す
 				const int keepId = entry.representativeId;
-
-				RebuildItemList(); // ★反映
+				RebuildItemList();
 				BuildEquipFilteredList(cat);
 
 				if (equipFiltered.empty()) {
@@ -498,7 +519,6 @@ eSceneType Map::Update(float delta_second) {
 						}
 					}
 					equipItemSelection = newIndex;
-
 					if (equipItemSelection < equipItemScrollOffset)
 						equipItemScrollOffset = equipItemSelection;
 					if (equipItemSelection >= equipItemScrollOffset + VISIBLE_ROWS)
@@ -506,13 +526,16 @@ eSceneType Map::Update(float delta_second) {
 				}
 			}
 
-			// Space/Esc：部位一覧に戻る
-			if (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetKeyDown(KEY_INPUT_ESCAPE)) {
+			// ★ Space/Esc/Tab：部位一覧に戻る
+			if (input->GetKeyDown(KEY_INPUT_SPACE) ||
+				input->GetKeyDown(KEY_INPUT_ESCAPE) ||
+				input->GetKeyDown(KEY_INPUT_TAB)) {
 				rightMode = RightMode::EquipSlots;
 			}
 
 			return eSceneType::eMap;
 		}
+
 	}
 	// ================== メニュー以外 ==================
 
@@ -672,6 +695,11 @@ void Map::Draw() {
 		const int rightW = menuW - (rightX - rootX) - 10;
 		const int rightH = leftH;
 
+		if (menuSelection == 1) {
+			DrawBox(rightX, rightY, rightX + rightW, rightY + rightH, GetColor(26, 26, 32), TRUE);	   // 背景
+			DrawBox(rightX, rightY, rightX + rightW, rightY + rightH, GetColor(200, 200, 200), FALSE); // 枠線を明るく
+		}
+
 		// 右ペイン：選択中のメニューに応じて即時表示（Enter不要）
 		{
 			std::string info;
@@ -704,6 +732,7 @@ void Map::Draw() {
 					info = "プレイヤー情報\n";
 					info += " レベル: " + std::to_string(pd->GetLevel()) + "\n";
 					info += " HP: " + std::to_string(pd->GetHp()) + " / " + std::to_string(pd->GetMaxHp()) + "\n";
+					info += " MP: " + std::to_string(pd->GetMp()) + " / " + std::to_string(pd->GetMaxMp()) + "\n";
 					info += " 攻撃力: " + std::to_string(pd->GetAttack()) + "\n";
 					info += " 防御力: " + std::to_string(pd->GetDefense());
 				} break;
@@ -725,11 +754,22 @@ void Map::Draw() {
 				std::istringstream iss(info);
 				std::string line;
 				int lineNum = 0;
+
+				// 右ペインの内側に少し余白(左:12px, 上:10px)を取って描画
+				const int marginLeft = 12;
+				const int marginTop = 10;
+				const int lineH = 20;
+
 				while (std::getline(iss, line)) {
-					DrawString(rightX, rightY + lineNum * 20, line.c_str(), GetColor(200, 255, 200));
+					DrawString(rightX + marginLeft,
+						rightY + marginTop + lineNum * lineH,
+						line.c_str(),
+						GetColor(200, 255, 200));
 					lineNum++;
 				}
 			}
+
+ 
 		}
 
 		// どうぐリスト：カーソルが「どうぐ」を指していれば常時表示（Enter不要で見える）
@@ -744,7 +784,9 @@ void Map::Draw() {
 			else {
 				subMenuSelection = 0;
 			}
-			DrawItemListPanel(rightX, rightY + 60, rightW, rightH - 60);
+			// どうぐリスト描画：左メニュー枠と高さを揃える
+			DrawItemListPanel(rightX, leftY, rightW, leftH);
+
 			// まだEnterでサブメニューに入っていない時は、操作ヒントを薄く表示（任意）
 			if (!isSubMenuVisible) {
 				DrawString(rightX, rightY + rightH - 18, "Enterで選択 / 使用", GetColor(180, 180, 180));
@@ -782,73 +824,82 @@ void Map::DrawStatusPanel(int x, int y, int w, int h) {
 	DrawString(x + 12, y + 10, txt.c_str(), GetColor(240, 240, 240));
 }
 
-// どうぐリスト描画
+
+// メニュー画面どうぐ（全面置き換え）
 void Map::DrawItemListPanel(int x, int y, int w, int h) {
-	DrawBox(x, y, x + w, y + h, GetColor(26, 26, 32), TRUE);
-	DrawBox(x, y, x + w, y + h, GetColor(140, 140, 140), FALSE);
+    // 外枠
+    DrawBox(x, y, x + w, y + h, GetColor(26, 26, 32), TRUE);
+    DrawBox(x, y, x + w, y + h, GetColor(140, 140, 140), FALSE);
 
-	// 見出し
-	DrawString(x + 8, y - 18, "所持品", GetColor(255, 255, 180));
+    // 枠内レイアウト
+    const int headerH = 24;      // 見出しエリア高さ（枠内）
+    const int lineH   = 20;      // 1 行の高さ
+    const int padX    = 8;       // 左余白
+    const int listTop = y + headerH;              // リスト描画開始 Y（枠内）
+    const int listH   = h - headerH;              // リスト領域の高さ（枠内）
+    const int rowsCap = std::max(1, listH / lineH);
+    const int maxRows = std::min(std::min(VISIBLE_ROWS, rowsCap), (int)groupedItems.size());
 
-	// ページ情報（右上）
-	{
-		int n = (int)groupedItems.size();
-		int totalPages = (n == 0) ? 1 : ((n + VISIBLE_ROWS - 1) / VISIBLE_ROWS);
-		int currentPage = (n == 0) ? 1 : ((listScrollOffset / VISIBLE_ROWS) + 1);
-		std::string pg = std::to_string(currentPage) + " / " + std::to_string(totalPages);
-		DrawString(x + w - 80, y - 18, pg.c_str(), GetColor(220, 220, 220));
-	}
+    // 見出し（枠内に収める）
+    DrawString(x + padX, y + 4, "所持品", GetColor(255, 255, 180));
 
-	const int lineH = 20;
-	int maxRows = std::min(VISIBLE_ROWS, (int)groupedItems.size());
-	for (int i = 0; i < maxRows; ++i) {
-		int idx = listScrollOffset + i;
-		if (idx < 0 || idx >= (int)groupedItems.size())
-			break;
-		const Map::MenuEntry& e = groupedItems[idx];
+    // 行描画
+    for (int i = 0; i < maxRows; ++i) {
+        int idx = listScrollOffset + i;
+        if (idx < 0 || idx >= (int)groupedItems.size()) break;
+        const Map::MenuEntry& e = groupedItems[idx];
 
-		std::string label;
-		switch (e.category) {
-		case EquipCategory::Weapon:
-			label = "[武] ";
-			break;
-		case EquipCategory::Shield:
-			label = "[盾] ";
-			break;
-		case EquipCategory::Armor:
-			label = "[鎧] ";
-			break;
-		case EquipCategory::Helmet:
-			label = "[頭] ";
-			break;
-		default:
-			label = "[薬] ";
-			break;
-		}
-		label += e.name;
-		if (e.type == ItemType::Consumable && e.count > 1)
-			label += " (x" + std::to_string(e.count) + ")";
-		if (e.equipped)
-			label = "★ " + label;
+        // 表示文字列
+        std::string label;
+        switch (e.category) {
+            case EquipCategory::Weapon: label = "[武] "; break;
+            case EquipCategory::Shield: label = "[盾] "; break;
+            case EquipCategory::Armor:  label = "[鎧] "; break;
+            case EquipCategory::Helmet: label = "[頭] "; break;
+            default:                    label = "[薬] "; break;
+        }
+        label += e.name;
+        if (e.type == ItemType::Consumable && e.count > 1) {
+            label += " (x" + std::to_string(e.count) + ")";
+        }
+        if (e.equipped) label = "★ " + label;
 
-		const bool rightFocused = isSubMenuVisible && (rightMode == RightMode::Items);
-		if (idx == subMenuSelection && rightFocused)
-			DrawString(x + 8, y + 6 + i * lineH, "＞", GetColor(255, 255, 0));
-		DrawString(x + 28, y + 6 + i * lineH, label.c_str(), GetColor(220, 255, 220));
-	}
+        const bool rightFocused = isSubMenuVisible && (rightMode == RightMode::Items);
+        int yLine = listTop + 6 + i * lineH;
+        if (idx == subMenuSelection && rightFocused) {
+            DrawString(x + padX, yLine, "＞", GetColor(255, 255, 0));
+        }
+        DrawString(x + padX + 20, yLine, label.c_str(), GetColor(220, 255, 220));
+    }
 
-	// スクロールバー
-	if ((int)groupedItems.size() > VISIBLE_ROWS) {
-		float ratio = (float)VISIBLE_ROWS / (float)groupedItems.size();
-		int barH = std::max(8, (int)(h * ratio));
-		int track = h - barH;
-		float posRatio = (float)listScrollOffset / std::max(1, (int)groupedItems.size() - VISIBLE_ROWS);
-		int barY = y + (int)(posRatio * track);
-		int barX = x + w - 8;
-		DrawBox(barX, y, barX + 4, y + h, GetColor(60, 60, 60), TRUE);
-		DrawBox(barX, barY, barX + 4, barY + barH, GetColor(200, 200, 200), TRUE);
-	}
+    // スクロールバー（枠内で完結）
+    if ((int)groupedItems.size() > maxRows) {
+        int trackX = x + w - 8;
+        int trackY = listTop;
+        int trackH = listH;
+        DrawBox(trackX, trackY, trackX + 4, trackY + trackH, GetColor(60, 60, 60), TRUE);
+
+        int scrollable = std::max(1, (int)groupedItems.size() - maxRows);
+        float posRatio = (float)listScrollOffset / (float)scrollable;
+        int barH = std::max(8, (int)(trackH * ((float)maxRows / (float)groupedItems.size())));
+        int barY = trackY + (int)((trackH - barH) * posRatio);
+        DrawBox(trackX, barY, trackX + 4, barY + barH, GetColor(200, 200, 200), TRUE);
+    }
+
+    // ページ数表示（右下・枠内）
+	const int rowsPerPage = VISIBLE_ROWS; // 1ページの行数（= 描画行数）
+	const int n = (int)groupedItems.size();
+	const int totalPages = (n == 0) ? 1 : ((n + rowsPerPage - 1) / rowsPerPage);
+	const int currentPage = (n == 0) ? 1 : ((listScrollOffset / rowsPerPage) + 1);
+
+	std::string pg = std::to_string(currentPage) + " / " + std::to_string(totalPages);
+
+	// 見出しと同じY座標の右端寄せ。数値が被る場合は -70 等で微調整してください。
+	DrawString(x + w - 70, y +190, pg.c_str(), GetColor(220, 220, 220));
+	
 }
+
+
 
 
 // ★ カーソル位置のアイテム情報（プレビュー常時表示）
@@ -1025,8 +1076,10 @@ void Map::BuildEquipFilteredList(EquipCategory cat) {
 		});
 }
 
-
+//メニュー画面そうび
 void Map::DrawEquipSlotsPanel(int x, int y, int w, int h) {
+
+
 	DrawBox(x, y, x + w, y + h, GetColor(26, 26, 32), TRUE);
 	DrawBox(x, y, x + w, y + h, GetColor(140, 140, 140), FALSE);
 
@@ -1050,25 +1103,36 @@ void Map::DrawEquipSlotsPanel(int x, int y, int w, int h) {
 		std::string line = std::string(rows[i].label) + "： " + pd->GetEquippedName(rows[i].cat);
 		DrawString(x + 28, yy, line.c_str(), GetColor(200, 255, 200));
 	}
-	DrawString(x + 8, y + h - 18, " ", GetColor(180, 180, 180));
+	DrawString(x + 8, y + h - 18," ", GetColor(180, 180, 180));
 }
 
+//装備一覧ページ
 void Map::DrawEquipItemListPanel(int x, int y, int w, int h) {
 	DrawBox(x, y, x + w, y + h, GetColor(26, 26, 32), TRUE);
 	DrawBox(x, y, x + w, y + h, GetColor(140, 140, 140), FALSE);
-	DrawString(x + 8, y - 18, "候補", GetColor(255, 255, 180));
 
-	// ページ情報（右上）
+
+	DrawString(x + 8, y +3, "候補", GetColor(255, 255, 180));
 	{
 		int n = (int)equipFiltered.size();
 		int totalPages = (n == 0) ? 1 : ((n + VISIBLE_ROWS - 1) / VISIBLE_ROWS);
 		int currentPage = (n == 0) ? 1 : ((equipItemScrollOffset / VISIBLE_ROWS) + 1);
+		//ページ数
 		std::string pg = std::to_string(currentPage) + " / " + std::to_string(totalPages);
-		DrawString(x + w - 80, y - 18, pg.c_str(), GetColor(220, 220, 220));
+		DrawString(x + w - 80, y +190, pg.c_str(), GetColor(220, 220, 220));
 	}
 
 	const int lineH = 20;
-	int maxRows = std::min(VISIBLE_ROWS, (int)equipFiltered.size());
+	const int topPad = 6;
+	const int botPad = 8;
+	const int fontH = 16;
+
+	int capacity = ((h - topPad - botPad - fontH) / lineH) + 1;
+	capacity = std::max(1, capacity);
+	int maxRows = std::min({ VISIBLE_ROWS, capacity, (int)equipFiltered.size() });
+
+	const int offsetY = 30;
+
 	for (int i = 0; i < maxRows; ++i) {
 		int idx = equipItemScrollOffset + i;
 		if (idx < 0 || idx >= (int)equipFiltered.size())
@@ -1080,8 +1144,9 @@ void Map::DrawEquipItemListPanel(int x, int y, int w, int h) {
 			label = "★ " + label;
 
 		if (idx == equipItemSelection)
-			DrawString(x + 8, y + 6 + i * lineH, "＞", GetColor(255, 255, 0));
-		DrawString(x + 28, y + 6 + i * lineH, label.c_str(), GetColor(220, 255, 220));
+			DrawString(x + 8, y + offsetY + 6 + i * lineH, "＞", GetColor(255, 255, 0));
+
+		DrawString(x + 28, y + offsetY + 6 + i * lineH, label.c_str(), GetColor(220, 255, 220));
 	}
 
 	if ((int)equipFiltered.size() > VISIBLE_ROWS) {
