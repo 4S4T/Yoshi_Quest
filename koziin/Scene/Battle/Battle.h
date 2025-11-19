@@ -13,20 +13,28 @@
 #include "../../Object/Enemy/EnemyType/Taurus.h"
 #include "../Map/Map.h"
 
+#include <memory>        // ★ 追加
+#include "EnemyAI.h"     // ★ 追加
+#include "SpellRegistry.h" // ★ 属性型を使うため
+
+// =============================
 // 戦闘ステート
+// =============================
 enum class BattleState {
 	PlayerCommand,
 	AttackSelect,
-	MagicMenu, // じゅもんメニュー（拡張用）
-	ItemMenu,  // どうぐメニュー（拡張用）
-	EnemyTurn, // 敵はキューで1体ずつ行動
-	Message,   // 手動送りメッセージ
-	Result,	   // 勝利リザルト（タイプライタ）
-	MagicTarget,
-	Defeat	   // ★敗北リザルト（タイプライタ）
+	MagicMenu,   // じゅもんメニュー（拡張用）
+	ItemMenu,    // どうぐメニュー（拡張用）
+	EnemyTurn,   // 敵はキューで1体ずつ行動
+	Message,     // 手動送りメッセージ
+	Result,	     // 勝利リザルト（タイプライタ）
+	MagicTarget, // 魔法対象選択
+	Defeat       // 敗北リザルト（タイプライタ）
 };
 
+// =============================
 // 敵ハンドル
+// =============================
 struct EnemyHandle {
 	std::string name;
 	std::string displayName;
@@ -36,32 +44,49 @@ struct EnemyHandle {
 	std::function<int()> getHp;
 	std::function<int()> getAtk;
 	std::function<int()> getDef;
-	std::function<void(int)> applyDamage;
+	std::function<void(int)>   applyDamage;
 	std::function<void(float)> setBlink;
-	std::function<void(bool)> setVisible;
+	std::function<void(bool)>  setVisible;
 
 	float x = 0.0f;
 	float y = 0.0f;
-	int maxHp = 1;
+	int   maxHp = 1;
+	int   dispHp = 1; // 視覚用HP
 
-	int dispHp = 1; // 視覚用HP
+	std::unique_ptr<IEnemyAI> ai; // 敵AI
+
+	// ★ ガード中フラグ（次の敵ターン開始まで被ダメ半減）
+	bool isGuarding = false;
+
+	// ★ コピー禁止・ムーブ可
+	EnemyHandle() = default;
+	EnemyHandle(const EnemyHandle&) = delete;
+	EnemyHandle& operator=(const EnemyHandle&) = delete;
+	EnemyHandle(EnemyHandle&&) noexcept = default;
+	EnemyHandle& operator=(EnemyHandle&&) noexcept = default;
 };
 
+// =============================
 // 遭遇テーブル
+// =============================
 struct EncounterEntry {
 	int minCount = 1;
 	int maxCount = 3;
 	std::vector<int> enemyTypeWeights; // 0:peabird, 1:Taurus ...
 };
 
+// =============================
 // ダメージポップ
+// =============================
 struct DamagePopup {
 	float timer;
 	int amount;
 	float x, y;
 };
 
+// =============================
 // 被弾スプラッシュ（赤い円）
+// =============================
 struct HitSplash {
 	float timer = 0.0f;
 	float duration = 0.3f;
@@ -70,11 +95,17 @@ struct HitSplash {
 	float r1 = 55.0f;
 };
 
+// =============================
+// 敵行動キュー
+// =============================
 struct EnemyAction {
 	int enemyIndex;
 	int damage;
 };
 
+// =============================
+// BattleScene クラス
+// =============================
 class BattleScene : public SceneBase {
 private:
 	static const int SCREEN_W = 960;
@@ -95,17 +126,17 @@ private:
 	std::string currentMessage;
 	BattleState messageNextState = BattleState::PlayerCommand;
 
-	// 敵
+	// 敵リスト
 	std::vector<EnemyHandle> enemies;
 	int totalEarnedExp = 0;
 
-	// 遭遇
+	// 遭遇テーブル
 	EncounterEntry encounter;
 
 	// 逃走：連続失敗救済
 	int escapePity = 0;
 
-	// ★追加：逃走成功したかどうか（リザルトを出さず戻る用）
+	// 逃走成功したか（リザルトスキップ用）
 	bool escapedSuccessfully = false;
 
 	// 被ダメ演出
@@ -122,9 +153,9 @@ private:
 	int enemyTurnCursor = 0;
 
 	// 導入フェード＋ズーム
-	int fadeAlpha = 0;		 // 0..255
-	int fadeState = 0;		 // 0:なし / 1:フェードイン
-	float introZoomT = 0.0f; // 0→1 : 1.15→1.0
+	int fadeAlpha = 0;
+	int fadeState = 0;
+	float introZoomT = 0.0f;
 	float introZoomDur = 0.6f;
 
 	// 攻撃演出
@@ -159,7 +190,7 @@ private:
 	// 会心率（%）
 	int criticalRatePercent = 6;
 
-	// リザルト（勝利）
+	// 勝利リザルト
 	bool resultInitialized = false;
 	std::vector<std::string> resultLines;
 	int resultLineIndex = 0;
@@ -168,17 +199,17 @@ private:
 	float resultTypeSpeed = 60.0f;
 	bool resultGrantDone = false;
 
-	// ★リザルト（敗北）
+	// 敗北リザルト
 	bool defeatInitialized = false;
 	std::vector<std::string> defeatLines;
 	int defeatLineIndex = 0;
 	int defeatCharIndex = 0;
 	float defeatTypeTimer = 0.0f;
 	float defeatTypeSpeed = 54.0f;
-	float defeatDarkT = 0.0f;	  // 0→1 で赤暗転
-	float defeatDarkSpeed = 0.7f; // 暗転速度
+	float defeatDarkT = 0.0f;
+	float defeatDarkSpeed = 0.7f;
 
-	// メッセージ系
+	// メッセージ制御
 	void enqueueMessage(const std::string& text);
 	void beginMessages(BattleState nextState);
 	void pumpMessageManual();
@@ -190,7 +221,7 @@ private:
 	void onEnemyDefeated(EnemyHandle& e);
 	void giveAllExpAndExit();
 
-	// 遭遇
+	// 遭遇関連
 	int chooseEnemyType() const;
 	void spawnEnemiesByEncounter();
 
@@ -203,7 +234,7 @@ private:
 	void drawHitEffects();
 	void drawHitSplashes();
 
-	// オフスクリーン
+	// オフスクリーン制御
 	void ensureOffscreen();
 	void releaseOffscreen();
 
@@ -223,13 +254,30 @@ private:
 	void drawResult();
 	bool grantExpAndMaybeRebuildResultLines();
 
-	// ★敗北リザルト
+	// 敗北リザルト
 	void initDefeatScreen();
 	void updateDefeat(float dt);
 	void drawDefeat();
 
 	// 敵HP 視覚追従
 	void updateEnemyHpDisplays(float dt);
+
+	// ★ 魔法属性演出
+	bool spellFxActive = false;
+	SpellElement spellFxElement = SpellElement::Neutral;
+	bool spellFxAoE = false;
+	float spellFxTimer = 0.0f;
+	float spellFxDur = 0.55f;
+	Vector2D spellFxPos = { 600.0f, 340.0f };
+
+	struct Bolt { float t; float life; float x1, y1, x2, y2; };
+	struct Shard { float t; float life; float x, y, vx, vy; };
+	std::vector<Bolt> bolts;
+	std::vector<Shard> shards;
+
+	void startSpellEffect(SpellElement elem, const Vector2D& pos, bool aoe);
+	void updateSpellEffects(float dt);
+	void drawSpellEffects();
 
 public:
 	BattleScene();
@@ -248,8 +296,8 @@ public:
 
 	void SetPlayerPosition(const Vector2D& position);
 
-	// BattleScene のメンバー変数（Battle.h内の private に追加）
-	int magicCursor = 0;								// 選択中の魔法インデックス
-	std::vector<PlayerData::MagicType> availableMagics; // プレイヤーが覚えている魔法一覧
-	PlayerData::MagicType pendingMagic = PlayerData::MagicType::Fire; // 現在選択している魔法
+	// ★ 魔法メニュー関連
+	int magicCursor = 0;
+	std::vector<PlayerData::MagicType> availableMagics;
+	PlayerData::MagicType pendingMagic = PlayerData::MagicType::Fire;
 };
