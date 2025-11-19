@@ -5,50 +5,38 @@
 #include "../Player.h"
 #include "../../../GameObjectManager.h"
 
-IdleState::IdleState(Player* p) : PlayerStateBase(p),
-								  input(nullptr) {
+IdleState::IdleState(Player* p)
+	: PlayerStateBase(p),
+	  input(nullptr) {
 }
 
 IdleState::~IdleState() {
 }
 
-void IdleState::Initialize()
-{
+void IdleState::Initialize() {
 	// 速度を0にする
 	player->velocity = 0.0f;
-	ResourceManager* rm = ResourceManager::GetInstance();
-	image = rm->GetImages("Resource/Images/yossi.png", 1, 1, 1, 16, 16)[0];
+	// 画像は Player 側で描画するので、ここでは読み込まない
 }
 
-void IdleState::Finalize() 
-{
-
+void IdleState::Finalize() {
 }
 
 void IdleState::Update(float delta_second) {
 	// 入力情報を取得
 	InputControl* input = Singleton<InputControl>::GetInstance();
-	// 移動処理
-	if (input->GetKey(KEY_INPUT_A))
-	{
-		player->SetNextState(ePlayerState::RUN);
-	}
-	if (input->GetKey(KEY_INPUT_D))
-	{
-		player->SetNextState(ePlayerState::RUN);
-	}
-	if (input->GetKey(KEY_INPUT_W)) {
-		player->SetNextState(ePlayerState::RUN);
-	}
-	if (input->GetKey(KEY_INPUT_S)) {
+
+	// どれかキーが押されたら RUN 状態へ
+	if (input->GetKey(KEY_INPUT_A) ||
+		input->GetKey(KEY_INPUT_D) ||
+		input->GetKey(KEY_INPUT_W) ||
+		input->GetKey(KEY_INPUT_S)) {
 		player->SetNextState(ePlayerState::RUN);
 	}
 }
 
-
-
 void IdleState::Draw() const {
-	DrawRotaGraphF(player->GetLocation().x, player->GetLocation().y, 1.5, 0.0, image, TRUE);
+	// ※プレイヤーの描画は Player::Draw で行うので何もしない
 }
 
 ePlayerState IdleState::GetState() const {

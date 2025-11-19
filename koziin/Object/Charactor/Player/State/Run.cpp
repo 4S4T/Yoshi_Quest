@@ -5,84 +5,61 @@
 #include "../Player.h"
 #include "../../../../Utility/ResourceManager.h"
 
-
-RunState::RunState(Player* p) : PlayerStateBase(p),
-								old_location(Vector2D(0.0f)),
-								animation_count(0),
-								animation_time(0.f)
-{
+RunState::RunState(Player* p)
+	: PlayerStateBase(p),
+	  old_location(Vector2D(0.0f)),
+	  animation_time(0.f),
+	  animation_count(0) {
 }
 
 RunState::~RunState() {
 }
 
 void RunState::Initialize() {
-	// 速度を0にする
-	old_location = 0.0f;
+	old_location = player->GetLocation();
 	animation_time = 0.0f;
 	animation_count = 0;
-	ResourceManager* rm = ResourceManager::GetInstance();
-	animation[0] = LoadGraph("Resource/Images/yossi.png");
-	animation[1] = LoadGraph("Resource/Images/yossi_ikiri.png");
-	/*image = rm->GetImages("Resource/Images/Sheep_0.png", 1, 1, 1, 16, 16)[0];*/
-	/*player_animation = rm->GetImages("Resource/Images/sheep.png", 1, 1, 1, 16, 16);
-	image = player_animation[1];*/
+	// 画像は Player 側で管理するので、ここでは読み込まない
 }
 
 void RunState::Finalize() {
 }
 
-void RunState::Update(float delta_second)
-{
+void RunState::Update(float delta_second) {
 	// 入力情報を取得
 	InputControl* input = Singleton<InputControl>::GetInstance();
 
-	// 移動処理
+	Vector2D v(0.0f, 0.0f);
+
 	if (input->GetKey(KEY_INPUT_D)) {
-		this->player->velocity.x = 1.0f;
+		v.x += 1.0f;
 	}
-	else if (input->GetKey(KEY_INPUT_A)) {
-		this->player->velocity.x = -1.0f;
+	if (input->GetKey(KEY_INPUT_A)) {
+		v.x -= 1.0f;
 	}
-	else if (input->GetKey(KEY_INPUT_W))
-	{
-		this->player->velocity.y = -1.0f;
+	if (input->GetKey(KEY_INPUT_W)) {
+		v.y -= 1.0f;
 	}
-	else if (input->GetKey(KEY_INPUT_S)) {
-		this->player->velocity.y = 1.0f;
+	if (input->GetKey(KEY_INPUT_S)) {
+		v.y += 1.0f;
 	}
-	else {
-		// キー入力がない場合、速度を0にする
-		this->player->velocity.x = 0.0f;
+
+	player->velocity = v;
+
+	// どのキーも押されていなければ Idle へ戻る
+	if (v.x == 0.0f && v.y == 0.0f) {
 		player->SetNextState(ePlayerState::IDLE);
 	}
 
-	// 前回座標の更新
 	old_location = player->GetLocation();
-	AnimationControl(delta_second);
 }
 
 void RunState::Draw() const {
-	DrawRotaGraphF(player->GetLocation().x, player->GetLocation().y, 1.5, 0.0, image, TRUE);
+	// ※プレイヤーの描画は Player::Draw で行うので、ここでは何もしない
 }
 
 void RunState::AnimationControl(float delta_second) {
-	// フレームカウントを加算する
-	animation_count++;
-
-	// 60フレーム目に到達したら
-	if (animation_count >= 30) {
-		// カウントリセット
-		animation_count = 0;
-
-		// 画像の切替
-		if (image == animation[0]) {
-			image = animation[1];
-		}
-		else {
-			image = animation[0];
-		}
-	}
+	// Player 側でアニメ制御しているので空でOK
 }
 
 ePlayerState RunState::GetState() const {
