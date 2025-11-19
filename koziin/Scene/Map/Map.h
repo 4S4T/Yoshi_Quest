@@ -59,7 +59,6 @@ private:
 	int listScrollOffset = 0;
 	static constexpr int VISIBLE_ROWS = 8;
 
-	 
 	void RebuildItemList();
 	void RebuildItemListGrouped();
 
@@ -93,10 +92,12 @@ private:
 	bool isAfterBattle = false;
 
 	// 既存のメニュー系メンバの近くに追記
-	enum class RightMode { None,
+	enum class RightMode {
+		None,
 		Items,
 		EquipSlots,
-		EquipItemList };
+		EquipItemList
+	};
 
 	RightMode rightMode = RightMode::None;
 
@@ -110,8 +111,6 @@ private:
 	void BuildEquipFilteredList(EquipCategory cat);
 	void DrawEquipSlotsPanel(int x, int y, int w, int h);
 	void DrawEquipItemListPanel(int x, int y, int w, int h);
-
-
 
 public:
 	Map();
@@ -127,8 +126,6 @@ public:
 	void DrawStageMap();
 	void LoadNextMap();
 	bool IsCollision(float x, float y);
-
-
 
 	int MapImage;
 	Vector2D generate_location;
