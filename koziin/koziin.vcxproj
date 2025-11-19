@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="AppMain.cpp" />
+    <ClCompile Include="Scene\Battle\DamageCalculator.cpp" />
     <ClCompile Include="Object\Enemy\EnemyBase.cpp" />
     <ClCompile Include="Object\Enemy\EnemyType\Rizard.cpp" />
     <ClCompile Include="Object\Enemy\EnemyType\Rock_Rizard.cpp" />
@@ -142,6 +143,7 @@
     <ClCompile Include="Scene\Memu\MemuSene.cpp" />
     <ClCompile Include="Scene\Title\Title2.cpp" />
     <ClCompile Include="Object\Enemy\EnemyType\Taurus.cpp" />
+    <ClCompile Include="Scene\Battle\SpellRegistry.cpp" />
     <ClCompile Include="Utility\PlayerData.cpp" />
     <ClCompile Include="Scene\Battle\Battle.cpp" />
     <ClCompile Include="Object\Charactor\Player\State\Idle.cpp" />
@@ -166,6 +168,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Scene\Battle\EnemyAI.h" />
+    <ClInclude Include="Scene\Battle\DamageCalculator.h" />
     <ClInclude Include="Object\Enemy\EnemyBase.h" />
     <ClInclude Include="Object\Enemy\EnemyType\Rizard.h" />
     <ClInclude Include="Object\Enemy\EnemyType\Rock_Rizard.h" />
@@ -175,6 +179,7 @@
     <ClInclude Include="Scene\Memu\MemuSene.h" />
     <ClInclude Include="Scene\Title\Title2.h" />
     <ClInclude Include="Object\Enemy\EnemyType\Taurus.h" />
+    <ClInclude Include="Scene\Battle\SpellRegistry.h" />
     <ClInclude Include="Utility\AttackEffect.h" />
     <ClInclude Include="Utility\PlayerData.h" />
     <ClInclude Include="Scene\Battle\Battle.h" />
