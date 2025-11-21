@@ -146,6 +146,7 @@ Map::~Map() {}
 
 // 初期化
 void Map::Initialize() {
+	// ★ 今のステージ index に対応する CSV を読み込む
 	mapdata = LoadStageMapCSV(stageFiles[currentStageIndex]);
 
 	GameManager* obj = Singleton<GameManager>::GetInstance();
@@ -837,7 +838,7 @@ void Map::DrawStatusPanel(int x, int y, int w, int h) {
 	DrawString(x + 12, y + 10, txt.c_str(), GetColor(240, 240, 240));
 }
 
-// メニュー画面どうぐ（全面置き換え）
+// メニュー画面どうぐ
 void Map::DrawItemListPanel(int x, int y, int w, int h) {
 	// 外枠
 	DrawBox(x, y, x + w, y + h, GetColor(26, 26, 32), TRUE);
@@ -981,7 +982,9 @@ eSceneType Map::GetNowSceneType() const {
 	return eSceneType::eMap;
 }
 
-// CSV 読み込み
+// ============================
+// CSV 読み込み（Book1.csv 対応）
+// ============================
 std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 	std::ifstream ifs(map_name);
 	if (ifs.fail())
@@ -993,6 +996,8 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 
 	std::string line;
 	int rowIdx = 0;
+
+	// ※ 現状仕様維持：stage2 だけエンカウント無効
 	isEncounterEnabled = (map_name != "Resource/stage2.csv");
 
 	while (std::getline(ifs, line)) {
@@ -1001,13 +1006,42 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 		std::stringstream ss(line);
 		std::string cell;
 		int colIdx = 0;
+
 		while (std::getline(ss, cell, ',')) {
-			char c = cell[0];
+
+			// ---- 空欄・空白対策 ----
+			// 末尾の改行・空白削除
+			while (!cell.empty() &&
+				   (cell.back() == ' ' || cell.back() == '\t' ||
+					   cell.back() == '\r' || cell.back() == '\n')) {
+				cell.pop_back();
+			}
+
+			// 先頭の空白スキップ
+			size_t pos = 0;
+			while (pos < cell.size() && (cell[pos] == ' ' || cell[pos] == '\t')) {
+				++pos;
+			}
+
+			char c;
+			if (pos >= cell.size()) {
+				// 完全に空欄 → '0' とみなす
+				c = '0';
+			}
+			else {
+				c = cell[pos];
+				// 数字以外が来たら '0' とみなす
+				if (c < '0' || c > '9') {
+					c = '0';
+				}
+			}
+
 			row.push_back(c);
 
-			// '3' や '6' を衝突とみなす（1マスにつき 1 要素だけ push するよう修正）
+			// 衝突フラグ：'3' と '6' を壁扱い
 			collisionRow.push_back(c == '3' || c == '6');
 
+			// マップ遷移ポイント（'4'）
 			if (c == '4') {
 				float x = D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * colIdx);
 				float y = D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * rowIdx);
@@ -1015,6 +1049,7 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 			}
 			colIdx++;
 		}
+
 		data.push_back(row);
 		collisionMap.push_back(collisionRow);
 		rowIdx++;
@@ -1022,13 +1057,32 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 	return data;
 }
 
-// マップ描画
+// ============================
+// マップ描画（防御付き）
+// ============================
 void Map::DrawStageMap() {
 	ResourceManager* rm = ResourceManager::GetInstance();
+
 	for (int i = 0; i < MAP_SQUARE_Y; i++) {
+		// 行が足りない場合は描画スキップ
+		if (i < 0 || i >= (int)mapdata.size())
+			continue;
+
 		for (int j = 0; j < MAP_SQUARE_X; j++) {
+			// 列が足りない場合もスキップ
+			if (j < 0 || j >= (int)mapdata[i].size())
+				continue;
+
 			char c = mapdata[i][j];
-			std::string path = "Resource/Images/Block/" + std::to_string(c - '0') + ".png";
+
+			// '0'～'9' → 0～9 のタイル番号に変換
+			int tileIndex = c - '0';
+			if (tileIndex < 0 || tileIndex > 9) {
+				tileIndex = 0; // 異常値は 0 とみなす
+			}
+
+			std::string path = "Resource/Images/Block/" + std::to_string(tileIndex) + ".png";
+
 			MapImage = rm->GetImages(path, 1, 1, 1, 16, 16)[0];
 			DrawRotaGraphF(
 				D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * j),
@@ -1217,4 +1271,3 @@ void Map::DrawEquipItemListPanel(int x, int y, int w, int h) {
 		DrawBox(barX, barY, barX + 4, barY + barH, GetColor(200, 200, 200), TRUE);
 	}
 }
-
