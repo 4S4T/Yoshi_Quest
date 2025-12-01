@@ -77,10 +77,7 @@ std::vector<std::shared_ptr<Item>> GenerateMapItems() {
 	std::vector<std::shared_ptr<Item>> items;
 
 	// 消費アイテム
-	items.push_back(std::make_shared<Item>(
-		1, "回復薬", Vector2D(500, 600),
-		ItemType::Consumable, EquipCategory::None,
-		0, 0, 0, 20));
+	items.push_back(std::make_shared<Item>(1, "回復薬", Vector2D(500, 600),ItemType::Consumable, EquipCategory::None,0, 0, 0, 20));
 
 	// Item( id,   名前,        位置,                 種類,                装備種別,                 攻撃補正, 防御補正, HP補正, 回復量 )
 	// 装備アイテム
@@ -110,9 +107,9 @@ std::vector<std::shared_ptr<Item>> GenerateMapItems() {
 
 
 
-	items.push_back(std::make_shared<Item>(3, "盾", Vector2D(550, 420),ItemType::Equipment, EquipCategory::Shield,0, 3, 0, 0));
+	items.push_back(std::make_shared<Item>(22, "盾", Vector2D(550, 420),ItemType::Equipment, EquipCategory::Shield,0, 3, 0, 0));
 
-	items.push_back(std::make_shared<Item>(4, "鎧", Vector2D(580, 450),ItemType::Equipment, EquipCategory::Armor,0, 0, 10, 0));
+	items.push_back(std::make_shared<Item>(789, "鎧", Vector2D(580, 450),ItemType::Equipment, EquipCategory::Armor,0, 0, 10, 0));
 
 	items.push_back(std::make_shared<Item>(5, "ヘルメット+20", Vector2D(600, 480),ItemType::Equipment, EquipCategory::Helmet,0, 2, 0, 0));
 

@@ -279,6 +279,10 @@ private:
 	void updateSpellEffects(float dt);
 	void drawSpellEffects();
 
+	// バトル中に使えるアイテム一覧（消費アイテム）を作る
+	void buildBattleItemList();
+
+
 public:
 	BattleScene();
 	~BattleScene();
@@ -300,4 +304,8 @@ public:
 	int magicCursor = 0;
 	std::vector<PlayerData::MagicType> availableMagics;
 	PlayerData::MagicType pendingMagic = PlayerData::MagicType::Fire;
+
+	// ★アイテム選択用（消費アイテムだけ）
+	int itemCursor = 0;
+	std::vector<int> battleItemIds; // PlayerData::ownedItems のキー（id）だけ持つ
 };

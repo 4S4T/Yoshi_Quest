@@ -17,7 +17,7 @@ static const int SCREEN_W = 960;
 static const int SCREEN_H = 720;
 
 // --- std::max 代用（int専用の軽量版）---
-static inline int IMAX(int a, int b) { return (a > b) ? a : b; }
+//static inline int IMAX(int a, int b) { return (a > b) ? a : b; }
 
 
 //--------------------------------------
@@ -717,10 +717,15 @@ void BattleScene::Initialize() {
 	defeatTypeTimer = 0.0f;
 	defeatDarkT = 0.0f;
 
-	// ★ じゅもんメニュー初期化
+		//  魔法
 	magicCursor = 0;
 	availableMagics = PlayerData::GetInstance()->GetLearnedMagics();
+
+	// ★アイテム（バトル開始時はカーソルとリストをクリア）
+	itemCursor = 0;
+	battleItemIds.clear();
 }
+
 
 //--------------------------------------
 // ズーム値取得（導入×フィニッシュ×攻撃）
@@ -1030,9 +1035,21 @@ eSceneType BattleScene::Update(float delta_second) {
 			else if (commandCursor == 1) {
 				battleState = BattleState::MagicMenu;
 			}
-			else if (commandCursor == 2) {
-				battleState = BattleState::ItemMenu;
+			else if (commandCursor == 2) { // アイテム
+				// バトル用の消費アイテム一覧を作る
+				buildBattleItemList();
+
+				// 1つもないならメッセージを出してコマンドに戻る
+				if (battleItemIds.empty()) {
+					enqueueMessage("つかえる どうぐ が ない！");
+					beginMessages(BattleState::PlayerCommand);
+				}
+				else {
+					itemCursor = 0;
+					battleState = BattleState::ItemMenu;
+				}
 			}
+
 			else if (commandCursor == 3) {
 				isPlayerDefending = true;
 				enqueueMessage("よっしーは みを まもっている。");
@@ -1202,16 +1219,87 @@ eSceneType BattleScene::Update(float delta_second) {
 		break;
 	}
 
-	case BattleState::ItemMenu: {
-		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
-			enqueueMessage("なにも もっていない！");
+		case BattleState::ItemMenu: {
+		const int itemCount = static_cast<int>(battleItemIds.size());
+
+		// 念のため、リストが空なら即終了
+		if (itemCount == 0) {
+			enqueueMessage("つかえる どうぐ が ない！");
 			beginMessages(BattleState::PlayerCommand);
+			break;
 		}
+
+		// 上下でカーソル移動
+		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+			itemCursor = (itemCursor + 1) % itemCount;
+		}
+		if (input->GetKeyDown(KEY_INPUT_UP)) {
+			itemCursor = (itemCursor + itemCount - 1) % itemCount;
+		}
+
+		// ESC でコマンドに戻る
 		if (input->GetKeyDown(KEY_INPUT_ESCAPE)) {
 			battleState = BattleState::PlayerCommand;
+			break;
 		}
+
+		// SPACE でアイテム使用
+		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
+			PlayerData* pd = PlayerData::GetInstance();
+			const auto& owned = pd->GetOwnedItems();
+
+			// 現在カーソルが指しているアイテムID
+			int id = battleItemIds[itemCursor];
+
+			// 念のため所持チェック
+			auto it = owned.find(id);
+			if (it == owned.end()) {
+				buildBattleItemList();
+				enqueueMessage("その どうぐ は もう ない！");
+				beginMessages(BattleState::PlayerCommand);
+				break;
+			}
+
+			const Item& item = it->second;
+			const std::string name = item.GetName();
+			const int heal = item.GetHealAmount();
+
+			bool used = pd->UseItem(id);
+			if (used) {
+				char buf[128];
+#if defined(_MSC_VER)
+				sprintf_s(buf, "%s を つかった！", name.c_str());
+#else
+				snprintf(buf, sizeof(buf), "%s を つかった！", name.c_str());
+#endif
+				enqueueMessage(buf);
+
+				if (heal > 0) {
+					char buf2[128];
+#if defined(_MSC_VER)
+					sprintf_s(buf2, "HPが %d かいふくした！", heal);
+#else
+					snprintf(buf2, sizeof(buf2), "HPが %d かいふくした！", heal);
+#endif
+					enqueueMessage(buf2);
+				}
+
+				// アイテムを消費したのでリストを作り直し
+				buildBattleItemList();
+
+				// ターン終了 → 敵ターンへ
+				beginMessages(BattleState::EnemyTurn);
+			}
+			else {
+				// HP満タンなどで UseItem が false の場合
+				enqueueMessage("いまは その どうぐ は つかえない！");
+				beginMessages(BattleState::PlayerCommand);
+			}
+		}
+
 		break;
 	}
+
 
 	case BattleState::AttackSelect: {
 		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
@@ -1668,9 +1756,59 @@ void BattleScene::Draw() {
 				DrawStringToHandle(50 + uiOx, 670 + uiOy, "SPACE: けってい / ESC: もどる", GetColor(200, 200, 200), LargeFont);
 			}
 			else if (battleState == BattleState::ItemMenu) {
-				DrawStringToHandle(50 + uiOx, 540 + uiOy, "どうぐは まだ ない。", GetColor(200, 200, 255), LargeFont);
-				DrawStringToHandle(50 + uiOx, 580 + uiOy, "SPACE: 決定 / ESC: もどる", GetColor(180, 180, 180), LargeFont);
+				PlayerData* pd = PlayerData::GetInstance();
+				const auto& owned = pd->GetOwnedItems();
+
+				// 見出し
+				DrawStringToHandle(
+					50 + uiOx,
+					540 + uiOy,
+					"どうぐ  SPACE: つかう / ESC: もどる",
+					GetColor(200, 200, 200),
+					LargeFont);
+
+				int x = 50 + uiOx;
+				int y = 580 + uiOy;
+				int lineH = 28;
+
+				if (battleItemIds.empty()) {
+					DrawStringToHandle(
+						x, y,
+						"つかえる どうぐ が ない",
+						GetColor(200, 200, 255),
+						LargeFont);
+				}
+				else {
+					int n = static_cast<int>(battleItemIds.size());
+					for (int i = 0; i < n; ++i) {
+						int id = battleItemIds[i];
+						auto it = owned.find(id);
+						const char* name = (it != owned.end()) ? it->second.GetName().c_str() : "???";
+
+						char line[128];
+#if defined(_MSC_VER)
+						sprintf_s(line, "%s", name);
+#else
+						snprintf(line, sizeof(line), "%s", name);
+#endif
+
+						// 選択中かどうか
+						int color = GetColor(255, 255, 255);
+						DrawStringToHandle(x + 20, y + i * lineH, line, color, LargeFont);
+
+						if (i == itemCursor && selectImg >= 0) {
+							DrawRotaGraph(
+								x,
+								y + i * lineH + 12,
+								0.05,
+								0,
+								selectImg,
+								TRUE);
+						}
+					}
+				}
 			}
+
 			else if (battleState == BattleState::Message && !currentMessage.empty()) {
 				DrawString(50 + uiOx, 540 + uiOy, currentMessage.c_str(), GetColor(255, 255, 255));
 				DrawString(620 + uiOx, 670 + uiOy, "▼", GetColor(200, 200, 200));
@@ -1735,3 +1873,32 @@ void BattleScene::Finalize() {
 }
 eSceneType BattleScene::GetNowSceneType() const { return eSceneType::eBattle; }
 void BattleScene::SetPlayerPosition(const Vector2D& position) { playerPosition = position; }
+
+
+//--------------------------------------
+// バトル用：使える消費アイテムの一覧を作る
+//--------------------------------------
+void BattleScene::buildBattleItemList() {
+	battleItemIds.clear();
+
+	PlayerData* pd = PlayerData::GetInstance();
+	const auto& owned = pd->GetOwnedItems();
+
+	for (const auto& kv : owned) {
+		const Item& item = kv.second;
+		// 消費アイテムだけリストに入れる
+		if (item.GetType() == ItemType::Consumable) {
+			battleItemIds.push_back(kv.first); // id だけ持つ
+		}
+	}
+
+	if (battleItemIds.empty()) {
+		itemCursor = 0;
+	}
+	else {
+		if (itemCursor < 0)
+			itemCursor = 0;
+		if (itemCursor >= static_cast<int>(battleItemIds.size()))
+			itemCursor = static_cast<int>(battleItemIds.size()) - 1;
+	}
+}
