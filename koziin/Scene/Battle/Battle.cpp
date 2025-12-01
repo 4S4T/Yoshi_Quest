@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <cmath>
 
-// š ’Ç‰ÁFƒŒƒWƒXƒgƒŠ^ŒvZ^AI
+// ï¿½ï¿½ ï¿½Ç‰ï¿½ï¿½Fï¿½ï¿½ï¿½Wï¿½Xï¿½gï¿½ï¿½ï¿½^ï¿½vï¿½Zï¿½^AI
 #include "SpellRegistry.h"
 #include "DamageCalculator.h"
 #include "EnemyAI.h"
@@ -16,19 +16,18 @@
 static const int SCREEN_W = 960;
 static const int SCREEN_H = 720;
 
-// --- std::max ‘ã—piintê—p‚ÌŒy—Ê”Åj---
-//static inline int IMAX(int a, int b) { return (a > b) ? a : b; }
+
 
 
 //--------------------------------------
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^ / ƒfƒXƒgƒ‰ƒNƒ^ / ƒZƒbƒ^[
+// ï¿½Rï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ / ï¿½fï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½^ / ï¿½Zï¿½bï¿½^ï¿½[
 //--------------------------------------
 BattleScene::BattleScene() {}
 BattleScene::~BattleScene() {}
 void BattleScene::SetPlayer(Player* p) { this->player = p; }
 
 //--------------------------------------
-// ƒƒbƒZ[ƒWiè“®‘—‚èj
+// ï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½iï¿½è“®ï¿½ï¿½ï¿½ï¿½j
 //--------------------------------------
 void BattleScene::enqueueMessage(const std::string& text) { messageQueue.push(text); }
 
@@ -58,7 +57,7 @@ void BattleScene::pumpMessageManual() {
 }
 
 //--------------------------------------
-// “Gƒ†[ƒeƒBƒŠƒeƒB
+// ï¿½Gï¿½ï¿½ï¿½[ï¿½eï¿½Bï¿½ï¿½ï¿½eï¿½B
 //--------------------------------------
 int BattleScene::livingEnemyCount() const {
 	int c = 0;
@@ -89,7 +88,7 @@ void BattleScene::onEnemyDefeated(EnemyHandle& e) {
 	e.defeated = true;
 	e.setVisible(false);
 	totalEarnedExp += e.expValue;
-	enqueueMessage(e.displayName + "‚ğ ‚½‚¨‚µ‚½I");
+	enqueueMessage(e.displayName + "ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I");
 }
 void BattleScene::giveAllExpAndExit() {
 	if (totalEarnedExp > 0) {
@@ -99,7 +98,7 @@ void BattleScene::giveAllExpAndExit() {
 }
 
 //--------------------------------------
-// ‘˜‹öFd‚İ’Š‘I • ¶¬i’†‰›Šñ‚¹j{ d•¡–¼‚ÉA/B/Cc•t—^
+// ï¿½ï¿½ï¿½ï¿½ï¿½Fï¿½dï¿½İ’ï¿½ï¿½I ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½iï¿½ï¿½ï¿½ï¿½ï¿½ñ‚¹jï¿½{ ï¿½dï¿½ï¿½ï¿½ï¿½ï¿½ï¿½A/B/Cï¿½cï¿½tï¿½^
 //--------------------------------------
 int BattleScene::chooseEnemyType() const {
 	if (encounter.enemyTypeWeights.empty())
@@ -165,7 +164,7 @@ void BattleScene::spawnEnemiesByEncounter() {
 		EnemyHandle h;
 		if (type == 0) {
 			auto* pea = obj->CreateGameObject<peabird>(Vector2D(x, y));
-			h.name = "ƒgƒŠƒbƒs[";
+			h.name = "ï¿½gï¿½ï¿½ï¿½bï¿½sï¿½[";
 			h.expValue = 100;
 			h.getHp = [pea]() { return pea->GetHp(); };
 			h.getAtk = [pea]() { return pea->GetAttack(); };
@@ -177,7 +176,7 @@ void BattleScene::spawnEnemiesByEncounter() {
 		}
 		else if (type == 1) {
 			auto* tau = obj->CreateGameObject<Taurus>(Vector2D(x, y));
-			h.name = "ƒ^ƒEƒƒX";
+			h.name = "ï¿½^ï¿½Eï¿½ï¿½ï¿½X";
 			h.expValue = 150;
 			h.getHp = [tau]() { return tau->GetHp(); };
 			h.getAtk = [tau]() { return tau->GetAttack(); };
@@ -185,11 +184,11 @@ void BattleScene::spawnEnemiesByEncounter() {
 			h.applyDamage = [tau](int dmg) { tau->SetHp(dmg); };
 			h.setBlink = [tau](float t) { tau->SetBlink(t); };
 			h.setVisible = [tau](bool v) { tau->SetVisible(v); };
-			h.ai = std::make_unique<GuardWhenLowAI>(); // HP’á‰º‚Å–hŒä
+			h.ai = std::make_unique<GuardWhenLowAI>(); // HPï¿½á‰ºï¿½Å–hï¿½ï¿½
 		}
 		else {
 			auto* pea = obj->CreateGameObject<peabird>(Vector2D(x, y));
-			h.name = "ƒgƒŠƒbƒs[";
+			h.name = "ï¿½gï¿½ï¿½ï¿½bï¿½sï¿½[";
 			h.expValue = 100;
 			h.getHp = [pea]() { return pea->GetHp(); };
 			h.getAtk = [pea]() { return pea->GetAttack(); };
@@ -211,12 +210,12 @@ void BattleScene::spawnEnemiesByEncounter() {
 		h.maxHp = hp0;
 		h.dispHp = hp0;
 
-		enemies.push_back(std::move(h)); // š ƒ€[ƒu‚ÅŠi”[
+		enemies.push_back(std::move(h)); // ï¿½ï¿½ ï¿½ï¿½ï¿½[ï¿½uï¿½ÅŠiï¿½[
 	}
 }
 
 //--------------------------------------
-// “¦‘–
+// ï¿½ï¿½ï¿½ï¿½
 //--------------------------------------
 void BattleScene::attemptEscape() {
 	PlayerData* pd = PlayerData::GetInstance();
@@ -249,20 +248,20 @@ void BattleScene::attemptEscape() {
 	int r = GetRand(99);
 	if (r < rate || escapePity >= 2) {
 		escapePity = 0;
-		escapedSuccessfully = true; // š “¦‘–¬Œ÷
-		enqueueMessage("‚æ‚Á‚µ[‚Í ‚É‚°‚¾‚µ‚½I");
+		escapedSuccessfully = true; // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		enqueueMessage("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ ï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I");
 		beginMessages(BattleState::PlayerCommand);
 	}
 	else {
 		escapePity += 1;
-		enqueueMessage("‚µ‚©‚µ ‚Ü‚í‚è‚±‚Ü‚ê‚Ä‚µ‚Ü‚Á‚½I");
-		enqueueMessage("‚É‚°‚ç‚ê‚È‚©‚Á‚½I");
+		enqueueMessage("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ü‚ï¿½è‚±ï¿½Ü‚ï¿½Ä‚ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½I");
+		enqueueMessage("ï¿½É‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I");
 		beginMessages(BattleState::EnemyTurn);
 	}
 }
 
 //--------------------------------------
-// ”íƒ_ƒ‰‰o
+// ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½o
 //--------------------------------------
 void BattleScene::triggerPlayerHit(int damage) {
 	lastDamage = damage;
@@ -276,7 +275,7 @@ void BattleScene::triggerPlayerHit(int damage) {
 	p.y = 80.0f;
 	popups.push_back(p);
 
-	// Ô‚¢ƒXƒvƒ‰ƒbƒVƒ…
+	// ï¿½Ô‚ï¿½ï¿½Xï¿½vï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½
 	HitSplash s;
 	s.timer = s.duration;
 	s.x = p.x + 10.0f;
@@ -312,7 +311,7 @@ void BattleScene::updateHitEffects(float dt) {
 			next.push_back(popups[i]);
 	popups.swap(next);
 
-	// ƒXƒvƒ‰ƒbƒVƒ…XV
+	// ï¿½Xï¿½vï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½Xï¿½V
 	std::vector<HitSplash> ns;
 	ns.reserve(splashes.size());
 	for (auto& s : splashes) {
@@ -333,7 +332,7 @@ void BattleScene::updateHitEffects(float dt) {
 			burstTimer = 0.0f;
 	}
 
-	// UŒ‚ƒY[ƒ€Œ¸Š
+	// ï¿½Uï¿½ï¿½ï¿½Yï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (attackZoomT > 0.0f) {
 		attackZoomT -= dt * attackZoomDecay;
 		if (attackZoomT < 0.0f)
@@ -341,12 +340,12 @@ void BattleScene::updateHitEffects(float dt) {
 	}
 }
 
-// ”íƒ_ƒ‰‰o‚Ì•`‰æiÔƒtƒ‰ƒbƒVƒ…^ƒ_ƒ[ƒWƒ|ƒbƒv^ƒXƒvƒ‰ƒbƒVƒ…j
+// ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½Ì•`ï¿½ï¿½iï¿½Ôƒtï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½^ï¿½_ï¿½ï¿½ï¿½[ï¿½Wï¿½|ï¿½bï¿½vï¿½^ï¿½Xï¿½vï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½j
 void BattleScene::drawHitEffects() {
-	// 1) ‰æ–ÊÔƒtƒ‰ƒbƒVƒ…i”í’ej
+	// 1) ï¿½ï¿½ÊÔƒtï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½iï¿½ï¿½eï¿½ï¿½ï¿½j
 	if (hitFlashTimer > 0.0f) {
 		float t = hitFlashTimer / hitFlashDuration; // 1.0 -> 0.0
-		int a = (int)(t * 160);						// “§‰ß
+		int a = (int)(t * 160);						// ï¿½ï¿½ï¿½ï¿½
 		if (a < 0)
 			a = 0;
 		if (a > 255)
@@ -356,12 +355,12 @@ void BattleScene::drawHitEffects() {
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 
-	// 2) ƒ_ƒ[ƒW”’lƒ|ƒbƒv
+	// 2) ï¿½_ï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ï¿½lï¿½|ï¿½bï¿½v
 	if (!popups.empty()) {
-		int font = CreateFontToHandle("‚l‚r ƒSƒVƒbƒN", 18, 4);
+		int font = CreateFontToHandle("ï¿½lï¿½r ï¿½Sï¿½Vï¿½bï¿½N", 18, 4);
 		for (const auto& p : popups) {
-			// c‚èŠÔ‚É‰‚¶‚ÄƒtƒF[ƒh
-			float life = (p.timer <= 0.6f) ? (p.timer / 0.6f) : 1.0f; // 0.6•bŠî€
+			// ï¿½cï¿½èï¿½Ô‚É‰ï¿½ï¿½ï¿½ï¿½Äƒtï¿½Fï¿½[ï¿½h
+			float life = (p.timer <= 0.6f) ? (p.timer / 0.6f) : 1.0f; // 0.6ï¿½bï¿½î€
 			if (life < 0.0f)
 				life = 0.0f;
 			if (life > 1.0f)
@@ -375,15 +374,15 @@ void BattleScene::drawHitEffects() {
 		DeleteFontToHandle(font);
 	}
 
-	// 3) Ô‚¢‰~ƒXƒvƒ‰ƒbƒVƒ…iŠù‘¶ƒwƒ‹ƒpj
+	// 3) ï¿½Ô‚ï¿½ï¿½~ï¿½Xï¿½vï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½iï¿½ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½ï¿½pï¿½j
 	drawHitSplashes();
 }
 
 
-// ÔƒXƒvƒ‰ƒbƒVƒ…•`‰æ
+// ï¿½ÔƒXï¿½vï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½`ï¿½ï¿½
 void BattleScene::drawHitSplashes() {
 	for (const auto& s : splashes) {
-		float t = 1.0f - (s.timer / s.duration); // 0¨1
+		float t = 1.0f - (s.timer / s.duration); // 0ï¿½ï¿½1
 		if (t < 0)
 			t = 0;
 		if (t > 1)
@@ -401,10 +400,10 @@ void BattleScene::drawHitSplashes() {
 }
 
 void BattleScene::startAttackEffect() {
-	worldShakeTimer = worldShakeDuration + 0.05f; // ­‚µ‹­‚ß
+	worldShakeTimer = worldShakeDuration + 0.05f; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	attackFlashTimer = attackFlashDuration;
 	burstTimer = burstDuration;
-	attackZoomT = 1.0f; // ƒY[ƒ€ƒCƒ“ŠJni™X‚É–ß‚éj
+	attackZoomT = 1.0f; // ï¿½Yï¿½[ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Jï¿½nï¿½iï¿½ï¿½ï¿½Xï¿½É–ß‚ï¿½j
 }
 void BattleScene::drawProceduralAttackEffects() {
 	if (attackFlashTimer > 0.0f) {
@@ -443,7 +442,7 @@ void BattleScene::drawProceduralAttackEffects() {
 }
 
 // ===============================
-// š ‘®«ƒGƒtƒFƒNƒgiƒXƒeƒbƒv3j
+// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Gï¿½tï¿½Fï¿½Nï¿½gï¿½iï¿½Xï¿½eï¿½bï¿½v3ï¿½j
 // ===============================
 void BattleScene::startSpellEffect(SpellElement elem, const Vector2D& pos, bool aoe) {
 	spellFxActive = true;
@@ -454,7 +453,7 @@ void BattleScene::startSpellEffect(SpellElement elem, const Vector2D& pos, bool 
 	bolts.clear();
 	shards.clear();
 
-	// ‰ŠúƒXƒ|[ƒ“i—‹E•Xj
+	// ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½|ï¿½[ï¿½ï¿½ï¿½iï¿½ï¿½ï¿½Eï¿½Xï¿½j
 	if (elem == SpellElement::Thunder) {
 		const int n = spellFxAoE ? 6 : 3;
 		for (int i = 0; i < n; ++i) {
@@ -478,7 +477,7 @@ void BattleScene::startSpellEffect(SpellElement elem, const Vector2D& pos, bool 
 			s.x = spellFxPos.x + (float)(GetRand(80) - 40);
 			s.y = spellFxPos.y - (float)(GetRand(40));
 			s.vx = (float)(GetRand(60) - 30) * 0.8f;
-			s.vy = (float)(GetRand(50) + 40) * -1.0f; // ã‚É”ò‚Ô
+			s.vy = (float)(GetRand(50) + 40) * -1.0f; // ï¿½ï¿½É”ï¿½ï¿½
 			shards.push_back(s);
 		}
 	}
@@ -494,16 +493,16 @@ void BattleScene::updateSpellEffects(float dt) {
 		shards.clear();
 		return;
 	}
-	// —‹/•X‚Ìõ–½is
+	// ï¿½ï¿½/ï¿½Xï¿½Ìï¿½ï¿½ï¿½ï¿½iï¿½s
 	for (auto& b : bolts)
 		b.t -= dt;
 	for (auto& s : shards) {
 		s.t -= dt;
 		s.x += s.vx * dt;
 		s.y += s.vy * dt;
-		s.vy += 220.0f * dt; // d—Í‚Á‚Û‚¢
+		s.vy += 220.0f * dt; // ï¿½dï¿½Í‚ï¿½ï¿½Û‚ï¿½
 	}
-	// ƒfƒX‘|œ
+	// ï¿½fï¿½Xï¿½|ï¿½ï¿½
 	if (!bolts.empty()) {
 		std::vector<Bolt> nb;
 		nb.reserve(bolts.size());
@@ -526,13 +525,13 @@ void BattleScene::drawSpellEffects() {
 	if (!spellFxActive)
 		return;
 
-	float t = 1.0f - (spellFxTimer / spellFxDur); // 0¨1
+	float t = 1.0f - (spellFxTimer / spellFxDur); // 0ï¿½ï¿½1
 	if (t < 0)
 		t = 0;
 	if (t > 1)
 		t = 1;
 
-	// ”Ä—p‚Ì‰~ƒŠƒ“ƒO
+	// ï¿½Ä—pï¿½Ì‰~ï¿½ï¿½ï¿½ï¿½ï¿½O
 	auto ring = [&](int r, int g, int b, float radius, float alpha) {
 		int a = (int)(alpha * 200);
 		if (a < 0)
@@ -552,7 +551,7 @@ void BattleScene::drawSpellEffects() {
 		if (a > 255)
 			a = 255;
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
-		DrawBox(0, 0, 960, 720, GetColor(60, 10, 6), TRUE); // ’gFƒg[ƒ“
+		DrawBox(0, 0, 960, 720, GetColor(60, 10, 6), TRUE); // ï¿½gï¿½Fï¿½gï¿½[ï¿½ï¿½
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
 		float base = spellFxAoE ? 160.0f : 80.0f;
@@ -565,7 +564,7 @@ void BattleScene::drawSpellEffects() {
 		ring(120, 200, 255, base * t, 1.0f);
 		ring(80, 180, 255, base * 0.6f * t, 0.8f);
 		for (auto& s : shards) {
-			float k = s.t / s.life; // 1¨0
+			float k = s.t / s.life; // 1ï¿½ï¿½0
 			int a = (int)(k * 200);
 			SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
 			int x1 = (int)(s.x), y1 = (int)(s.y);
@@ -612,7 +611,7 @@ void BattleScene::drawSpellEffects() {
 }
 
 //--------------------------------------
-// ƒIƒtƒXƒNƒŠ[ƒ“ŠÇ—
+// ï¿½Iï¿½tï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Ç—ï¿½
 //--------------------------------------
 void BattleScene::ensureOffscreen() {
 	if (sceneScreen <= 0) {
@@ -648,7 +647,7 @@ void BattleScene::Initialize() {
 	}
 	player->SetIsBattle(true);
 
-	// ‘˜‹öƒe[ƒuƒ‹—á
+	// ï¿½ï¿½ï¿½ï¿½ï¿½eï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½
 	encounter.minCount = 1;
 	encounter.maxCount = 3;
 	encounter.enemyTypeWeights.clear();
@@ -673,7 +672,7 @@ void BattleScene::Initialize() {
 
 	escapedSuccessfully = false;
 
-	// ƒGƒtƒFƒNƒg‰Šú‰»
+	// ï¿½Gï¿½tï¿½Fï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	hitFlashTimer = 0.0f;
 	uiShakeTimer = 0.0f;
 	lastDamage = 0;
@@ -685,12 +684,12 @@ void BattleScene::Initialize() {
 	enemyTurnQueue.clear();
 	enemyTurnCursor = 0;
 
-	// ƒtƒF[ƒh{ƒY[ƒ€
+	// ï¿½tï¿½Fï¿½[ï¿½hï¿½{ï¿½Yï¿½[ï¿½ï¿½
 	fadeAlpha = 255;
 	fadeState = 1;
 	introZoomT = 0.0f;
 
-	// ƒtƒBƒjƒbƒVƒ…‰‰o
+	// ï¿½tï¿½Bï¿½jï¿½bï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½o
 	victoryTimer = 0.0f;
 	finishZoomT = 0.0f;
 
@@ -701,7 +700,7 @@ void BattleScene::Initialize() {
 
 	isPlayerDefending = false;
 
-	// ƒŠƒUƒ‹ƒg‰Šú‰»
+	// ï¿½ï¿½ï¿½Uï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	resultInitialized = false;
 	resultLines.clear();
 	resultLineIndex = 0;
@@ -709,7 +708,7 @@ void BattleScene::Initialize() {
 	resultTypeTimer = 0.0f;
 	resultGrantDone = false;
 
-	// ”s–k‰Šú‰»
+	// ï¿½sï¿½kï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	defeatInitialized = false;
 	defeatLines.clear();
 	defeatLineIndex = 0;
@@ -717,18 +716,18 @@ void BattleScene::Initialize() {
 	defeatTypeTimer = 0.0f;
 	defeatDarkT = 0.0f;
 
-		//  –‚–@
+		//  ï¿½ï¿½ï¿½@
 	magicCursor = 0;
 	availableMagics = PlayerData::GetInstance()->GetLearnedMagics();
 
-	// šƒAƒCƒeƒ€iƒoƒgƒ‹ŠJn‚ÍƒJ[ƒ\ƒ‹‚ÆƒŠƒXƒg‚ğƒNƒŠƒAj
+	// ï¿½ï¿½ï¿½Aï¿½Cï¿½eï¿½ï¿½ï¿½iï¿½oï¿½gï¿½ï¿½ï¿½Jï¿½nï¿½ï¿½ï¿½ÍƒJï¿½[ï¿½\ï¿½ï¿½ï¿½Æƒï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Aï¿½j
 	itemCursor = 0;
 	battleItemIds.clear();
 }
 
 
 //--------------------------------------
-// ƒY[ƒ€’læ“¾i“±“ü~ƒtƒBƒjƒbƒVƒ…~UŒ‚j
+// ï¿½Yï¿½[ï¿½ï¿½ï¿½lï¿½æ“¾ï¿½iï¿½ï¿½ï¿½ï¿½ï¿½~ï¿½tï¿½Bï¿½jï¿½bï¿½Vï¿½ï¿½ï¿½~ï¿½Uï¿½ï¿½ï¿½j
 //--------------------------------------
 float BattleScene::getCurrentZoom() const {
 	float introZoom = 1.0f;
@@ -754,7 +753,7 @@ float BattleScene::getCurrentZoom() const {
 }
 
 //--------------------------------------
-// Ÿ—˜ƒŠƒUƒ‹ƒgiƒ^ƒCƒvƒ‰ƒCƒ^j
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Uï¿½ï¿½ï¿½gï¿½iï¿½^ï¿½Cï¿½vï¿½ï¿½ï¿½Cï¿½^ï¿½j
 //--------------------------------------
 void BattleScene::initResultScreen() {
 	if (resultInitialized)
@@ -762,8 +761,8 @@ void BattleScene::initResultScreen() {
 	resultInitialized = true;
 
 	resultLines.clear();
-	resultLines.push_back("‚Ü‚à‚Ì‚ğ ‚â‚Á‚Â‚¯‚½I");
-	resultLines.push_back(std::string("‚¯‚¢‚¯‚ñ‚¿ ") + std::to_string(totalEarnedExp) + " ‚ğ ‚¦‚½I");
+	resultLines.push_back("ï¿½Ü‚ï¿½ï¿½Ì‚ï¿½ ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½I");
+	resultLines.push_back(std::string("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ") + std::to_string(totalEarnedExp) + " ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½I");
 
 	resultLineIndex = 0;
 	resultCharIndex = 0;
@@ -796,7 +795,7 @@ void BattleScene::updateResult(float dt) {
 		if (input && input->GetKeyDown(KEY_INPUT_SPACE)) {
 			int len = (int)resultLines[resultLineIndex].size();
 			if (resultCharIndex < len) {
-				resultCharIndex = len; // ‘S•¶•\¦
+				resultCharIndex = len; // ï¿½Sï¿½ï¿½ï¿½\ï¿½ï¿½
 			}
 			else {
 				resultLineIndex++;
@@ -834,7 +833,7 @@ void BattleScene::updateResult(float dt) {
 }
 
 void BattleScene::drawResult() {
-	int LargeFont = CreateFontToHandle("‚l‚r ƒSƒVƒbƒN", 22, 6);
+	int LargeFont = CreateFontToHandle("ï¿½lï¿½r ï¿½Sï¿½Vï¿½bï¿½N", 22, 6);
 
 	int w = 720, h = 220;
 	int x = (SCREEN_W - w) / 2;
@@ -851,7 +850,7 @@ void BattleScene::drawResult() {
 		std::string sub = line.substr(0, (size_t)resultCharIndex);
 		DrawStringToHandle(x + 24, drawY, sub.c_str(), GetColor(255, 255, 255), LargeFont);
 		if ((int)sub.size() == (int)line.size()) {
-			DrawStringToHandle(x + w - 40, y + h - 32, "¥", GetColor(200, 200, 200), LargeFont);
+			DrawStringToHandle(x + w - 40, y + h - 32, "ï¿½ï¿½", GetColor(200, 200, 200), LargeFont);
 		}
 	}
 
@@ -870,8 +869,8 @@ bool BattleScene::grantExpAndMaybeRebuildResultLines() {
 
 	if (afterLv > beforeLv) {
 		std::vector<std::string> lvLines;
-		lvLines.push_back("ƒŒƒxƒ‹‚ª ‚ ‚ª‚Á‚½I");
-		lvLines.push_back(std::string("ƒŒƒxƒ‹ ") + std::to_string(afterLv) + " ‚É ‚È‚Á‚½I");
+		lvLines.push_back("ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I");
+		lvLines.push_back(std::string("ï¿½ï¿½ï¿½xï¿½ï¿½ ") + std::to_string(afterLv) + " ï¿½ï¿½ ï¿½È‚ï¿½ï¿½ï¿½ï¿½I");
 		resultLines = lvLines;
 		return true;
 	}
@@ -879,7 +878,7 @@ bool BattleScene::grantExpAndMaybeRebuildResultLines() {
 }
 
 //--------------------------------------
-// š”s–kƒŠƒUƒ‹ƒg
+// ï¿½ï¿½ï¿½sï¿½kï¿½ï¿½ï¿½Uï¿½ï¿½ï¿½g
 //--------------------------------------
 void BattleScene::initDefeatScreen() {
 	if (defeatInitialized)
@@ -887,8 +886,8 @@ void BattleScene::initDefeatScreen() {
 	defeatInitialized = true;
 
 	defeatLines.clear();
-	defeatLines.push_back("‚æ‚Á‚µ[‚Í ‚¿‚©‚ç‚Â‚«‚½c");
-	defeatLines.push_back("‚ß‚Ì‚Ü‚¦‚ª ‚Ü‚Á‚­‚ç‚É ‚È‚Á‚½I");
+	defeatLines.push_back("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â‚ï¿½ï¿½ï¿½ï¿½c");
+	defeatLines.push_back("ï¿½ß‚Ì‚Ü‚ï¿½ï¿½ï¿½ ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½È‚ï¿½ï¿½ï¿½ï¿½I");
 
 	defeatLineIndex = 0;
 	defeatCharIndex = 0;
@@ -946,7 +945,7 @@ void BattleScene::drawDefeat() {
 	DrawBox(0, 0, SCREEN_W, SCREEN_H, GetColor(80, 0, 0), TRUE);
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	int LargeFont = CreateFontToHandle("‚l‚r ƒSƒVƒbƒN", 22, 6);
+	int LargeFont = CreateFontToHandle("ï¿½lï¿½r ï¿½Sï¿½Vï¿½bï¿½N", 22, 6);
 	int w = 720, h = 220;
 	int x = (SCREEN_W - w) / 2;
 	int y = (SCREEN_H - h) / 2;
@@ -962,7 +961,7 @@ void BattleScene::drawDefeat() {
 		std::string sub = line.substr(0, (size_t)defeatCharIndex);
 		DrawStringToHandle(x + 24, drawY, sub.c_str(), GetColor(255, 220, 220), LargeFont);
 		if ((int)sub.size() == (int)line.size()) {
-			DrawStringToHandle(x + w - 40, y + h - 32, "¥", GetColor(220, 180, 180), LargeFont);
+			DrawStringToHandle(x + w - 40, y + h - 32, "ï¿½ï¿½", GetColor(220, 180, 180), LargeFont);
 		}
 	}
 
@@ -1020,7 +1019,7 @@ eSceneType BattleScene::Update(float delta_second) {
 			commandCursor = (commandCursor + 4) % 5;
 		}
 		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
-			if (commandCursor == 0) { // ‚½‚½‚©‚¤
+			if (commandCursor == 0) { // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				if (livingEnemyCount() > 0) {
 					battleState = BattleState::AttackSelect;
 					int firstIdx = firstLivingIndex();
@@ -1035,13 +1034,13 @@ eSceneType BattleScene::Update(float delta_second) {
 			else if (commandCursor == 1) {
 				battleState = BattleState::MagicMenu;
 			}
-			else if (commandCursor == 2) { // ƒAƒCƒeƒ€
-				// ƒoƒgƒ‹—p‚ÌÁ”ïƒAƒCƒeƒ€ˆê——‚ğì‚é
+			else if (commandCursor == 2) { // ï¿½Aï¿½Cï¿½eï¿½ï¿½
+				// ï¿½oï¿½gï¿½ï¿½ï¿½pï¿½Ìï¿½ï¿½ï¿½Aï¿½Cï¿½eï¿½ï¿½ï¿½ê——ï¿½ï¿½ï¿½ï¿½ï¿½
 				buildBattleItemList();
 
-				// 1‚Â‚à‚È‚¢‚È‚çƒƒbƒZ[ƒW‚ğo‚µ‚ÄƒRƒ}ƒ“ƒh‚É–ß‚é
+				// 1ï¿½Â‚ï¿½ï¿½È‚ï¿½ï¿½È‚çƒï¿½bï¿½Zï¿½[ï¿½Wï¿½ï¿½ï¿½oï¿½ï¿½ï¿½ÄƒRï¿½}ï¿½ï¿½ï¿½hï¿½É–ß‚ï¿½
 				if (battleItemIds.empty()) {
-					enqueueMessage("‚Â‚©‚¦‚é ‚Ç‚¤‚® ‚ª ‚È‚¢I");
+					enqueueMessage("ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç‚ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½È‚ï¿½ï¿½I");
 					beginMessages(BattleState::PlayerCommand);
 				}
 				else {
@@ -1052,7 +1051,7 @@ eSceneType BattleScene::Update(float delta_second) {
 
 			else if (commandCursor == 3) {
 				isPlayerDefending = true;
-				enqueueMessage("‚æ‚Á‚µ[‚Í ‚İ‚ğ ‚Ü‚à‚Á‚Ä‚¢‚éB");
+				enqueueMessage("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ ï¿½İ‚ï¿½ ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B");
 				beginMessages(BattleState::EnemyTurn);
 			}
 			else {
@@ -1065,7 +1064,7 @@ eSceneType BattleScene::Update(float delta_second) {
 	case BattleState::MagicMenu: {
 		const int magicCount = static_cast<int>(availableMagics.size());
 		if (magicCount == 0) {
-			enqueueMessage("‚µ‚©‚µ ‚Ü‚¾ ‚È‚É‚à ‚¨‚Ú‚¦‚Ä‚¢‚È‚¢I");
+			enqueueMessage("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ü‚ï¿½ ï¿½È‚É‚ï¿½ ï¿½ï¿½ï¿½Ú‚ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½I");
 			beginMessages(BattleState::PlayerCommand);
 			break;
 		}
@@ -1084,7 +1083,7 @@ eSceneType BattleScene::Update(float delta_second) {
 
 			const SpellDef* def = FindSpell(pendingMagic);
 			if (!def) {
-				enqueueMessage("‚µ‚©‚µ ‚È‚É‚à ‚¨‚±‚ç‚È‚©‚Á‚½I");
+				enqueueMessage("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½È‚É‚ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I");
 				beginMessages(BattleState::PlayerCommand);
 				break;
 			}
@@ -1093,21 +1092,21 @@ eSceneType BattleScene::Update(float delta_second) {
 			PlayerData* pd = PlayerData::GetInstance();
 			if (def->isHealing) {
 				if (!pd->HasMp(cost)) {
-					enqueueMessage("MP‚ª ‚½‚è‚È‚¢I");
+					enqueueMessage("MPï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½I");
 					beginMessages(BattleState::PlayerCommand);
 					break;
 				}
 				pd->ConsumeMp(cost);
-				enqueueMessage("MP‚ğ " + std::to_string(cost) + " ‚µ‚å‚¤‚Ğ‚µ‚½I");
-				enqueueMessage(std::string("‚æ‚Á‚µ[‚Í ") + def->name + "‚ğ ‚Æ‚È‚¦‚½I");
+				enqueueMessage("MPï¿½ï¿½ " + std::to_string(cost) + " ï¿½ï¿½ï¿½å‚¤ï¿½Ğ‚ï¿½ï¿½ï¿½ï¿½I");
+				enqueueMessage(std::string("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ ") + def->name + "ï¿½ï¿½ ï¿½Æ‚È‚ï¿½ï¿½ï¿½ï¿½I");
 
 				int heal = CalcHealingAmount(*def, pd->GetLevel());
 				pd->SetHp(pd->GetHp() + heal);
 
-				// š ‰ñ•œ‚Ì‘®«ƒGƒtƒFƒNƒg
+				// ï¿½ï¿½ ï¿½ñ•œ‚Ì‘ï¿½ï¿½ï¿½ï¿½Gï¿½tï¿½Fï¿½Nï¿½g
 				startSpellEffect(def->element, Vector2D(90.0f, 80.0f), /*aoe=*/false);
 
-				enqueueMessage("HP‚ª ‚©‚¢‚Ó‚­‚µ‚½I");
+				enqueueMessage("HPï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ó‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I");
 				beginMessages(BattleState::EnemyTurn);
 				break;
 			}
@@ -1145,20 +1144,20 @@ eSceneType BattleScene::Update(float delta_second) {
 
 			const SpellDef* def = FindSpell(pendingMagic);
 			if (!def) {
-				enqueueMessage("‚µ‚©‚µ ‚È‚É‚à ‚¨‚±‚ç‚È‚©‚Á‚½I");
+				enqueueMessage("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½È‚É‚ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I");
 				beginMessages(BattleState::PlayerCommand);
 				break;
 			}
 			int cost = def->mpCost;
 
 			if (!pd->HasMp(cost)) {
-				enqueueMessage("MP‚ª ‚½‚è‚È‚¢I");
+				enqueueMessage("MPï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½I");
 				beginMessages(BattleState::PlayerCommand);
 				break;
 			}
 			pd->ConsumeMp(cost);
-			enqueueMessage("MP‚ğ " + std::to_string(cost) + " ‚µ‚å‚¤‚Ğ‚µ‚½I");
-			enqueueMessage(std::string("‚æ‚Á‚µ[‚Í ") + def->name + "‚ğ ‚Æ‚È‚¦‚½I");
+			enqueueMessage("MPï¿½ï¿½ " + std::to_string(cost) + " ï¿½ï¿½ï¿½å‚¤ï¿½Ğ‚ï¿½ï¿½ï¿½ï¿½I");
+			enqueueMessage(std::string("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ ") + def->name + "ï¿½ï¿½ ï¿½Æ‚È‚ï¿½ï¿½ï¿½ï¿½I");
 
 			CalcContext ctx;
 			ctx.attackerAtk = pd->GetAttack();
@@ -1171,18 +1170,18 @@ eSceneType BattleScene::Update(float delta_second) {
 					ctx.defenderDef = en.getDef();
 					int actual = CalcSpellDamage(*def, ctx);
 
-					// š ƒK[ƒh’†‚È‚ç”¼Œ¸
+					// ï¿½ï¿½ ï¿½Kï¿½[ï¿½hï¿½ï¿½ï¿½È‚ç”¼ï¿½ï¿½
 					if (en.isGuarding) {
 						actual = (actual + 1) / 2;
-						enqueueMessage(en.displayName + "‚Í ƒK[ƒh‚µ‚Ä‚¢‚éI ƒ_ƒ[ƒW‚ª ‚Ö‚Á‚½I");
+						enqueueMessage(en.displayName + "ï¿½ï¿½ ï¿½Kï¿½[ï¿½hï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½I ï¿½_ï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ ï¿½Ö‚ï¿½ï¿½ï¿½ï¿½I");
 					}
 
 					en.applyDamage(actual);
-					enqueueMessage(en.displayName + "‚É " + std::to_string(actual) + " ‚Ì ƒ_ƒ[ƒWI");
+					enqueueMessage(en.displayName + "ï¿½ï¿½ " + std::to_string(actual) + " ï¿½ï¿½ ï¿½_ï¿½ï¿½ï¿½[ï¿½Wï¿½I");
 					if (en.getHp() <= 0)
 						onEnemyDefeated(en);
 				}
-				// ‰‰oi‘S‘Ìj
+				// ï¿½ï¿½ï¿½oï¿½iï¿½Sï¿½Ìj
 				startAttackEffect();
 				effectPos = Vector2D(600.0f, 340.0f);
 				startSpellEffect(def->element, effectPos, /*aoe=*/true);
@@ -1198,18 +1197,18 @@ eSceneType BattleScene::Update(float delta_second) {
 				ctx.defenderDef = e.getDef();
 				int actual = CalcSpellDamage(*def, ctx);
 
-				// š ƒK[ƒh’†‚È‚ç”¼Œ¸
+				// ï¿½ï¿½ ï¿½Kï¿½[ï¿½hï¿½ï¿½ï¿½È‚ç”¼ï¿½ï¿½
 				if (e.isGuarding) {
 					actual = (actual + 1) / 2;
-					enqueueMessage(e.displayName + "‚Í ƒK[ƒh‚µ‚Ä‚¢‚éI ƒ_ƒ[ƒW‚ª ‚Ö‚Á‚½I");
+					enqueueMessage(e.displayName + "ï¿½ï¿½ ï¿½Kï¿½[ï¿½hï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½I ï¿½_ï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ ï¿½Ö‚ï¿½ï¿½ï¿½ï¿½I");
 				}
 
 				e.applyDamage(actual);
-				enqueueMessage(e.displayName + "‚É " + std::to_string(actual) + " ‚Ì ƒ_ƒ[ƒWI");
+				enqueueMessage(e.displayName + "ï¿½ï¿½ " + std::to_string(actual) + " ï¿½ï¿½ ï¿½_ï¿½ï¿½ï¿½[ï¿½Wï¿½I");
 				if (e.getHp() <= 0)
 					onEnemyDefeated(e);
 
-				// ‰‰oi’P‘Ìj
+				// ï¿½ï¿½ï¿½oï¿½iï¿½Pï¿½Ìj
 				startAttackEffect();
 				effectPos = Vector2D((float)e.x, (float)(e.y - 10.0f));
 				startSpellEffect(def->element, effectPos, /*aoe=*/false);
@@ -1222,14 +1221,14 @@ eSceneType BattleScene::Update(float delta_second) {
 		case BattleState::ItemMenu: {
 		const int itemCount = static_cast<int>(battleItemIds.size());
 
-		// ”O‚Ì‚½‚ßAƒŠƒXƒg‚ª‹ó‚È‚ç‘¦I—¹
+		// ï¿½Oï¿½Ì‚ï¿½ï¿½ßAï¿½ï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½ï¿½È‚ç‘¦ï¿½Iï¿½ï¿½
 		if (itemCount == 0) {
-			enqueueMessage("‚Â‚©‚¦‚é ‚Ç‚¤‚® ‚ª ‚È‚¢I");
+			enqueueMessage("ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç‚ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½È‚ï¿½ï¿½I");
 			beginMessages(BattleState::PlayerCommand);
 			break;
 		}
 
-		// ã‰º‚ÅƒJ[ƒ\ƒ‹ˆÚ“®
+		// ï¿½ã‰ºï¿½ÅƒJï¿½[ï¿½\ï¿½ï¿½ï¿½Ú“ï¿½
 		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
 			itemCursor = (itemCursor + 1) % itemCount;
 		}
@@ -1237,25 +1236,25 @@ eSceneType BattleScene::Update(float delta_second) {
 			itemCursor = (itemCursor + itemCount - 1) % itemCount;
 		}
 
-		// ESC ‚ÅƒRƒ}ƒ“ƒh‚É–ß‚é
+		// ESC ï¿½ÅƒRï¿½}ï¿½ï¿½ï¿½hï¿½É–ß‚ï¿½
 		if (input->GetKeyDown(KEY_INPUT_ESCAPE)) {
 			battleState = BattleState::PlayerCommand;
 			break;
 		}
 
-		// SPACE ‚ÅƒAƒCƒeƒ€g—p
+		// SPACE ï¿½ÅƒAï¿½Cï¿½eï¿½ï¿½ï¿½gï¿½p
 		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
 			PlayerData* pd = PlayerData::GetInstance();
 			const auto& owned = pd->GetOwnedItems();
 
-			// Œ»İƒJ[ƒ\ƒ‹‚ªw‚µ‚Ä‚¢‚éƒAƒCƒeƒ€ID
+			// ï¿½ï¿½ï¿½İƒJï¿½[ï¿½\ï¿½ï¿½ï¿½ï¿½ï¿½wï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½Aï¿½Cï¿½eï¿½ï¿½ID
 			int id = battleItemIds[itemCursor];
 
-			// ”O‚Ì‚½‚ßŠƒ`ƒFƒbƒN
+			// ï¿½Oï¿½Ì‚ï¿½ï¿½ßï¿½ï¿½ï¿½ï¿½`ï¿½Fï¿½bï¿½N
 			auto it = owned.find(id);
 			if (it == owned.end()) {
 				buildBattleItemList();
-				enqueueMessage("‚»‚Ì ‚Ç‚¤‚® ‚Í ‚à‚¤ ‚È‚¢I");
+				enqueueMessage("ï¿½ï¿½ï¿½ï¿½ ï¿½Ç‚ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½È‚ï¿½ï¿½I");
 				beginMessages(BattleState::PlayerCommand);
 				break;
 			}
@@ -1268,31 +1267,31 @@ eSceneType BattleScene::Update(float delta_second) {
 			if (used) {
 				char buf[128];
 #if defined(_MSC_VER)
-				sprintf_s(buf, "%s ‚ğ ‚Â‚©‚Á‚½I", name.c_str());
+				sprintf_s(buf, "%s ï¿½ï¿½ ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I", name.c_str());
 #else
-				snprintf(buf, sizeof(buf), "%s ‚ğ ‚Â‚©‚Á‚½I", name.c_str());
+				snprintf(buf, sizeof(buf), "%s ï¿½ï¿½ ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I", name.c_str());
 #endif
 				enqueueMessage(buf);
 
 				if (heal > 0) {
 					char buf2[128];
 #if defined(_MSC_VER)
-					sprintf_s(buf2, "HP‚ª %d ‚©‚¢‚Ó‚­‚µ‚½I", heal);
+					sprintf_s(buf2, "HPï¿½ï¿½ %d ï¿½ï¿½ï¿½ï¿½ï¿½Ó‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I", heal);
 #else
-					snprintf(buf2, sizeof(buf2), "HP‚ª %d ‚©‚¢‚Ó‚­‚µ‚½I", heal);
+					snprintf(buf2, sizeof(buf2), "HPï¿½ï¿½ %d ï¿½ï¿½ï¿½ï¿½ï¿½Ó‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I", heal);
 #endif
 					enqueueMessage(buf2);
 				}
 
-				// ƒAƒCƒeƒ€‚ğÁ”ï‚µ‚½‚Ì‚ÅƒŠƒXƒg‚ğì‚è’¼‚µ
+				// ï¿½Aï¿½Cï¿½eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï‚µï¿½ï¿½ï¿½Ì‚Åƒï¿½ï¿½Xï¿½gï¿½ï¿½ï¿½ï¿½è’¼ï¿½ï¿½
 				buildBattleItemList();
 
-				// ƒ^[ƒ“I—¹ ¨ “Gƒ^[ƒ“‚Ö
+				// ï¿½^ï¿½[ï¿½ï¿½ï¿½Iï¿½ï¿½ ï¿½ï¿½ ï¿½Gï¿½^ï¿½[ï¿½ï¿½ï¿½ï¿½
 				beginMessages(BattleState::EnemyTurn);
 			}
 			else {
-				// HP–ƒ^ƒ“‚È‚Ç‚Å UseItem ‚ª false ‚Ìê‡
-				enqueueMessage("‚¢‚Ü‚Í ‚»‚Ì ‚Ç‚¤‚® ‚Í ‚Â‚©‚¦‚È‚¢I");
+				// HPï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½È‚Ç‚ï¿½ UseItem ï¿½ï¿½ false ï¿½Ìê‡
+				enqueueMessage("ï¿½ï¿½ï¿½Ü‚ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ç‚ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Â‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½I");
 				beginMessages(BattleState::PlayerCommand);
 			}
 		}
@@ -1322,24 +1321,24 @@ eSceneType BattleScene::Update(float delta_second) {
 
 				int actualDamage = CalcPhysicalDamage(cx);
 
-				// š ƒK[ƒh’†‚È‚ç”¼Œ¸
+				// ï¿½ï¿½ ï¿½Kï¿½[ï¿½hï¿½ï¿½ï¿½È‚ç”¼ï¿½ï¿½
 				if (tgt.isGuarding) {
 					actualDamage = (actualDamage + 1) / 2;
-					enqueueMessage(tgt.displayName + "‚Í ƒK[ƒh‚µ‚Ä‚¢‚éI ƒ_ƒ[ƒW‚ª ‚Ö‚Á‚½I");
+					enqueueMessage(tgt.displayName + "ï¿½ï¿½ ï¿½Kï¿½[ï¿½hï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½I ï¿½_ï¿½ï¿½ï¿½[ï¿½Wï¿½ï¿½ ï¿½Ö‚ï¿½ï¿½ï¿½ï¿½I");
 				}
 
 				if (cx.critical) {
-					enqueueMessage("‚©‚¢‚µ‚ñ‚Ì ‚¢‚¿‚°‚«II");
+					enqueueMessage("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½I");
 				}
 
 				tgt.applyDamage(actualDamage);
 				tgt.setBlink(1.0f);
-				enqueueMessage("‚æ‚Á‚µ[‚Ì ‚±‚¤‚°‚«I");
-				enqueueMessage(tgt.displayName + "‚É " + std::to_string(actualDamage) + " ‚Ì ƒ_ƒ[ƒWI");
+				enqueueMessage("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I");
+				enqueueMessage(tgt.displayName + "ï¿½ï¿½ " + std::to_string(actualDamage) + " ï¿½ï¿½ ï¿½_ï¿½ï¿½ï¿½[ï¿½Wï¿½I");
 
 				startAttackEffect();
 				effectPos = Vector2D((float)tgt.x, (float)(tgt.y - 10.0f));
-				// •¨—‚Í’†—§F‚ª—~‚µ‚¯‚ê‚ÎˆÈ‰º‚ğ—LŒø‰»
+				// ï¿½ï¿½ï¿½ï¿½ï¿½Í’ï¿½ï¿½ï¿½ï¿½Fï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎˆÈ‰ï¿½ï¿½ï¿½Lï¿½ï¿½ï¿½ï¿½
 				// startSpellEffect(SpellElement::Neutral, effectPos, false);
 
 				if (tgt.getHp() <= 0 && !tgt.defeated)
@@ -1392,7 +1391,7 @@ eSceneType BattleScene::Update(float delta_second) {
 	}
 
 	case BattleState::EnemyTurn: {
-		// š ‚±‚Ìƒ^[ƒ“‚ÅV‚½‚És“®‚ğŒˆ‚ß‚é‘O‚ÉA‘Sˆõ‚ÌƒK[ƒh‚ğ‰ğœ
+		// ï¿½ï¿½ ï¿½ï¿½ï¿½Ìƒ^ï¿½[ï¿½ï¿½ï¿½ÅVï¿½ï¿½ï¿½Ésï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½Oï¿½ÉAï¿½Sï¿½ï¿½ï¿½ÌƒKï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (enemyTurnQueue.empty()) {
 			for (auto& e : enemies)
 				e.isGuarding = false;
@@ -1438,17 +1437,17 @@ eSceneType BattleScene::Update(float delta_second) {
 
 				int dmg = act.damage;
 				if (isPlayerDefending) {
-					dmg = (dmg + 1) / 2; // ƒvƒŒƒCƒ„[–hŒä’†‚Í”¼Œ¸
+					dmg = (dmg + 1) / 2; // ï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½hï¿½ä’†ï¿½Í”ï¿½ï¿½ï¿½
 				}
 
 				if (dmg <= 0) {
-					// š –hŒä^—lqŒ©FŸ‚ÌƒvƒŒƒCƒ„[s“®‚Ü‚Å”íƒ_ƒ”¼Œ¸
+					// ï¿½ï¿½ ï¿½hï¿½ï¿½^ï¿½lï¿½qï¿½ï¿½ï¿½Fï¿½ï¿½ï¿½Ìƒvï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½sï¿½ï¿½ï¿½Ü‚Å”ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					e.isGuarding = true;
-					enqueueMessage(e.displayName + "‚Í ‚İ‚ğ ‚Ü‚à‚Á‚Ä‚¢‚éB");
+					enqueueMessage(e.displayName + "ï¿½ï¿½ ï¿½İ‚ï¿½ ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B");
 				}
 				else {
-					enqueueMessage(e.displayName + "‚Ì ‚±‚¤‚°‚«I");
-					enqueueMessage("‚æ‚Á‚µ[‚É " + std::to_string(dmg) + " ‚Ì ƒ_ƒ[ƒWI");
+					enqueueMessage(e.displayName + "ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½I");
+					enqueueMessage("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ " + std::to_string(dmg) + " ï¿½ï¿½ ï¿½_ï¿½ï¿½ï¿½[ï¿½Wï¿½I");
 					pd->SetHp(pd->GetHp() - dmg);
 					if (dmg > 0)
 						triggerPlayerHit(dmg);
@@ -1499,15 +1498,15 @@ eSceneType BattleScene::Update(float delta_second) {
 	}
 	}
 
-	// UŒ‚/”íƒ_ƒ‰‰o‚È‚Ç
+	// ï¿½Uï¿½ï¿½/ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½È‚ï¿½
 	updateHitEffects(delta_second);
-	// š ‘®«ƒGƒtƒFƒNƒgXV
+	// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Gï¿½tï¿½Fï¿½Nï¿½gï¿½Xï¿½V
 	updateSpellEffects(delta_second);
 
-	// “GHP•\¦‚Ì’Ç]
+	// ï¿½GHPï¿½\ï¿½ï¿½ï¿½Ì’Ç]
 	updateEnemyHpDisplays(delta_second);
 
-	// š“¦‘–¬Œ÷FƒƒbƒZ[ƒW‚ğ”²‚¯‚½‚ç‘¦ƒ}ƒbƒv‚Ö
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Fï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½ğ”²‚ï¿½ï¿½ï¿½ï¿½ç‘¦ï¿½}ï¿½bï¿½vï¿½ï¿½
 	if (escapedSuccessfully && battleState != BattleState::Message) {
 		return eSceneType::eMap;
 	}
@@ -1516,7 +1515,7 @@ eSceneType BattleScene::Update(float delta_second) {
 	return GetNowSceneType();
 }
 
-// “GHP ‹Šo’Ç]
+// ï¿½GHP ï¿½ï¿½ï¿½oï¿½Ç]
 void BattleScene::updateEnemyHpDisplays(float dt) {
 	for (auto& e : enemies) {
 		int real = e.getHp();
@@ -1525,7 +1524,7 @@ void BattleScene::updateEnemyHpDisplays(float dt) {
 
 		if (e.dispHp > real) {
 			int diff = e.dispHp - real;
-			int step = (diff / 6 > 1) ? (diff / 6) : 1; // ‰ºŒÀ1
+			int step = (diff / 6 > 1) ? (diff / 6) : 1; // ï¿½ï¿½ï¿½ï¿½1
 			e.dispHp -= step;
 			if (e.dispHp < real)
 				e.dispHp = real;
@@ -1537,7 +1536,7 @@ void BattleScene::updateEnemyHpDisplays(float dt) {
 }
 
 //--------------------------------------
-// DrawiƒIƒtƒXƒNƒŠ[ƒ“‚É•`‚¢‚Ä‚©‚çŠg‘åk¬j
+// Drawï¿½iï¿½Iï¿½tï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½É•`ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½gï¿½ï¿½kï¿½ï¿½ï¿½j
 //--------------------------------------
 void BattleScene::drawWindow(int x, int y, int w, int h, int fillR, int fillG, int fillB) {
 	DrawBox(x, y, x + w, y + h, GetColor(fillR, fillG, fillB), TRUE);
@@ -1547,20 +1546,20 @@ void BattleScene::drawWindow(int x, int y, int w, int h, int fillR, int fillG, i
 void BattleScene::Draw() {
 	GameManager* gm = Singleton<GameManager>::GetInstance();
 
-	// ===== ‚Ü‚¸ƒIƒtƒXƒNƒŠ[ƒ“ =====
+	// ===== ï¿½Ü‚ï¿½ï¿½Iï¿½tï¿½Xï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ =====
 	ensureOffscreen();
 	SetDrawScreen(sceneScreen);
 	ClearDrawScreen();
 
 	gm->Draw();
 
-	// “GHPƒo[•ƒ^[ƒQƒbƒg‹­’²
+	// ï¿½GHPï¿½oï¿½[ï¿½ï¿½ï¿½^ï¿½[ï¿½Qï¿½bï¿½gï¿½ï¿½ï¿½ï¿½
 	for (int i = 0; i < (int)enemies.size(); ++i) {
 		const auto& e = enemies[i];
 		if (e.defeated || e.getHp() <= 0)
 			continue;
 
-		// ƒ^[ƒQƒbƒgÔ˜gi“_–Åj
+		// ï¿½^ï¿½[ï¿½Qï¿½bï¿½gï¿½Ô˜gï¿½iï¿½_ï¿½Åj
 		if ((battleState == BattleState::AttackSelect || battleState == BattleState::MagicTarget) && i == targetCursor) {
 			float s = (sinf(blinkClock * 8.0f) * 0.5f + 0.5f);
 			int a = (int)(120 + 120 * s);
@@ -1576,7 +1575,7 @@ void BattleScene::Draw() {
 			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 		}
 
-		// HPƒo[
+		// HPï¿½oï¿½[
 		const int w = 56;
 		const int h = 6;
 		const int x0 = (int)e.x - w / 2;
@@ -1600,20 +1599,20 @@ void BattleScene::Draw() {
 		DrawBox(x0, y0, x0 + fillW, y0 + h, GetColor(50, 255, 50), TRUE);
 		DrawBox(x0, y0, x0 + w, y0 + h, GetColor(255, 255, 255), FALSE);
 
-		// i”CˆÓjƒK[ƒh’†•\¦
+		// ï¿½iï¿½Cï¿½Ójï¿½Kï¿½[ï¿½hï¿½ï¿½ï¿½\ï¿½ï¿½
 		if (e.isGuarding) {
 			DrawString((int)e.x - 20, (int)e.y - 58, "GUARD", GetColor(180, 220, 255));
 		}
 	}
 
-	// UI—h‚ê
+	// UIï¿½hï¿½ï¿½
 	int uiOx = 0, uiOy = 0;
 	if (uiShakeTimer > 0.0f) {
 		uiOx = (GetRand(4) - 2);
 		uiOy = (GetRand(4) - 2);
 	}
 
-	int LargeFont = CreateFontToHandle("‚l‚r ƒSƒVƒbƒN", 18, 6);
+	int LargeFont = CreateFontToHandle("ï¿½lï¿½r ï¿½Sï¿½Vï¿½bï¿½N", 18, 6);
 
 	if (battleState == BattleState::Result) {
 		drawResult();
@@ -1622,20 +1621,20 @@ void BattleScene::Draw() {
 		drawDefeat();
 	}
 	else {
-		// ¶ãFƒXƒe[ƒ^ƒX˜g
+		// ï¿½ï¿½ï¿½ï¿½Fï¿½Xï¿½eï¿½[ï¿½^ï¿½Xï¿½g
 		drawWindow(20 + uiOx, 20 + uiOy, 180, 190, 0, 0, 64);
 		{
 			bool dangerBlink = (hitFlashTimer > 0.0f);
 			int plateColor = dangerBlink ? GetColor(160, 32, 32) : GetColor(255, 255, 255);
 			DrawBox(37 + uiOx, 10 + uiOy, 112 + uiOx, 40 + uiOy, plateColor, true);
-			DrawString(38 + uiOx, 20 + uiOy, "‚æ‚Á‚µ[", GetColor(0, 0, 0));
+			DrawString(38 + uiOx, 20 + uiOy, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[", GetColor(0, 0, 0));
 
 			PlayerData* pd = PlayerData::GetInstance();
 			DrawFormatStringToHandle(30 + uiOx, 60 + uiOy, GetColor(255, 255, 255), LargeFont, "Lv  : %d", pd->GetLevel());
 			DrawFormatStringToHandle(30 + uiOx, 90 + uiOy, GetColor(255, 255, 255), LargeFont, "HP  : %d", pd->GetHp());
 			DrawFormatStringToHandle(30 + uiOx, 120 + uiOy, GetColor(180, 220, 255), LargeFont, "MP  : %d/%d", pd->GetMp(), pd->GetMaxMp());
 
-			// MPƒo[
+			// MPï¿½oï¿½[
 			{
 				const int bx = 30 + uiOx;
 				const int by = 150 + uiOy;
@@ -1662,14 +1661,14 @@ void BattleScene::Draw() {
 			}
 
 			if (isPlayerDefending) {
-				DrawStringToHandle(30 + uiOx, 170 + uiOy, "‚Ú‚¤‚¬‚å’†", GetColor(200, 200, 255), LargeFont);
+				DrawStringToHandle(30 + uiOx, 170 + uiOy, "ï¿½Ú‚ï¿½ï¿½ï¿½ï¿½å’†", GetColor(200, 200, 255), LargeFont);
 			}
 		}
 
-		// ‰EFƒRƒ}ƒ“ƒh˜g
+		// ï¿½Eï¿½Fï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½g
 		drawWindow(720 + uiOx, 460 + uiOy, 220, 230, 0, 0, 64);
 		{
-			const char* cmds[5] = { "‚½‚½‚©‚¤", "‚¶‚ã‚à‚ñ", "‚Ç‚¤‚®", "‚Ú‚¤‚¬‚å", "‚É‚°‚é" };
+			const char* cmds[5] = { "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½", "ï¿½Ç‚ï¿½ï¿½ï¿½", "ï¿½Ú‚ï¿½ï¿½ï¿½ï¿½ï¿½", "ï¿½É‚ï¿½ï¿½ï¿½" };
 			for (int i = 0; i < 5; ++i) {
 				int y = 480 + i * 40;
 				DrawStringToHandle(750 + uiOx, y + uiOy, cmds[i], GetColor(255, 255, 255), LargeFont);
@@ -1679,7 +1678,7 @@ void BattleScene::Draw() {
 			}
 		}
 
-		// ‰º•”FƒƒbƒZ[ƒW˜g
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Fï¿½ï¿½ï¿½bï¿½Zï¿½[ï¿½Wï¿½g
 		drawWindow(20 + uiOx, 520 + uiOy, 680, 170, 0, 0, 64);
 		{
 			if (battleState == BattleState::AttackSelect) {
@@ -1688,7 +1687,7 @@ void BattleScene::Draw() {
 					const auto& e = enemies[i];
 					if (e.defeated || e.getHp() <= 0)
 						continue;
-					DrawStringToHandle(50 + uiOx, y + uiOy, (e.displayName + " ‚ğ ‚±‚¤‚°‚«").c_str(), GetColor(255, 255, 255), LargeFont);
+					DrawStringToHandle(50 + uiOx, y + uiOy, (e.displayName + " ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½").c_str(), GetColor(255, 255, 255), LargeFont);
 					if (i == targetCursor && selectImg >= 0) {
 						DrawRotaGraph(30 + uiOx, y + 12 + uiOy, 0.05, 0, selectImg, TRUE);
 					}
@@ -1704,7 +1703,7 @@ void BattleScene::Draw() {
 #else
 				snprintf(mpbuf, sizeof(mpbuf), "MP: %d / %d", pd->GetMp(), pd->GetMaxMp());
 #endif
-				DrawStringToHandle(50 + uiOx, 540 + uiOy, "‚¶‚ã‚à‚ñ‚ğ ‚¦‚ç‚ñ‚Å‚­‚¾‚³‚¢B  SPACE: Œˆ’è / ESC: ‚à‚Ç‚é", GetColor(200, 200, 200), LargeFont);
+				DrawStringToHandle(50 + uiOx, 540 + uiOy, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B  SPACE: ï¿½ï¿½ï¿½ï¿½ / ESC: ï¿½ï¿½ï¿½Ç‚ï¿½", GetColor(200, 200, 200), LargeFont);
 				DrawStringToHandle(50 + uiOx + 520, 540 + uiOy, mpbuf, GetColor(180, 220, 255), LargeFont);
 
 				int x = 50 + uiOx;
@@ -1712,13 +1711,13 @@ void BattleScene::Draw() {
 				int lineH = 28;
 
 				if (availableMagics.empty()) {
-					DrawStringToHandle(x, y, "‚µ‚©‚µ ‚Ü‚¾ ‚È‚É‚à ‚¨‚Ú‚¦‚Ä‚¢‚È‚¢I", GetColor(200, 200, 255), LargeFont);
+					DrawStringToHandle(x, y, "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ü‚ï¿½ ï¿½È‚É‚ï¿½ ï¿½ï¿½ï¿½Ú‚ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½I", GetColor(200, 200, 255), LargeFont);
 				}
 				else {
 					for (int i = 0; i < (int)availableMagics.size(); ++i) {
 						PlayerData::MagicType t = availableMagics[i];
 						const SpellDef* def = FindSpell(t);
-						const char* name = def ? def->name : "HHH";
+						const char* name = def ? def->name : "ï¿½Hï¿½Hï¿½H";
 						int cost = def ? def->mpCost : 0;
 
 						char line[128];
@@ -1747,23 +1746,23 @@ void BattleScene::Draw() {
 					const auto& e = enemies[i];
 					if (e.defeated || e.getHp() <= 0)
 						continue;
-					DrawStringToHandle(50 + uiOx, y + uiOy, (e.displayName + " ‚É ‚¶‚ã‚à‚ñ").c_str(), GetColor(255, 255, 255), LargeFont);
+					DrawStringToHandle(50 + uiOx, y + uiOy, (e.displayName + " ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½").c_str(), GetColor(255, 255, 255), LargeFont);
 					if (i == targetCursor && selectImg >= 0) {
 						DrawRotaGraph(30 + uiOx, y + 12 + uiOy, 0.05, 0, selectImg, TRUE);
 					}
 					y += 40;
 				}
-				DrawStringToHandle(50 + uiOx, 670 + uiOy, "SPACE: ‚¯‚Á‚Ä‚¢ / ESC: ‚à‚Ç‚é", GetColor(200, 200, 200), LargeFont);
+				DrawStringToHandle(50 + uiOx, 670 + uiOy, "SPACE: ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ / ESC: ï¿½ï¿½ï¿½Ç‚ï¿½", GetColor(200, 200, 200), LargeFont);
 			}
 			else if (battleState == BattleState::ItemMenu) {
 				PlayerData* pd = PlayerData::GetInstance();
 				const auto& owned = pd->GetOwnedItems();
 
-				// Œ©o‚µ
+				// ï¿½ï¿½ï¿½oï¿½ï¿½
 				DrawStringToHandle(
 					50 + uiOx,
 					540 + uiOy,
-					"‚Ç‚¤‚®  SPACE: ‚Â‚©‚¤ / ESC: ‚à‚Ç‚é",
+					"ï¿½Ç‚ï¿½ï¿½ï¿½  SPACE: ï¿½Â‚ï¿½ï¿½ï¿½ / ESC: ï¿½ï¿½ï¿½Ç‚ï¿½",
 					GetColor(200, 200, 200),
 					LargeFont);
 
@@ -1774,7 +1773,7 @@ void BattleScene::Draw() {
 				if (battleItemIds.empty()) {
 					DrawStringToHandle(
 						x, y,
-						"‚Â‚©‚¦‚é ‚Ç‚¤‚® ‚ª ‚È‚¢",
+						"ï¿½Â‚ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç‚ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½È‚ï¿½",
 						GetColor(200, 200, 255),
 						LargeFont);
 				}
@@ -1792,7 +1791,7 @@ void BattleScene::Draw() {
 						snprintf(line, sizeof(line), "%s", name);
 #endif
 
-						// ‘I‘ğ’†‚©‚Ç‚¤‚©
+						// ï¿½Iï¿½ğ’†‚ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½
 						int color = GetColor(255, 255, 255);
 						DrawStringToHandle(x + 20, y + i * lineH, line, color, LargeFont);
 
@@ -1811,38 +1810,38 @@ void BattleScene::Draw() {
 
 			else if (battleState == BattleState::Message && !currentMessage.empty()) {
 				DrawString(50 + uiOx, 540 + uiOy, currentMessage.c_str(), GetColor(255, 255, 255));
-				DrawString(620 + uiOx, 670 + uiOy, "¥", GetColor(200, 200, 200));
+				DrawString(620 + uiOx, 670 + uiOy, "ï¿½ï¿½", GetColor(200, 200, 200));
 			}
 			else if (battleState == BattleState::PlayerCommand) {
-				DrawStringToHandle(50 + uiOx, 540 + uiOy, "ƒRƒ}ƒ“ƒh‚ğ ‚¦‚ç‚ñ‚Å‚­‚¾‚³‚¢B", GetColor(200, 200, 200), LargeFont);
+				DrawStringToHandle(50 + uiOx, 540 + uiOy, "ï¿½Rï¿½}ï¿½ï¿½ï¿½hï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B", GetColor(200, 200, 200), LargeFont);
 			}
 		}
 
-		// ”íƒ_ƒŒø‰Ê
+		// ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		drawHitEffects();
 
-		// ‰æ‘œ‚È‚µ‚ÌUŒ‚‰‰o
+		// ï¿½æ‘œï¿½È‚ï¿½ï¿½ÌUï¿½ï¿½ï¿½ï¿½ï¿½o
 		drawProceduralAttackEffects();
 
-		// š ‘®«ƒGƒtƒFƒNƒg•`‰æ
+		// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Gï¿½tï¿½Fï¿½Nï¿½gï¿½`ï¿½ï¿½
 		drawSpellEffects();
 
-		// Ÿ—˜ƒeƒLƒXƒgiƒtƒF[ƒhj
+		// ï¿½ï¿½ï¿½ï¿½ï¿½eï¿½Lï¿½Xï¿½gï¿½iï¿½tï¿½Fï¿½[ï¿½hï¿½j
 		if (victoryTimer > 0.0f) {
 			int a = (int)(victoryTimer * 255);
 			if (a > 255)
 				a = 255;
 			if (a < 0)
 				a = 0;
-			int bigFont = CreateFontToHandle("‚l‚r ƒSƒVƒbƒN", 36, 10);
+			int bigFont = CreateFontToHandle("ï¿½lï¿½r ï¿½Sï¿½Vï¿½bï¿½N", 36, 10);
 			SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
-			DrawStringToHandle(SCREEN_W / 2 - 80, SCREEN_H / 2 - 20, "‚µ‚å‚¤‚èI", GetColor(255, 255, 255), bigFont);
+			DrawStringToHandle(SCREEN_W / 2 - 80, SCREEN_H / 2 - 20, "ï¿½ï¿½ï¿½å‚¤ï¿½ï¿½I", GetColor(255, 255, 255), bigFont);
 			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 			DeleteFontToHandle(bigFont);
 		}
 	}
 
-	// ===== ƒY[ƒ€“]‘— =====
+	// ===== ï¿½Yï¿½[ï¿½ï¿½ï¿½]ï¿½ï¿½ =====
 	SetDrawScreen(DX_SCREEN_BACK);
 
 	int wOx = 0, wOy = 0;
@@ -1876,7 +1875,7 @@ void BattleScene::SetPlayerPosition(const Vector2D& position) { playerPosition =
 
 
 //--------------------------------------
-// ƒoƒgƒ‹—pFg‚¦‚éÁ”ïƒAƒCƒeƒ€‚Ìˆê——‚ğì‚é
+// ï¿½oï¿½gï¿½ï¿½ï¿½pï¿½Fï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Cï¿½eï¿½ï¿½ï¿½Ìˆê——ï¿½ï¿½ï¿½ï¿½ï¿½
 //--------------------------------------
 void BattleScene::buildBattleItemList() {
 	battleItemIds.clear();
@@ -1886,9 +1885,9 @@ void BattleScene::buildBattleItemList() {
 
 	for (const auto& kv : owned) {
 		const Item& item = kv.second;
-		// Á”ïƒAƒCƒeƒ€‚¾‚¯ƒŠƒXƒg‚É“ü‚ê‚é
+		// ï¿½ï¿½ï¿½ï¿½Aï¿½Cï¿½eï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½gï¿½É“ï¿½ï¿½ï¿½ï¿½
 		if (item.GetType() == ItemType::Consumable) {
-			battleItemIds.push_back(kv.first); // id ‚¾‚¯‚Â
+			battleItemIds.push_back(kv.first); // id ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		}
 	}
 
