@@ -19,7 +19,6 @@ static const int SCREEN_H = 720;
 // --- std::max 代用（int専用の軽量版）---
 //static inline int IMAX(int a, int b) { return (a > b) ? a : b; }
 
-
 //--------------------------------------
 // コンストラクタ / デストラクタ / セッター
 //--------------------------------------
@@ -378,7 +377,6 @@ void BattleScene::drawHitEffects() {
 	drawHitSplashes();
 }
 
-
 // 赤スプラッシュ描画
 void BattleScene::drawHitSplashes() {
 	for (const auto& s : splashes) {
@@ -442,7 +440,7 @@ void BattleScene::drawProceduralAttackEffects() {
 }
 
 // ===============================
-// ★ 属性エフェクト（ステップ3）
+// 属性エフェクト
 // ===============================
 void BattleScene::startSpellEffect(SpellElement elem, const Vector2D& pos, bool aoe) {
 	spellFxActive = true;
@@ -576,6 +574,10 @@ void BattleScene::drawSpellEffects() {
 	}
 	case SpellElement::Thunder: {
 		int a = (int)((1.0f - t) * 220);
+		if (a < 0)
+			a = 0;
+		if (a > 255)
+			a = 255;
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
 		DrawBox(0, 0, 960, 720, GetColor(255, 255, 255), TRUE);
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
@@ -600,6 +602,10 @@ void BattleScene::drawSpellEffects() {
 		ring(120, 255, 140, base * t, 1.0f);
 		ring(80, 220, 120, base * 0.55f * t, 0.8f);
 		int a = (int)((1.0f - t) * 120);
+		if (a < 0)
+			a = 0;
+		if (a > 255)
+			a = 255;
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, a);
 		DrawBox(0, 0, 960, 720, GetColor(10, 30, 10), TRUE);
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
@@ -719,6 +725,10 @@ void BattleScene::Initialize() {
 	// ★ じゅもんメニュー初期化
 	magicCursor = 0;
 	availableMagics = PlayerData::GetInstance()->GetLearnedMagics();
+
+	// ★ アイテムメニュー初期化（バトル開始時はカーソルとリストをクリア）
+	itemCursor = 0;
+	battleItemIds.clear();
 }
 
 //--------------------------------------
@@ -873,7 +883,7 @@ bool BattleScene::grantExpAndMaybeRebuildResultLines() {
 }
 
 //--------------------------------------
-// ★敗北リザルト
+// 敗北リザルト
 //--------------------------------------
 void BattleScene::initDefeatScreen() {
 	if (defeatInitialized)
@@ -1029,8 +1039,19 @@ eSceneType BattleScene::Update(float delta_second) {
 			else if (commandCursor == 1) {
 				battleState = BattleState::MagicMenu;
 			}
-			else if (commandCursor == 2) {
-				battleState = BattleState::ItemMenu;
+			else if (commandCursor == 2) { // ★ どうぐ
+				// バトル用の最新アイテム一覧を用意
+				buildBattleItemList();
+
+				// 1つもなければメッセージ出してコマンドに戻る
+				if (battleItemIds.empty()) {
+					enqueueMessage("しかし なにも もっていない！");
+					beginMessages(BattleState::PlayerCommand);
+				}
+				else {
+					itemCursor = 0;
+					battleState = BattleState::ItemMenu;
+				}
 			}
 			else if (commandCursor == 3) {
 				isPlayerDefending = true;
@@ -1072,7 +1093,6 @@ eSceneType BattleScene::Update(float delta_second) {
 			}
 			int cost = def->mpCost;
 
-			PlayerData* pd = PlayerData::GetInstance();
 			if (def->isHealing) {
 				if (!pd->HasMp(cost)) {
 					enqueueMessage("MPが たりない！");
@@ -1086,8 +1106,8 @@ eSceneType BattleScene::Update(float delta_second) {
 				int heal = CalcHealingAmount(*def, pd->GetLevel());
 				pd->SetHp(pd->GetHp() + heal);
 
-				// ★ 回復の属性エフェクト
-				startSpellEffect(def->element, Vector2D(90.0f, 80.0f), /*aoe=*/false);
+				// 回復の属性エフェクト
+				startSpellEffect(def->element, Vector2D(90.0f, 80.0f), false);
 
 				enqueueMessage("HPが かいふくした！");
 				beginMessages(BattleState::EnemyTurn);
@@ -1123,8 +1143,6 @@ eSceneType BattleScene::Update(float delta_second) {
 			break;
 		}
 		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
-			PlayerData* pd = PlayerData::GetInstance();
-
 			const SpellDef* def = FindSpell(pendingMagic);
 			if (!def) {
 				enqueueMessage("しかし なにも おこらなかった！");
@@ -1153,7 +1171,7 @@ eSceneType BattleScene::Update(float delta_second) {
 					ctx.defenderDef = en.getDef();
 					int actual = CalcSpellDamage(*def, ctx);
 
-					// ★ ガード中なら半減
+					// ガード中なら半減
 					if (en.isGuarding) {
 						actual = (actual + 1) / 2;
 						enqueueMessage(en.displayName + "は ガードしている！ ダメージが へった！");
@@ -1167,7 +1185,7 @@ eSceneType BattleScene::Update(float delta_second) {
 				// 演出（全体）
 				startAttackEffect();
 				effectPos = Vector2D(600.0f, 340.0f);
-				startSpellEffect(def->element, effectPos, /*aoe=*/true);
+				startSpellEffect(def->element, effectPos, true);
 
 				beginMessages(BattleState::EnemyTurn);
 				break;
@@ -1180,7 +1198,7 @@ eSceneType BattleScene::Update(float delta_second) {
 				ctx.defenderDef = e.getDef();
 				int actual = CalcSpellDamage(*def, ctx);
 
-				// ★ ガード中なら半減
+				// ガード中なら半減
 				if (e.isGuarding) {
 					actual = (actual + 1) / 2;
 					enqueueMessage(e.displayName + "は ガードしている！ ダメージが へった！");
@@ -1194,7 +1212,7 @@ eSceneType BattleScene::Update(float delta_second) {
 				// 演出（単体）
 				startAttackEffect();
 				effectPos = Vector2D((float)e.x, (float)(e.y - 10.0f));
-				startSpellEffect(def->element, effectPos, /*aoe=*/false);
+				startSpellEffect(def->element, effectPos, false);
 			}
 			beginMessages(BattleState::EnemyTurn);
 		}
@@ -1202,13 +1220,82 @@ eSceneType BattleScene::Update(float delta_second) {
 	}
 
 	case BattleState::ItemMenu: {
-		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
-			enqueueMessage("なにも もっていない！");
+		const int itemCount = static_cast<int>(battleItemIds.size());
+
+		// 念のため：リストが空ならコマンドへ戻る
+		if (itemCount == 0) {
+			enqueueMessage("しかし なにも もっていない！");
 			beginMessages(BattleState::PlayerCommand);
+			break;
 		}
+
+		// 上下カーソル移動
+		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+			itemCursor = (itemCursor + 1) % itemCount;
+		}
+		if (input->GetKeyDown(KEY_INPUT_UP)) {
+			itemCursor = (itemCursor + itemCount - 1) % itemCount;
+		}
+
+		// ESCでコマンドに戻る
 		if (input->GetKeyDown(KEY_INPUT_ESCAPE)) {
 			battleState = BattleState::PlayerCommand;
+			break;
 		}
+
+		// SPACEでアイテム使用
+		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
+			const auto& owned = pd->GetOwnedItems();
+
+			// 現在カーソルで選択されているアイテムID
+			int id = battleItemIds[itemCursor];
+
+			// 念のため：所持チェック
+			auto it = owned.find(id);
+			if (it == owned.end()) {
+				buildBattleItemList();
+				enqueueMessage("もう その どうぐ は もっていない！");
+				beginMessages(BattleState::PlayerCommand);
+				break;
+			}
+
+			const Item& item = it->second;
+			const std::string name = item.GetName();
+			const int heal = item.GetHealAmount();
+
+			bool used = pd->UseItem(id);
+			if (used) {
+				char buf[128];
+#if defined(_MSC_VER)
+				sprintf_s(buf, "%s を つかった！", name.c_str());
+#else
+				snprintf(buf, sizeof(buf), "%s を つかった！", name.c_str());
+#endif
+				enqueueMessage(buf);
+
+				if (heal > 0) {
+					char buf2[128];
+#if defined(_MSC_VER)
+					sprintf_s(buf2, "HPが %d かいふくした！", heal);
+#else
+					snprintf(buf2, sizeof(buf2), "HPが %d かいふくした！", heal);
+#endif
+					enqueueMessage(buf2);
+				}
+
+				// アイテム数が変わったのでリスト再構築
+				buildBattleItemList();
+
+				// ターン終了 → 敵ターンへ
+				beginMessages(BattleState::EnemyTurn);
+			}
+			else {
+				// HP満タンなどで UseItem が false の場合
+				enqueueMessage("いまは それを つかえない！");
+				beginMessages(BattleState::PlayerCommand);
+			}
+		}
+
 		break;
 	}
 
@@ -1233,7 +1320,7 @@ eSceneType BattleScene::Update(float delta_second) {
 
 				int actualDamage = CalcPhysicalDamage(cx);
 
-				// ★ ガード中なら半減
+				// ガード中なら半減
 				if (tgt.isGuarding) {
 					actualDamage = (actualDamage + 1) / 2;
 					enqueueMessage(tgt.displayName + "は ガードしている！ ダメージが へった！");
@@ -1353,7 +1440,7 @@ eSceneType BattleScene::Update(float delta_second) {
 				}
 
 				if (dmg <= 0) {
-					// ★ 防御／様子見：次のプレイヤー行動まで被ダメ半減
+					// 防御／様子見：次のプレイヤー行動まで被ダメ半減
 					e.isGuarding = true;
 					enqueueMessage(e.displayName + "は みを まもっている。");
 				}
@@ -1412,7 +1499,7 @@ eSceneType BattleScene::Update(float delta_second) {
 
 	// 攻撃/被ダメ演出など
 	updateHitEffects(delta_second);
-	// ★ 属性エフェクト更新
+	// 属性エフェクト更新
 	updateSpellEffects(delta_second);
 
 	// 敵HP表示の追従
@@ -1541,10 +1628,10 @@ void BattleScene::Draw() {
 			DrawBox(37 + uiOx, 10 + uiOy, 112 + uiOx, 40 + uiOy, plateColor, true);
 			DrawString(38 + uiOx, 20 + uiOy, "よっしー", GetColor(0, 0, 0));
 
-			PlayerData* pd = PlayerData::GetInstance();
-			DrawFormatStringToHandle(30 + uiOx, 60 + uiOy, GetColor(255, 255, 255), LargeFont, "Lv  : %d", pd->GetLevel());
-			DrawFormatStringToHandle(30 + uiOx, 90 + uiOy, GetColor(255, 255, 255), LargeFont, "HP  : %d", pd->GetHp());
-			DrawFormatStringToHandle(30 + uiOx, 120 + uiOy, GetColor(180, 220, 255), LargeFont, "MP  : %d/%d", pd->GetMp(), pd->GetMaxMp());
+			PlayerData* pd2 = PlayerData::GetInstance();
+			DrawFormatStringToHandle(30 + uiOx, 60 + uiOy, GetColor(255, 255, 255), LargeFont, "Lv  : %d", pd2->GetLevel());
+			DrawFormatStringToHandle(30 + uiOx, 90 + uiOy, GetColor(255, 255, 255), LargeFont, "HP  : %d", pd2->GetHp());
+			DrawFormatStringToHandle(30 + uiOx, 120 + uiOy, GetColor(180, 220, 255), LargeFont, "MP  : %d/%d", pd2->GetMp(), pd2->GetMaxMp());
 
 			// MPバー
 			{
@@ -1553,9 +1640,9 @@ void BattleScene::Draw() {
 				const int bw = 120;
 				const int bh = 8;
 				float mpr = 0.0f;
-				const int maxmp = pd->GetMaxMp();
+				const int maxmp = pd2->GetMaxMp();
 				if (maxmp > 0) {
-					mpr = (float)pd->GetMp() / (float)maxmp;
+					mpr = (float)pd2->GetMp() / (float)maxmp;
 					if (mpr < 0.0f)
 						mpr = 0.0f;
 					if (mpr > 1.0f)
@@ -1607,16 +1694,16 @@ void BattleScene::Draw() {
 				}
 			}
 			else if (battleState == BattleState::MagicMenu) {
-				PlayerData* pd = PlayerData::GetInstance();
+				PlayerData* pd3 = PlayerData::GetInstance();
 
 				char mpbuf[64];
 #if defined(_MSC_VER)
-				sprintf_s(mpbuf, "MP: %d / %d", pd->GetMp(), pd->GetMaxMp());
+				sprintf_s(mpbuf, "MP: %d / %d", pd3->GetMp(), pd3->GetMaxMp());
 #else
-				snprintf(mpbuf, sizeof(mpbuf), "MP: %d / %d", pd->GetMp(), pd->GetMaxMp());
+				snprintf(mpbuf, sizeof(mpbuf), "MP: %d / %d", pd3->GetMp(), pd3->GetMaxMp());
 #endif
 				DrawStringToHandle(50 + uiOx, 540 + uiOy, "じゅもんを えらんでください。  SPACE: 決定 / ESC: もどる", GetColor(200, 200, 200), LargeFont);
-				DrawStringToHandle(50 + uiOx + 520, 540 + uiOy, mpbuf, GetColor(180, 220, 255), LargeFont);
+				DrawStringToHandle(570 + uiOx, 540 + uiOy, mpbuf, GetColor(180, 220, 255), LargeFont);
 
 				int x = 50 + uiOx;
 				int y = 580 + uiOy;
@@ -1642,7 +1729,7 @@ void BattleScene::Draw() {
 						if (i == magicCursor) {
 							color = GetColor(255, 255, 0);
 						}
-						else if (!pd->HasMp(cost)) {
+						else if (!pd3->HasMp(cost)) {
 							color = GetColor(160, 160, 160);
 						}
 						DrawStringToHandle(x + 20, y + i * lineH, line, color, LargeFont);
@@ -1667,8 +1754,51 @@ void BattleScene::Draw() {
 				DrawStringToHandle(50 + uiOx, 670 + uiOy, "SPACE: けってい / ESC: もどる", GetColor(200, 200, 200), LargeFont);
 			}
 			else if (battleState == BattleState::ItemMenu) {
-				DrawStringToHandle(50 + uiOx, 540 + uiOy, "どうぐは まだ ない。", GetColor(200, 200, 255), LargeFont);
-				DrawStringToHandle(50 + uiOx, 580 + uiOy, "SPACE: 決定 / ESC: もどる", GetColor(180, 180, 180), LargeFont);
+				PlayerData* pd4 = PlayerData::GetInstance();
+				const auto& owned = pd4->GetOwnedItems();
+
+				DrawStringToHandle(
+					50 + uiOx, 540 + uiOy,
+					"どうぐ  SPACE: つかう / ESC: もどる",
+					GetColor(200, 200, 200),
+					LargeFont);
+
+				int x = 50 + uiOx;
+				int y = 580 + uiOy;
+				int lineH = 28;
+
+				if (battleItemIds.empty()) {
+					DrawStringToHandle(
+						x, y,
+						"しかし なにも もっていない！",
+						GetColor(200, 200, 255),
+						LargeFont);
+				}
+				else {
+					int n = static_cast<int>(battleItemIds.size());
+					for (int i = 0; i < n; ++i) {
+						int id = battleItemIds[i];
+						auto it = owned.find(id);
+						const char* name = (it != owned.end()) ? it->second.GetName().c_str() : "???";
+
+						DrawStringToHandle(
+							x + 20,
+							y + i * lineH,
+							name,
+							GetColor(255, 255, 255),
+							LargeFont);
+
+						if (i == itemCursor && selectImg >= 0) {
+							DrawRotaGraph(
+								x,
+								y + i * lineH + 12,
+								0.05,
+								0,
+								selectImg,
+								TRUE);
+						}
+					}
+				}
 			}
 			else if (battleState == BattleState::Message && !currentMessage.empty()) {
 				DrawString(50 + uiOx, 540 + uiOy, currentMessage.c_str(), GetColor(255, 255, 255));
@@ -1685,7 +1815,7 @@ void BattleScene::Draw() {
 		// 画像なしの攻撃演出
 		drawProceduralAttackEffects();
 
-		// ★ 属性エフェクト描画
+		// 属性エフェクト描画
 		drawSpellEffects();
 
 		// 勝利テキスト（フェード）
@@ -1734,3 +1864,31 @@ void BattleScene::Finalize() {
 }
 eSceneType BattleScene::GetNowSceneType() const { return eSceneType::eBattle; }
 void BattleScene::SetPlayerPosition(const Vector2D& position) { playerPosition = position; }
+
+//--------------------------------------
+// ★ バトル用：所持アイテム一覧を構築する
+//--------------------------------------
+void BattleScene::buildBattleItemList() {
+	battleItemIds.clear();
+
+	PlayerData* pd = PlayerData::GetInstance();
+	const auto& owned = pd->GetOwnedItems();
+
+	for (const auto& kv : owned) {
+		const Item& item = kv.second;
+		// 消費アイテムのみリストに載せる
+		if (item.GetType() == ItemType::Consumable) {
+			battleItemIds.push_back(kv.first); // id を保存
+		}
+	}
+
+	if (battleItemIds.empty()) {
+		itemCursor = 0;
+	}
+	else {
+		if (itemCursor < 0)
+			itemCursor = 0;
+		if (itemCursor >= static_cast<int>(battleItemIds.size()))
+			itemCursor = static_cast<int>(battleItemIds.size()) - 1;
+	}
+}
