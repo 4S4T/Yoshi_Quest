@@ -177,6 +177,7 @@
     <ClInclude Include="Object\Item\Item.h" />
     <ClInclude Include="Object\NPC\NPC.h" />
     <ClInclude Include="Scene\Memu\MemuSene.h" />
+    <ClInclude Include="Utility\SoundManager.h" />
     <ClInclude Include="Scene\Title\Title2.h" />
     <ClInclude Include="Object\Enemy\EnemyType\Taurus.h" />
     <ClInclude Include="Scene\Battle\SpellRegistry.h" />
