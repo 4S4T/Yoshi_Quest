@@ -3,6 +3,8 @@
 #include "DxLib.h"
 #include "../SceneManager.h"
 #include "../../Utility/ResourceManager.h"
+#include"../../Utility/SoundManager.h"
+
 
 Option::Option() 
 {
@@ -12,7 +14,10 @@ Option::~Option()
 {
 }
 
-void Option::Initialize() {
+void Option::Initialize()
+{
+	SoundManager::GetInstance().PlayBGM("Resource/Sounds/Title.mp3");
+
 	ResourceManager* rm = ResourceManager::GetInstance();
 	OptionImage = rm->GetImages("Resource/Images/Option.png", 1, 1, 1, 32, 32)[0];
 }
@@ -37,9 +42,11 @@ void Option::Draw()
 	
 }
 
-void Option::Finalize() 
+void Option::Finalize()
 {
+
 }
+
 
 eSceneType Option::GetNowSceneType() const
 {

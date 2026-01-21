@@ -3,13 +3,13 @@
 #include "DxLib.h"
 #include <algorithm>
 #include <map>
-
 #include "Map.h"
 #include "../Battle/Battle.h"
 #include "../Memu/MemuSene.h"
 #include "../../Object/Item/Item.h"
 #include "../../Utility/InputControl.h"
 #include "../SceneManager.h"
+#include"../../Utility/SoundManager.h"
 #include "../../Object/GameObjectManager.h"
 #include "../../Object/NPC/NPC.h"
 #include "../../Utility/ResourceManager.h"
@@ -151,6 +151,14 @@ void Map::Initialize() {
 
 	GameManager* obj = Singleton<GameManager>::GetInstance();
 
+	SoundManager::GetInstance().PlayBGM("Resource/Sounds/Title.mp3");
+	soubi_Sound = LoadSoundMem("Resource/Sounds/音/選択/装備付け外し.mp3");
+	sentaku_Sound = LoadSoundMem("Resource/Sounds/Cursor.mp3");
+	erabu_Sound=LoadSoundMem("Resource/Sounds/音/選択/選択1.mp3");
+	modoru_Sound = LoadSoundMem("Resource/Sounds/音/選択/cancel.mp3");
+
+
+
 	if (isFirstSpawn) {
 		generate_location = Vector2D(200.0f, 600.0f);
 		isFirstSpawn = false;
@@ -206,6 +214,11 @@ eSceneType Map::Update(float delta_second) {
 		}
 	}
 
+	if (input->GetKeyDown(KEY_INPUT_DOWN) || input->GetKeyDown(KEY_INPUT_UP))
+	{
+		PlaySoundMem(erabu_Sound, DX_PLAYTYPE_NORMAL);
+	}
+
 	// ================== メニュー処理 ==================
 	if (isMenuVisible) {
 		// 「どうぐ」を指していて未構築なら一覧を準備
@@ -223,8 +236,10 @@ eSceneType Map::Update(float delta_second) {
 			int before = menuSelection;
 
 			if (input->GetKeyDown(KEY_INPUT_DOWN))
+				
 				menuSelection = (menuSelection + 1) % menuItemCount;
 			if (input->GetKeyDown(KEY_INPUT_UP))
+				
 				menuSelection = (menuSelection - 1 + menuItemCount) % menuItemCount;
 
 			if (menuSelection != before) {
@@ -246,6 +261,7 @@ eSceneType Map::Update(float delta_second) {
 
 			// Enter：どうぐ/そうび/つよさ/もどる
 			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
+				PlaySoundMem(sentaku_Sound, DX_PLAYTYPE_NORMAL);
 				switch (menuSelection) {
 				case 0: { // どうぐ：右リストに入る
 					if (groupedItems.empty()) {
@@ -286,6 +302,7 @@ eSceneType Map::Update(float delta_second) {
 
 			// ↓：ページ最下段で次ページ先頭へ。末尾では先頭ページ先頭にラップ。
 			if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+
 				int rel = subMenuSelection - listScrollOffset; // 0..VISIBLE_ROWS-1
 				if (subMenuSelection + 1 < (int)groupedItems.size()) {
 					if (rel == VISIBLE_ROWS - 1) {
@@ -307,6 +324,7 @@ eSceneType Map::Update(float delta_second) {
 
 			// ↑：ページ先頭で前ページ末尾へ。先頭では最後ページ末尾にラップ。
 			if (input->GetKeyDown(KEY_INPUT_UP)) {
+				
 				int rel = subMenuSelection - listScrollOffset;
 				if (subMenuSelection > 0) {
 					if (rel == 0) {
@@ -330,6 +348,8 @@ eSceneType Map::Update(float delta_second) {
 
 			// Enter：装備 / 使用（トグル）
 			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
+				//Sound
+				PlaySoundMem(soubi_Sound, DX_PLAYTYPE_NORMAL);
 				const MenuEntry& entry = groupedItems[subMenuSelection];
 				const auto& owned = PlayerData::GetInstance()->GetOwnedItems();
 				auto it = owned.find(entry.representativeId);
@@ -388,6 +408,7 @@ eSceneType Map::Update(float delta_second) {
 
 			// Space / Esc：左メニューへ戻る
 			if (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetKeyDown(KEY_INPUT_ESCAPE)) {
+				PlaySoundMem(modoru_Sound, DX_PLAYTYPE_NORMAL);
 				isSubMenuVisible = false;
 				rightMode = RightMode::None;
 			}
@@ -400,6 +421,7 @@ eSceneType Map::Update(float delta_second) {
 			if (input->GetKeyDown(KEY_INPUT_SPACE) ||
 				input->GetKeyDown(KEY_INPUT_ESCAPE) ||
 				input->GetKeyDown(KEY_INPUT_TAB)) {
+				PlaySoundMem(modoru_Sound, DX_PLAYTYPE_NORMAL);
 				isSubMenuVisible = false;
 				rightMode = RightMode::None;
 				subMenuText.clear();
@@ -410,11 +432,15 @@ eSceneType Map::Update(float delta_second) {
 		// ---------- 右：そうび（EquipSlots：部位一覧） ----------
 		if (rightMode == RightMode::EquipSlots && menuSelection == 1) {
 			if (input->GetKeyDown(KEY_INPUT_DOWN))
+				
 				equipSlotSelection = (equipSlotSelection + 1) % 4;
 			if (input->GetKeyDown(KEY_INPUT_UP))
+				
 				equipSlotSelection = (equipSlotSelection + 3) % 4;
 
 			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
+
+					PlaySoundMem(sentaku_Sound, DX_PLAYTYPE_NORMAL);
 				EquipCategory cat =
 					(equipSlotSelection == 0)	? EquipCategory::Weapon
 					: (equipSlotSelection == 1) ? EquipCategory::Shield
@@ -428,6 +454,7 @@ eSceneType Map::Update(float delta_second) {
 			}
 			// Space/Esc：左へ戻る
 			if (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetKeyDown(KEY_INPUT_ESCAPE)) {
+				PlaySoundMem(modoru_Sound, DX_PLAYTYPE_NORMAL);
 				isSubMenuVisible = false;
 				rightMode = RightMode::None;
 			}
@@ -442,6 +469,7 @@ eSceneType Map::Update(float delta_second) {
 				if (input->GetKeyDown(KEY_INPUT_SPACE) ||
 					input->GetKeyDown(KEY_INPUT_ESCAPE) ||
 					input->GetKeyDown(KEY_INPUT_TAB)) {
+					PlaySoundMem(modoru_Sound, DX_PLAYTYPE_NORMAL);
 					rightMode = RightMode::EquipSlots;
 				}
 				return eSceneType::eMap;
@@ -449,6 +477,7 @@ eSceneType Map::Update(float delta_second) {
 
 			// ↓：ページ最下段で次ページ先頭へ。末尾で先頭ページへラップ。
 			if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+				
 				int rel = equipItemSelection - equipItemScrollOffset;
 				if (equipItemSelection + 1 < (int)equipFiltered.size()) {
 					if (rel == VISIBLE_ROWS - 1) {
@@ -469,6 +498,7 @@ eSceneType Map::Update(float delta_second) {
 
 			// ↑：ページ先頭で前ページ末尾へ。先頭で最後ページ末尾にラップ。
 			if (input->GetKeyDown(KEY_INPUT_UP)) {
+				
 				int rel = equipItemSelection - equipItemScrollOffset;
 				if (equipItemSelection > 0) {
 					if (rel == 0) {
@@ -491,6 +521,7 @@ eSceneType Map::Update(float delta_second) {
 
 			// Enter：装備 / 外す
 			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
+				PlaySoundMem(soubi_Sound, DX_PLAYTYPE_NORMAL);
 				const MenuEntry& entry = equipFiltered[equipItemSelection];
 				auto* pd = PlayerData::GetInstance();
 				EquipCategory cat = entry.category;
@@ -530,9 +561,8 @@ eSceneType Map::Update(float delta_second) {
 			}
 
 			// ★ Space/Esc/Tab：部位一覧に戻る
-			if (input->GetKeyDown(KEY_INPUT_SPACE) ||
-				input->GetKeyDown(KEY_INPUT_ESCAPE) ||
-				input->GetKeyDown(KEY_INPUT_TAB)) {
+			if (input->GetKeyDown(KEY_INPUT_SPACE)) {
+				PlaySoundMem(modoru_Sound, DX_PLAYTYPE_NORMAL);
 				rightMode = RightMode::EquipSlots;
 			}
 
@@ -646,6 +676,7 @@ eSceneType Map::Update(float delta_second) {
 				wasInBattle = true;
 				BattleScene* battleScene = new BattleScene();
 				battleScene->SetPlayer(player);
+				SoundManager::GetInstance().StopBGM();
 				return eSceneType::eBattle;
 			}
 		}
@@ -662,6 +693,7 @@ eSceneType Map::Update(float delta_second) {
 
 	// メニューを開く
 	if (input->GetKeyDown(KEY_INPUT_TAB)) {
+		PlaySoundMem(erabu_Sound, DX_PLAYTYPE_NORMAL);
 		isMenuVisible = true;
 		isSubMenuVisible = false;
 		rightMode = RightMode::None;
@@ -1016,6 +1048,26 @@ std::string Map::BuildItemPreviewText(const Map::MenuEntry& e) {
 void Map::Finalize() {
 	GameManager* obj = Singleton<GameManager>::GetInstance();
 	obj->Finalize();
+
+	if (soubi_Sound != -1) {
+		DeleteSoundMem(soubi_Sound);
+		soubi_Sound = -1;
+	}
+	if (sentaku_Sound != -1) {
+		DeleteSoundMem(sentaku_Sound);
+		sentaku_Sound = -1;
+	}
+	if (erabu_Sound != -1) {
+		DeleteSoundMem(erabu_Sound);
+		erabu_Sound = -1;
+
+	}
+	if (modoru_Sound != -1) {
+		DeleteSoundMem(modoru_Sound);
+		modoru_Sound = -1;
+	}
+
+
 }
 
 // 現在のシーンタイプ
