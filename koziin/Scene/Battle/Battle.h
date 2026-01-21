@@ -114,6 +114,16 @@ private:
 	Vector2D playerPosition;
 	Player* player = nullptr;
 
+	//サウンドエフェクト
+	int erabu_sound = -1;
+	int senntaku_sound = -1;
+	int attack_sound = -1;
+	int damage_sound = -1;
+	int nigeru_sound = -1;
+	int Level_UP_sound = -1;
+
+
+
 	// カーソル
 	int targetCursor = 0;
 	int commandCursor = 0;
@@ -294,7 +304,6 @@ public:
 	void Draw() override;
 	void Finalize() override;
 	eSceneType GetNowSceneType() const override;
-
 	Vector2D generate_location;
 	Vector2D player_location;
 
