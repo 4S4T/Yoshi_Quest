@@ -22,15 +22,10 @@ private:
 	std::vector<std::shared_ptr<NCP>> ncps;
 
 	// ステージ
-	// ★ 今は Book1.csv のみを使用
-	// ★ 将来 CSV を増やす場合はここに追加するだけでOK
-	//   例:
-	//   std::vector<std::string> stageFiles = {
-	//       "Resource/Book1.csv",
-	//       "Resource/stage2.csv",
-	//   };
+	// ★ 必要に応じてファイルを増やす
 	std::vector<std::string> stageFiles = {
-		"Resource/Book1.csv"
+		"Resource/Book1.csv",
+		"Resource/Book2.csv",
 	};
 	int currentStageIndex = 0;
 

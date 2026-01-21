@@ -587,6 +587,46 @@ eSceneType Map::Update(float delta_second) {
 		wasInMenu = false;
 	}
 
+	// === タイル 6・7 に触れたら Book2.csv（stageFiles[1]）へワープ ===
+	{
+		int col = static_cast<int>(player->GetLocation().x / (D_OBJECT_SIZE * 2));
+		int row = static_cast<int>(player->GetLocation().y / (D_OBJECT_SIZE * 2));
+
+		if (row >= 0 && row < (int)mapdata.size() &&
+			col >= 0 && col < (int)mapdata[row].size()) {
+
+			char tile = mapdata[row][col];
+
+			// タイル 6 または 7 の上にいる？
+			if (tile == '6' || tile == '7') {
+				// stageFiles[1] があれば Book2 に飛ぶ
+				if (stageFiles.size() > 1) {
+					currentStageIndex = 1; // Book2.csv
+
+					// マップ再読み込み
+					mapdata = LoadStageMapCSV(stageFiles[currentStageIndex]);
+					player->SetMapData(mapdata);
+
+					// ワープ後の位置（Book2 内のスタート位置に合わせて調整してOK）
+					player->SetLocation(Vector2D(200.0f, 600.0f));
+
+					// NPC は一旦クリア（必要ならここで Book2 用 NPC を追加）
+					ncps.clear();
+
+					// エンカウント状態リセット
+					encounterStepCounter = 0;
+					encounterCooldownTimer = encounterCooldown;
+					lastPlayerPos = player->GetLocation();
+
+					// フェード演出
+					StartFadeIn();
+				}
+
+				return eSceneType::eMap;
+			}
+		}
+	}
+
 	// エンカウント
 	Vector2D currentPos = player->GetLocation();
 	if (encounterCooldownTimer > 0.0f) {
@@ -612,6 +652,7 @@ eSceneType Map::Update(float delta_second) {
 	}
 
 	// マップ遷移ポイント
+	// ※ 今は '4' を遷移には使わないので、transitionPoints は空のまま
 	for (const Vector2D& transitionPoint : transitionPoints) {
 		if (currentPos.DistanceTo(transitionPoint) < D_OBJECT_SIZE) {
 			LoadNextMap();
@@ -983,7 +1024,7 @@ eSceneType Map::GetNowSceneType() const {
 }
 
 // ============================
-// CSV 読み込み（Book1.csv 対応）
+// CSV 読み込み
 // ============================
 std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 	std::ifstream ifs(map_name);
@@ -1038,15 +1079,9 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 
 			row.push_back(c);
 
-			// 衝突フラグ：'3' と '6' を壁扱い
-			collisionRow.push_back(c == '3' || c == '6');
+			// 衝突フラグ：'3' と '4' だけ壁扱い（6,7 は通行可）
+			collisionRow.push_back(c == '3' || c == '4');
 
-			// マップ遷移ポイント（'4'）
-			if (c == '4') {
-				float x = D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * colIdx);
-				float y = D_OBJECT_SIZE + ((D_OBJECT_SIZE * 2) * rowIdx);
-				transitionPoints.push_back(Vector2D(x, y));
-			}
 			colIdx++;
 		}
 
@@ -1075,7 +1110,7 @@ void Map::DrawStageMap() {
 
 			char c = mapdata[i][j];
 
-			// '0'～'9' → 0～9 のタイル番号に変換
+			// '0'?'9' → 0?9 のタイル番号に変換
 			int tileIndex = c - '0';
 			if (tileIndex < 0 || tileIndex > 9) {
 				tileIndex = 0; // 異常値は 0 とみなす
