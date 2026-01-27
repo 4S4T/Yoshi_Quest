@@ -51,8 +51,13 @@ void BattleScene::pumpMessageManual() {
 			return;
 		}
 	}
-	if (input && input->GetKeyDown(KEY_INPUT_SPACE)) {
-		PlaySoundMem(senntaku_sound, DX_PLAYTYPE_NORMAL);
+	bool space = input && input->GetKeyDown(KEY_INPUT_SPACE);
+
+	if (space && CheckSoundMem(senntaku_sound) == 0) {
+		PlaySoundMem(senntaku_sound, DX_PLAYTYPE_BACK);
+	}
+
+	if (space) {
 		currentMessage.clear();
 	}
 }
@@ -247,10 +252,15 @@ void BattleScene::attemptEscape() {
 		rate = 95;
 
 	int r = GetRand(99);
-	if (r < rate || escapePity >= 2) {
+
+	bool escapeSuccess = (r < rate || escapePity >= 2);
+
+	if (escapeSuccess) {
 		escapePity = 0;
-		escapedSuccessfully = true; // ★ 逃走成功
-		PlaySoundMem(nigeru_sound, DX_PLAYTYPE_NORMAL);
+		escapedSuccessfully = true;
+
+		requestSE = nigeru_sound; // ★ 音は予約だけ
+
 		enqueueMessage("よっしーは にげだした！");
 		beginMessages(BattleState::PlayerCommand);
 	}
@@ -260,6 +270,8 @@ void BattleScene::attemptEscape() {
 		enqueueMessage("にげられなかった！");
 		beginMessages(BattleState::EnemyTurn);
 	}
+
+
 }
 
 //--------------------------------------
@@ -648,6 +660,7 @@ void BattleScene::Initialize() {
 	ChangeVolumeSoundMem(500, attack_sound);
 	damage_sound = LoadSoundMem("Resource/Sounds/音/battle/damage2.mp3");
 	ChangeVolumeSoundMem(500, damage_sound);
+	requestSE=LoadSoundMem("Resource/Sounds/音/battle/damage1.mp3");
 	/*Level_UP_sound = LoadSoundMem("Resource/Sounds/音/battle/LevelUP.mp3");*/
 	
 
@@ -1036,16 +1049,22 @@ eSceneType BattleScene::Update(float delta_second) {
 
 	switch (battleState) {
 	case BattleState::PlayerCommand: {
-		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+		
+		bool down = input->GetKeyDown(KEY_INPUT_DOWN);
+		bool up = input->GetKeyDown(KEY_INPUT_UP);
+		bool enter = input->GetKeyDown(KEY_INPUT_SPACE);
+
+		if (down) {
 			commandCursor = (commandCursor + 1) % 5;
-			PlaySoundMem(erabu_sound, DX_PLAYTYPE_NORMAL);
+			PlaySoundMem(erabu_sound, DX_PLAYTYPE_BACK);
 		}
-		if (input->GetKeyDown(KEY_INPUT_UP)) {
+		if (up) {
 			commandCursor = (commandCursor + 4) % 5;
-			PlaySoundMem(erabu_sound, DX_PLAYTYPE_NORMAL);
+			PlaySoundMem(erabu_sound, DX_PLAYTYPE_BACK);
 		}
-		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
-			PlaySoundMem(senntaku_sound, DX_PLAYTYPE_NORMAL);
+		if (enter) {
+			PlaySoundMem(senntaku_sound, DX_PLAYTYPE_BACK);
+
 			if (commandCursor == 0) { // たたかう
 				if (livingEnemyCount() > 0) {
 					battleState = BattleState::AttackSelect;
