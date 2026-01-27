@@ -51,8 +51,13 @@ void BattleScene::pumpMessageManual() {
 			return;
 		}
 	}
-	if (input && input->GetKeyDown(KEY_INPUT_SPACE)) {
-		PlaySoundMem(senntaku_sound, DX_PLAYTYPE_NORMAL);
+	bool space = input && input->GetKeyDown(KEY_INPUT_SPACE);
+
+	if (space && CheckSoundMem(senntaku_sound) == 0) {
+		PlaySoundMem(senntaku_sound, DX_PLAYTYPE_BACK);
+	}
+
+	if (space) {
 		currentMessage.clear();
 	}
 }
@@ -247,10 +252,13 @@ void BattleScene::attemptEscape() {
 		rate = 95;
 
 	int r = GetRand(99);
-	if (r < rate || escapePity >= 2) {
+
+	bool escapeSuccess = (r < rate || escapePity >= 2);
+
+	if (escapeSuccess) {
 		escapePity = 0;
-		escapedSuccessfully = true; // ★ 逃走成功
-		PlaySoundMem(nigeru_sound, DX_PLAYTYPE_NORMAL);
+		escapedSuccessfully = true;
+
 		enqueueMessage("よっしーは にげだした！");
 		beginMessages(BattleState::PlayerCommand);
 	}
@@ -260,6 +268,8 @@ void BattleScene::attemptEscape() {
 		enqueueMessage("にげられなかった！");
 		beginMessages(BattleState::EnemyTurn);
 	}
+
+
 }
 
 //--------------------------------------
@@ -1036,16 +1046,22 @@ eSceneType BattleScene::Update(float delta_second) {
 
 	switch (battleState) {
 	case BattleState::PlayerCommand: {
-		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+		
+		bool down = input->GetKeyDown(KEY_INPUT_DOWN);
+		bool up = input->GetKeyDown(KEY_INPUT_UP);
+		bool enter = input->GetKeyDown(KEY_INPUT_SPACE);
+
+		if (down) {
 			commandCursor = (commandCursor + 1) % 5;
-			PlaySoundMem(erabu_sound, DX_PLAYTYPE_NORMAL);
+			PlaySoundMem(erabu_sound, DX_PLAYTYPE_BACK);
 		}
-		if (input->GetKeyDown(KEY_INPUT_UP)) {
+		if (up) {
 			commandCursor = (commandCursor + 4) % 5;
-			PlaySoundMem(erabu_sound, DX_PLAYTYPE_NORMAL);
+			PlaySoundMem(erabu_sound, DX_PLAYTYPE_BACK);
 		}
-		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
-			PlaySoundMem(senntaku_sound, DX_PLAYTYPE_NORMAL);
+		if (enter) {
+			PlaySoundMem(senntaku_sound, DX_PLAYTYPE_BACK);
+
 			if (commandCursor == 0) { // たたかう
 				if (livingEnemyCount() > 0) {
 					battleState = BattleState::AttackSelect;
@@ -1095,18 +1111,31 @@ eSceneType BattleScene::Update(float delta_second) {
 			break;
 		}
 
-		if (input->GetKeyDown(KEY_INPUT_DOWN))
+		bool up = input->GetKeyDown(KEY_INPUT_UP);
+		bool down = input->GetKeyDown(KEY_INPUT_DOWN);
+		bool move = up || down;
+
+		// ↓
+		if (down)
 			magicCursor = (magicCursor + 1) % magicCount;
-		PlaySoundMem(erabu_sound, DX_PLAYTYPE_NORMAL);
-		if (input->GetKeyDown(KEY_INPUT_UP))
+
+		// ↑
+		if (up)
 			magicCursor = (magicCursor + magicCount - 1) % magicCount;
-		PlaySoundMem(erabu_sound, DX_PLAYTYPE_NORMAL);
 
-		if (input->GetKeyDown(KEY_INPUT_ESCAPE))
+		// 移動音（1回だけ）
+		if (move && CheckSoundMem(erabu_sound) == 0) {
+			PlaySoundMem(erabu_sound, DX_PLAYTYPE_BACK);
+		}
+
+		// 戻る
+		if (input->GetKeyDown(KEY_INPUT_ESCAPE)) {
 			battleState = BattleState::PlayerCommand;
+		}
 
+		// 決定
 		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
-			PlaySoundMem(senntaku_sound, DX_PLAYTYPE_NORMAL);
+			PlaySoundMem(senntaku_sound, DX_PLAYTYPE_BACK);
 			auto magic = availableMagics[magicCursor];
 			pendingMagic = magic;
 
@@ -1153,25 +1182,44 @@ eSceneType BattleScene::Update(float delta_second) {
 	}
 
 	case BattleState::MagicTarget: {
-		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+
+		bool up = input->GetKeyDown(KEY_INPUT_UP);
+		bool down = input->GetKeyDown(KEY_INPUT_DOWN);
+		bool move = up || down;
+		bool enter = input->GetKeyDown(KEY_INPUT_SPACE);
+
+		int before = targetCursor;
+
+		if (down) {
 			int next = nextLivingIndex(targetCursor, +1);
 			if (next >= 0)
 				targetCursor = next;
-			PlaySoundMem(erabu_sound, DX_PLAYTYPE_NORMAL);
 		}
-		if (input->GetKeyDown(KEY_INPUT_UP)) {
+
+		if (up) {
 			int prev = nextLivingIndex(targetCursor, -1);
 			if (prev >= 0)
 				targetCursor = prev;
-			PlaySoundMem(erabu_sound, DX_PLAYTYPE_NORMAL);
 		}
+
+		// ★ カーソルが実際に動いたときだけ音
+		if (move && targetCursor != before &&
+			CheckSoundMem(erabu_sound) == 0) {
+			PlaySoundMem(erabu_sound, DX_PLAYTYPE_BACK);
+		}
+
+		// 戻る
 		if (input->GetKeyDown(KEY_INPUT_ESCAPE)) {
 			battleState = BattleState::MagicMenu;
 			break;
 		}
-		if (input->GetKeyDown(KEY_INPUT_SPACE)) {
-			PlaySoundMem(senntaku_sound, DX_PLAYTYPE_NORMAL);
+
+		// 決定
+		if (enter) {
+			PlaySoundMem(senntaku_sound, DX_PLAYTYPE_BACK);
 			const SpellDef* def = FindSpell(pendingMagic);
+			// ↓ 以降の処理はそのまま
+	
 			if (!def) {
 				enqueueMessage("しかし なにも おこらなかった！");
 				beginMessages(BattleState::PlayerCommand);
@@ -1331,21 +1379,37 @@ eSceneType BattleScene::Update(float delta_second) {
 	}
 
 	case BattleState::AttackSelect: {
-		if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+		bool up = input->GetKeyDown(KEY_INPUT_UP);
+		bool down = input->GetKeyDown(KEY_INPUT_DOWN);
+
+		int before = targetCursor;
+
+		if (down) {
 			int next = nextLivingIndex(targetCursor, +1);
 			if (next >= 0)
 				targetCursor = next;
-			PlaySoundMem(erabu_sound, DX_PLAYTYPE_NORMAL);
 		}
-		if (input->GetKeyDown(KEY_INPUT_UP)) {
+		if (up) {
 			int prev = nextLivingIndex(targetCursor, -1);
 			if (prev >= 0)
 				targetCursor = prev;
+		}
+
+		// ★ 実際に動いたときだけ音
+		if ((up || down) && targetCursor != before) {
 			PlaySoundMem(erabu_sound, DX_PLAYTYPE_NORMAL);
 		}
-		if (input->GetKeyDown(KEY_INPUT_SPACE) && targetCursor >= 0 && targetCursor < (int)enemies.size()) {
-			PlaySoundMem(senntaku_sound, DX_PLAYTYPE_NORMAL);
+
+		if (input->GetKeyDown(KEY_INPUT_SPACE) &&
+			targetCursor >= 0 &&
+			targetCursor < (int)enemies.size()) {
+
+			// ★ 先に鳴らす（ここが重要）
+			PlaySoundMem(attack_sound, DX_PLAYTYPE_NORMAL);
+
 			EnemyHandle& tgt = enemies[targetCursor];
+
+			// 以降は今まで通り
 			if (!tgt.defeated && tgt.getHp() > 0) {
 				CalcContext cx;
 				cx.attackerAtk = pd->GetAttack();
@@ -1354,20 +1418,19 @@ eSceneType BattleScene::Update(float delta_second) {
 
 				int actualDamage = CalcPhysicalDamage(cx);
 
-				// ガード中なら半減
 				if (tgt.isGuarding) {
 					actualDamage = (actualDamage + 1) / 2;
-					enqueueMessage(tgt.displayName + "は ガードしている！ ダメージが へった！");
+					enqueueMessage(tgt.displayName + "は ガードしている！");
 				}
 
 				if (cx.critical) {
 					enqueueMessage("かいしんの いちげき！！");
 				}
 
-				
-				
 				tgt.applyDamage(actualDamage);
-				PlaySoundMem(attack_sound, DX_PLAYTYPE_NORMAL);
+				tgt.setBlink(1.0f);
+			
+
 				tgt.setBlink(1.0f);
 			
 				enqueueMessage("よっしーの こうげき！");
@@ -1483,9 +1546,8 @@ eSceneType BattleScene::Update(float delta_second) {
 					enqueueMessage(e.displayName + "は みを まもっている。");
 				}
 				else {
-					
-					enqueueMessage(e.displayName + "の こうげき！");
 					PlaySoundMem(damage_sound, DX_PLAYTYPE_NORMAL);
+					enqueueMessage(e.displayName + "の こうげき！");
 					enqueueMessage("よっしーに " + std::to_string(dmg) + " の ダメージ！");
 					pd->SetHp(pd->GetHp() - dmg);
 					if (dmg > 0)
@@ -1902,23 +1964,7 @@ void BattleScene::Finalize() {
 	obj->Finalize();
 	releaseOffscreen();
 
-	if (senntaku_sound != -1) {
-		DeleteSoundMem(senntaku_sound);
-		senntaku_sound = -1;
-	}
-	if (erabu_sound != -1) {
-		DeleteSoundMem(erabu_sound);
-		erabu_sound = -1;
-	}
-	if (damage_sound != -1) {
-		DeleteSoundMem(damage_sound);
-		damage_sound = -1;
-	}
-	if (attack_sound != -1) {
-		DeleteSoundMem(attack_sound);
-		attack_sound = -1;
-	}
-
+	
 
 }
 eSceneType BattleScene::GetNowSceneType() const { return eSceneType::eBattle; }
