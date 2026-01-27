@@ -214,10 +214,14 @@ eSceneType Map::Update(float delta_second) {
 		}
 	}
 
-	if (input->GetKeyDown(KEY_INPUT_DOWN) || input->GetKeyDown(KEY_INPUT_UP))
-	{
-		PlaySoundMem(erabu_Sound, DX_PLAYTYPE_NORMAL);
+	bool move =
+		input->GetKeyDown(KEY_INPUT_DOWN) ||
+		input->GetKeyDown(KEY_INPUT_UP);
+
+	if (move && CheckSoundMem(erabu_Sound) == 0) {
+		PlaySoundMem(erabu_Sound, DX_PLAYTYPE_BACK);
 	}
+
 
 	// ================== メニュー処理 ==================
 	if (isMenuVisible) {
@@ -236,11 +240,16 @@ eSceneType Map::Update(float delta_second) {
 			int before = menuSelection;
 
 			if (input->GetKeyDown(KEY_INPUT_DOWN))
-				
+
 				menuSelection = (menuSelection + 1) % menuItemCount;
 			if (input->GetKeyDown(KEY_INPUT_UP))
-				
+
 				menuSelection = (menuSelection - 1 + menuItemCount) % menuItemCount;
+
+			if (move && menuSelection != before &&
+				CheckSoundMem(erabu_Sound) == 0) {
+				PlaySoundMem(erabu_Sound, DX_PLAYTYPE_BACK);
+			}
 
 			if (menuSelection != before) {
 				subMenuText.clear();
@@ -260,8 +269,11 @@ eSceneType Map::Update(float delta_second) {
 			}
 
 			// Enter：どうぐ/そうび/つよさ/もどる
-			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
-				PlaySoundMem(sentaku_Sound, DX_PLAYTYPE_NORMAL);
+			if (input->GetKeyDown(KEY_INPUT_RETURN) &&
+				CheckSoundMem(sentaku_Sound) == 0) {
+				PlaySoundMem(sentaku_Sound, DX_PLAYTYPE_BACK);
+
+
 				switch (menuSelection) {
 				case 0: { // どうぐ：右リストに入る
 					if (groupedItems.empty()) {
@@ -324,7 +336,7 @@ eSceneType Map::Update(float delta_second) {
 
 			// ↑：ページ先頭で前ページ末尾へ。先頭では最後ページ末尾にラップ。
 			if (input->GetKeyDown(KEY_INPUT_UP)) {
-				
+
 				int rel = subMenuSelection - listScrollOffset;
 				if (subMenuSelection > 0) {
 					if (rel == 0) {
@@ -346,10 +358,13 @@ eSceneType Map::Update(float delta_second) {
 				}
 			}
 
-			// Enter：装備 / 使用（トグル）
-			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
-				//Sound
-				PlaySoundMem(soubi_Sound, DX_PLAYTYPE_NORMAL);
+			bool enter = input->GetKeyDown(KEY_INPUT_RETURN);
+
+			if (enter && CheckSoundMem(soubi_Sound) == 0) {
+				PlaySoundMem(soubi_Sound, DX_PLAYTYPE_BACK);
+			}
+
+			if (enter) {
 				const MenuEntry& entry = groupedItems[subMenuSelection];
 				const auto& owned = PlayerData::GetInstance()->GetOwnedItems();
 				auto it = owned.find(entry.representativeId);
@@ -431,144 +446,54 @@ eSceneType Map::Update(float delta_second) {
 
 		// ---------- 右：そうび（EquipSlots：部位一覧） ----------
 		if (rightMode == RightMode::EquipSlots && menuSelection == 1) {
-			if (input->GetKeyDown(KEY_INPUT_DOWN))
-				
+
+			bool up = input->GetKeyDown(KEY_INPUT_UP);
+			bool down = input->GetKeyDown(KEY_INPUT_DOWN);
+			bool move = up || down;
+			bool enter = input->GetKeyDown(KEY_INPUT_RETURN);
+
+			int before = equipSlotSelection;
+
+			if (down)
 				equipSlotSelection = (equipSlotSelection + 1) % 4;
-			if (input->GetKeyDown(KEY_INPUT_UP))
-				
+			if (up)
 				equipSlotSelection = (equipSlotSelection + 3) % 4;
 
-			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
+			// 移動音
+			if (move && equipSlotSelection != before &&
+				CheckSoundMem(erabu_Sound) == 0) {
+				PlaySoundMem(erabu_Sound, DX_PLAYTYPE_BACK);
+			}
 
-					PlaySoundMem(sentaku_Sound, DX_PLAYTYPE_NORMAL);
+			// Enter：部位決定
+			if (enter) {
+				PlaySoundMem(soubi_Sound, DX_PLAYTYPE_BACK);
+
 				EquipCategory cat =
-					(equipSlotSelection == 0)	? EquipCategory::Weapon
-					: (equipSlotSelection == 1) ? EquipCategory::Shield
-					: (equipSlotSelection == 2) ? EquipCategory::Armor
-												: EquipCategory::Helmet;
+					(equipSlotSelection == 0) ? EquipCategory::Weapon : (equipSlotSelection == 1) ? EquipCategory::Shield
+																	: (equipSlotSelection == 2)	  ? EquipCategory::Armor
+																								  : EquipCategory::Helmet;
 
+				// ★ 重い処理はここでは最小限
 				BuildEquipFilteredList(cat);
 				equipItemSelection = 0;
 				equipItemScrollOffset = 0;
-				rightMode = RightMode::EquipItemList; // 候補へ
+				rightMode = RightMode::EquipItemList;
 			}
-			// Space/Esc：左へ戻る
-			if (input->GetKeyDown(KEY_INPUT_SPACE) || input->GetKeyDown(KEY_INPUT_ESCAPE)) {
-				PlaySoundMem(modoru_Sound, DX_PLAYTYPE_NORMAL);
+
+			// 戻る
+			if (input->GetKeyDown(KEY_INPUT_SPACE) ||
+				input->GetKeyDown(KEY_INPUT_ESCAPE)) {
+				PlaySoundMem(modoru_Sound, DX_PLAYTYPE_BACK);
 				isSubMenuVisible = false;
 				rightMode = RightMode::None;
-			}
-			return eSceneType::eMap;
-		}
-
-		// ---------- 右：そうび（EquipItemList：候補一覧） ----------
-		if (rightMode == RightMode::EquipItemList && menuSelection == 1) {
-
-			// ★ 空のとき：Space/Esc/Tab/Enter のどれでも部位一覧へ戻す
-			if (equipFiltered.empty()) {
-				if (input->GetKeyDown(KEY_INPUT_SPACE) ||
-					input->GetKeyDown(KEY_INPUT_ESCAPE) ||
-					input->GetKeyDown(KEY_INPUT_TAB)) {
-					PlaySoundMem(modoru_Sound, DX_PLAYTYPE_NORMAL);
-					rightMode = RightMode::EquipSlots;
-				}
-				return eSceneType::eMap;
-			}
-
-			// ↓：ページ最下段で次ページ先頭へ。末尾で先頭ページへラップ。
-			if (input->GetKeyDown(KEY_INPUT_DOWN)) {
-				
-				int rel = equipItemSelection - equipItemScrollOffset;
-				if (equipItemSelection + 1 < (int)equipFiltered.size()) {
-					if (rel == VISIBLE_ROWS - 1) {
-						int nextOffset = equipItemScrollOffset + VISIBLE_ROWS;
-						int lastOffset = std::max(0, (int)equipFiltered.size() - VISIBLE_ROWS);
-						equipItemScrollOffset = std::min(nextOffset, lastOffset);
-						equipItemSelection = equipItemScrollOffset; // 次ページ先頭
-					}
-					else {
-						equipItemSelection++;
-					}
-				}
-				else {
-					equipItemScrollOffset = 0;
-					equipItemSelection = 0;
-				}
-			}
-
-			// ↑：ページ先頭で前ページ末尾へ。先頭で最後ページ末尾にラップ。
-			if (input->GetKeyDown(KEY_INPUT_UP)) {
-				
-				int rel = equipItemSelection - equipItemScrollOffset;
-				if (equipItemSelection > 0) {
-					if (rel == 0) {
-						int prevOffset = std::max(0, equipItemScrollOffset - VISIBLE_ROWS);
-						equipItemScrollOffset = prevOffset;
-						equipItemSelection = equipItemScrollOffset + VISIBLE_ROWS - 1;
-						if (equipItemSelection >= (int)equipFiltered.size())
-							equipItemSelection = (int)equipFiltered.size() - 1;
-					}
-					else {
-						equipItemSelection--;
-					}
-				}
-				else {
-					int lastOffset = ((int)equipFiltered.size() - 1) / VISIBLE_ROWS * VISIBLE_ROWS;
-					equipItemScrollOffset = std::max(0, lastOffset);
-					equipItemSelection = (int)equipFiltered.size() - 1;
-				}
-			}
-
-			// Enter：装備 / 外す
-			if (input->GetKeyDown(KEY_INPUT_RETURN)) {
-				PlaySoundMem(soubi_Sound, DX_PLAYTYPE_NORMAL);
-				const MenuEntry& entry = equipFiltered[equipItemSelection];
-				auto* pd = PlayerData::GetInstance();
-				EquipCategory cat = entry.category;
-
-				int cur = pd->GetEquippedId(cat);
-				if (cur == entry.representativeId) {
-					pd->Unequip(cat);
-					subMenuText = "外しました： " + entry.name;
-				}
-				else {
-					pd->EquipItem(cat, entry.representativeId);
-					subMenuText = "装備しました： " + entry.name;
-				}
-
-				// 直近操作IDを保持 → 再構築後に同位置へ戻す
-				const int keepId = entry.representativeId;
-				RebuildItemList();
-				BuildEquipFilteredList(cat);
-
-				if (equipFiltered.empty()) {
-					rightMode = RightMode::EquipSlots;
-				}
-				else {
-					int newIndex = std::min(equipItemSelection, (int)equipFiltered.size() - 1);
-					for (int i = 0; i < (int)equipFiltered.size(); ++i) {
-						if (equipFiltered[i].representativeId == keepId) {
-							newIndex = i;
-							break;
-						}
-					}
-					equipItemSelection = newIndex;
-					if (equipItemSelection < equipItemScrollOffset)
-						equipItemScrollOffset = equipItemSelection;
-					if (equipItemSelection >= equipItemScrollOffset + VISIBLE_ROWS)
-						equipItemScrollOffset = std::max(0, equipItemSelection - (VISIBLE_ROWS - 1));
-				}
-			}
-
-			// ★ Space/Esc/Tab：部位一覧に戻る
-			if (input->GetKeyDown(KEY_INPUT_SPACE)) {
-				PlaySoundMem(modoru_Sound, DX_PLAYTYPE_NORMAL);
-				rightMode = RightMode::EquipSlots;
 			}
 
 			return eSceneType::eMap;
 		}
 	}
+
+
 	// ================== メニュー以外 ==================
 
 	// NPC 会話
