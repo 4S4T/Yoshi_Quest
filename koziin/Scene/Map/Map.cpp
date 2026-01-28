@@ -1043,21 +1043,21 @@ std::vector<std::vector<char>> Map::LoadStageMapCSV(std::string map_name) {
 
 			char c;
 			if (pos >= cell.size()) {
-				// 完全に空欄 → '0' とみなす
-				c = '0';
+				// 完全に空欄 → ',' とみなす
+				c = ',';
 			}
 			else {
 				c = cell[pos];
 				// 数字以外が来たら '0' とみなす
 				if (c < '0' || c > '9') {
-					c = '0';
+					c = ',';
 				}
 			}
 
 			row.push_back(c);
 
 			// 衝突フラグ：'3' と '4' だけ壁扱い（6,7 は通行可）
-			collisionRow.push_back(c == '3' || c == '4');
+			collisionRow.push_back(c == '3' || c == '4' || c == ',');
 
 			colIdx++;
 		}
@@ -1086,6 +1086,11 @@ void Map::DrawStageMap() {
 				continue;
 
 			char c = mapdata[i][j];
+
+			//,は描画しない
+			if (c == ',') {
+				continue;
+			}
 
 			// '0'?'9' → 0?9 のタイル番号に変換
 			int tileIndex = c - '0';
