@@ -146,6 +146,11 @@ Map::~Map() {}
 
 // 初期化
 void Map::Initialize() {
+	// ★ここを追加：戦闘から戻ってきた場合は、戦闘前にいたステージに戻す
+	if (wasInBattle) {
+		currentStageIndex = old_stageIndex;
+	}
+
 	// ★ 今のステージ index に対応する CSV を読み込む
 	mapdata = LoadStageMapCSV(stageFiles[currentStageIndex]);
 

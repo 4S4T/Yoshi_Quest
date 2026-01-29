@@ -68,11 +68,11 @@ private:
 	void DrawItemListPanel(int x, int y, int w, int h);
 	std::string BuildItemPreviewText(const MenuEntry& e);
 
-	//サウンド
+	// サウンド
 
 
-	int BGM=-1;
-	int soubi_Sound=-1;
+	int BGM = -1;
+	int soubi_Sound = -1;
 	int sentaku_Sound = -1;
 	int erabu_Sound = -1;
 	int modoru_Sound = -1;
