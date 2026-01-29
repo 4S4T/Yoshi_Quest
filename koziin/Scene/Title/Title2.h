@@ -5,6 +5,7 @@
 class TitleScene2 : public SceneBase {
 private:
 	int cursorSound2 = -1;
+	int cursor_SE = -1;
 
 public:
 	TitleScene2();
@@ -15,6 +16,7 @@ public:
 	int Title_name;
 	int select;
 	int menu_cursor;
+	
 
 	virtual eSceneType Update(float delta_second) override;
 	virtual void Draw() override;
