@@ -12,10 +12,11 @@ void TitleScene2::Initialize() {
 	// ★ Title2でも同じタイトルBGMを使用
 	SoundManager::GetInstance().PlayBGM("Resource/Sounds/Title.mp3");
 	cursorSound2 = LoadSoundMem("Resource/Sounds/Cursor.mp3");
+	cursor_SE = LoadSoundMem("Resource/Sounds/音/選択/選択1.mp3");
 
 	ResourceManager* rm = ResourceManager::GetInstance();
-	TitleImage = rm->GetImages("Resource/Images/Title.jpg", 1, 1, 1, 32, 32)[0];
-	Title_name = rm->GetImages("Resource/Images/2.png", 1, 1, 1, 32, 32)[0];
+	TitleImage = rm->GetImages("Resource/Images/Titel.png", 1, 1, 1, 32, 32)[0];
+	Title_name = rm->GetImages("Resource/Images/3.png", 1, 1, 1, 32, 32)[0];
 	select = rm->GetImages("Resource/Images/select.png", 1, 1, 1, 32, 32)[0];
 
 	menu_cursor = 1;
@@ -27,12 +28,14 @@ eSceneType TitleScene2::Update(float delta_second) {
 
 	//カーソル移動
 	if (input->GetKeyDown(KEY_INPUT_DOWN)) {
+		PlaySoundMem(cursor_SE, DX_PLAYTYPE_BACK);
 		menu_cursor++;
 		if (menu_cursor > 3)
 			menu_cursor = 1;
 	}
 
 	if (input->GetKeyDown(KEY_INPUT_UP)) {
+		PlaySoundMem(cursor_SE, DX_PLAYTYPE_BACK);
 		menu_cursor--;
 		if (menu_cursor < 1)
 			menu_cursor = 3;
@@ -65,18 +68,34 @@ eSceneType TitleScene2::Update(float delta_second) {
 }
 
 void TitleScene2::Draw() {
+	// 背景
 	DrawGraph(0, 0, TitleImage, TRUE);
-	DrawRotaGraph(500, 250, 0.5f, 0.0, Title_name, TRUE);
-	DrawRotaGraph(350, 430 + menu_cursor * 50, 0.1, 0, select, TRUE);
 
-	int time = GetNowCount();
-	bool blink = (time / 500) % 2 == 0;
-	int colorBlink = blink ? GetColor(255, 255, 0) : GetColor(255, 255, 255);
+	// タイトルロゴ
+	DrawRotaGraph(500, 250, 0.5f, 0.0f, Title_name, TRUE);
 
+	// セレクトカーソル
+	DrawRotaGraph(350, 430 + menu_cursor * 50, 0.1f, 0.0f, select, TRUE);
+
+	// フォント設定
 	SetFontSize(30);
 
+	// 点滅制御
+	int time = GetNowCount();
+	bool blink = (time / 500) % 2 == 0;
+
+	// 色設定
+	int blinkColor = blink
+						 ? GetColor(255, 255, 100) // 選択中：黄色
+						 : GetColor(255, 255, 255);
+
+	int normalColor = GetColor(255, 255, 255); // 非選択：白
+	int edgeColor = GetColor(0, 0, 0);		   // 黒フチ
+
 	for (int i = 1; i <= 3; i++) {
+		int x = 410;
 		int y = 470 + (i - 1) * 50;
+
 		const char* text = "";
 
 		switch (i) {
@@ -91,12 +110,23 @@ void TitleScene2::Draw() {
 			break;
 		}
 
+		// ★ まず全項目に黒フチ
+		for (int dx = -1; dx <= 1; dx++) {
+			for (int dy = -1; dy <= 1; dy++) {
+				if (dx == 0 && dy == 0)
+					continue;
+				DrawFormatString(x + dx, y + dy, edgeColor, text);
+			}
+		}
+
+		// ★ 本体文字
 		if (i == menu_cursor)
-			DrawFormatString(380, y, colorBlink, text);
+			DrawFormatString(x, y, blinkColor, text); // 選択中
 		else
-			DrawFormatString(380, y, GetColor(255, 255, 255), text);
+			DrawFormatString(x, y, normalColor, text); // 非選択
 	}
 }
+
 
 void TitleScene2::Finalize() {
 	SetFontSize(19);
