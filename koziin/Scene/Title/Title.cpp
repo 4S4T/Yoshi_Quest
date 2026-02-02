@@ -11,7 +11,7 @@ TitleScene::~TitleScene() {}
 void TitleScene::Initialize()
 {
 	// ★ タイトルBGM再生（シーン移動してもこのシーンの間だけ再生）
-	SoundManager::GetInstance().PlayBGM("Resource/Sounds/Title.mp3");
+	SoundManager::GetInstance().PlayBGM("Resource/Sounds/jo-jokyoku.mp3");
 	cursorSound = LoadSoundMem("Resource/Sounds/Cursor.mp3");
 
 	ResourceManager* rm = ResourceManager::GetInstance();
