@@ -81,35 +81,12 @@ std::vector<std::shared_ptr<Item>> GenerateMapItems() {
 
 	// Item( id,   名前,        位置,                 種類,                装備種別,                 攻撃補正, 防御補正, HP補正, 回復量 )
 	// 装備アイテム
-	items.push_back(std::make_shared<Item>(2, "日輪刀DX", Vector2D(300, 600),ItemType::Equipment, EquipCategory::Weapon,1000000, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(2, "錆びた剣", Vector2D(300, 600),ItemType::Equipment, EquipCategory::Weapon,10, 0, 0, 0));
+	
 
-	//テスト用
-	items.push_back(std::make_shared<Item>(3, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(4, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(34, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(37, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(38, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(35, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(3616, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(3714, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(3212, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(3166, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(31, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(41, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(341, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(371, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
-	items.push_back(std::make_shared<Item>(381, "日輪刀DX", Vector2D(300, 600), ItemType::Equipment, EquipCategory::Weapon, 1000000, 0, 0, 0));
+	items.push_back(std::make_shared<Item>(3, "盾", Vector2D(550, 420),ItemType::Equipment, EquipCategory::Shield,0, 3, 0, 0));
 
-
-
-
-
-
-
-
-	items.push_back(std::make_shared<Item>(22, "盾", Vector2D(550, 420),ItemType::Equipment, EquipCategory::Shield,0, 3, 0, 0));
-
-	items.push_back(std::make_shared<Item>(789, "鎧", Vector2D(580, 450),ItemType::Equipment, EquipCategory::Armor,0, 0, 10, 0));
+	items.push_back(std::make_shared<Item>(4, "鎧", Vector2D(580, 450),ItemType::Equipment, EquipCategory::Armor,0, 0, 10, 0));
 
 	items.push_back(std::make_shared<Item>(5, "ヘルメット+20", Vector2D(600, 480),ItemType::Equipment, EquipCategory::Helmet,0, 2, 0, 0));
 
