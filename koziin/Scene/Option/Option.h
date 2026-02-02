@@ -12,6 +12,7 @@ public:
 	// ‰Šú‰»ˆ—
 	virtual void Initialize() override;
 	int OptionImage;
+	int Option_SE = -1;
 
 
 	// XVˆ—

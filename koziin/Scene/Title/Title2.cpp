@@ -10,7 +10,7 @@ TitleScene2::~TitleScene2() {}
 
 void TitleScene2::Initialize() {
 	// ★ Title2でも同じタイトルBGMを使用
-	SoundManager::GetInstance().PlayBGM("Resource/Sounds/Title.mp3");
+	SoundManager::GetInstance().PlayBGM("Resource/Sounds/jo-jokyoku.mp3");
 	cursorSound2 = LoadSoundMem("Resource/Sounds/Cursor.mp3");
 	cursor_SE = LoadSoundMem("Resource/Sounds/音/選択/選択1.mp3");
 
@@ -100,7 +100,7 @@ void TitleScene2::Draw() {
 
 		switch (i) {
 		case 1:
-			text = "STATE";
+			text = "START";
 			break;
 		case 2:
 			text = "OPTION";
