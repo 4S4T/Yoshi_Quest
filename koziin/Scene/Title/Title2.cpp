@@ -100,7 +100,7 @@ void TitleScene2::Draw() {
 
 		switch (i) {
 		case 1:
-			text = "STATE";
+			text = "START";
 			break;
 		case 2:
 			text = "OPTION";

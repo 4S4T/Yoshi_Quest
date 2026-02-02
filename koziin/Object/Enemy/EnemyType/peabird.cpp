@@ -44,7 +44,7 @@ void peabird::Draw(const Vector2D& screen_offset) const
 	if (!isVisible)
 		return;
 
-	DrawFormatString(0, 200, GetColor(255, 255, 255), "とり　: %d", hp);
+	//DrawFormatString(0, 200, GetColor(255, 255, 255), "とり　: %d", hp);
 
 	// 点滅中は0.1秒ごとに非表示
 	if (isBlinking && static_cast<int>(blinkTimer * 10) % 2 == 0) {
