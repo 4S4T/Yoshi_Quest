@@ -26,6 +26,7 @@ private:
 	std::vector<std::string> stageFiles = {
 		"Resource/Book1.csv",
 		"Resource/Book2.csv",
+		"Resource/mati.csv",
 	};
 	int currentStageIndex = 0;
 
@@ -39,9 +40,9 @@ private:
 	static constexpr int menuItemCount = 4;
 	const char* menuItems[menuItemCount] = { "どうぐ", "そうび", "つよさ", "もどる" };
 
-	// フォーカスON=右リスト操作中 / OFF=左メニュー操作中
+	// フォーカスON=リスト操作中 / OFF=左メニュー操作中
 	bool isSubMenuVisible = false; // フォーカス管理に使用
-	std::string subMenuText;	   // 結果表示テキスト
+	std::string subMenuText;	   // 右側表示テキスト
 
 	std::vector<std::shared_ptr<Item>> items;
 
@@ -69,14 +70,11 @@ private:
 	std::string BuildItemPreviewText(const MenuEntry& e);
 
 	// サウンド
-
-
 	int BGM = -1;
 	int soubi_Sound = -1;
 	int sentaku_Sound = -1;
 	int erabu_Sound = -1;
 	int modoru_Sound = -1;
-
 
 	// フェード
 	bool isFadingIn = false;
@@ -96,12 +94,15 @@ private:
 	}
 
 	bool isFirstSpawn = true;
+
+	// ★ ここが重要：エンカウントON/OFF
 	bool isEncounterEnabled = true;
+
 	float encounterCooldown = 2.0f;
 	float encounterCooldownTimer = 0.0f;
 	bool isAfterBattle = false;
 
-	// 既存のメニュー系メンバの近くに追記
+	// 右側のメニュー状態
 	enum class RightMode {
 		None,
 		Items,
@@ -111,13 +112,13 @@ private:
 
 	RightMode rightMode = RightMode::None;
 
-	// そうび用
-	int equipSlotSelection = 0;			  // 0:武器 1:盾 2:防具 3:頭
+	// 装備用
+	int equipSlotSelection = 0;			  // 0:武器 1:盾 2:鎧 3:兜
 	std::vector<MenuEntry> equipFiltered; // 選んだ部位の候補
 	int equipItemSelection = 0;			  // 候補リスト用カーソル
 	int equipItemScrollOffset = 0;		  // 候補リスト用スクロール
 
-	// ヘルパ
+	// 補助用
 	void BuildEquipFilteredList(EquipCategory cat);
 	void DrawEquipSlotsPanel(int x, int y, int w, int h);
 	void DrawEquipItemListPanel(int x, int y, int w, int h);
