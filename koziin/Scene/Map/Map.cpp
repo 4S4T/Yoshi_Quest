@@ -526,14 +526,27 @@ eSceneType Map::Update(float delta_second) {
 	// 通常更新
 	obj->Update(delta_second);
 
-	// 戦闘復帰
+	// ★★★ 修正版：戦闘復帰（元のCSVに確実に戻す）★★★
 	if (wasInBattle && GetNowSceneType() == eSceneType::eMap) {
+
+		// ① 元いたマップ（CSV）に戻す
+		currentStageIndex = old_stageIndex;
+		mapdata = LoadStageMapCSV(stageFiles[currentStageIndex]);
+
+		// ② プレイヤーに新しいマップをセット
+		player->SetMapData(mapdata);
+
+		// ③ その上で元の座標に戻す
 		player->SetLocation(old_location);
+
 		wasInBattle = false;
 		encounterStepCounter = 0;
 		encounterCooldownTimer = encounterCooldown;
 		isAfterBattle = true;
 		lastPlayerPos = player->GetLocation();
+
+		// 見た目を整える
+		StartFadeIn();
 	}
 
 	// メニュー復帰（今はフラグだけ・必要なら使う）
