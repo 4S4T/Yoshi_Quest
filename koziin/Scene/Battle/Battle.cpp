@@ -8,6 +8,8 @@
 #include"../../Utility/SoundManager.h"
 #include <unordered_map>
 #include <cmath>
+#include "../../Object/Enemy/EnemyType/Slime.h"
+
 
 // ★ 追加：レジストリ／計算／AI
 #include "SpellRegistry.h"
@@ -168,6 +170,7 @@ void BattleScene::spawnEnemiesByEncounter() {
 		float y = 300.0f;
 
 		EnemyHandle h;
+
 		if (type == 0) {
 			auto* pea = obj->CreateGameObject<peabird>(Vector2D(x, y));
 			h.name = "トリッピー";
@@ -190,9 +193,22 @@ void BattleScene::spawnEnemiesByEncounter() {
 			h.applyDamage = [tau](int dmg) { tau->SetHp(dmg); };
 			h.setBlink = [tau](float t) { tau->SetBlink(t); };
 			h.setVisible = [tau](bool v) { tau->SetVisible(v); };
-			h.ai = std::make_unique<GuardWhenLowAI>(); // HP低下で防御
+			h.ai = std::make_unique<GuardWhenLowAI>();
+		}
+		else if (type == 2) {
+			auto* slime = obj->CreateGameObject<Slime>(Vector2D(x, y));
+			h.name = "スライム";
+			h.expValue = 50;
+			h.getHp = [slime]() { return slime->GetHp(); };
+			h.getAtk = [slime]() { return slime->GetAttack(); };
+			h.getDef = [slime]() { return slime->GetDefense(); };
+			h.applyDamage = [slime](int dmg) { slime->SetHp(dmg); };
+			h.setBlink = [slime](float t) { slime->SetBlink(t); };
+			h.setVisible = [slime](bool v) { slime->SetVisible(v); };
+			h.ai = std::make_unique<SimpleAttackAI>(); // とりあえず通常AI
 		}
 		else {
+			// 保険
 			auto* pea = obj->CreateGameObject<peabird>(Vector2D(x, y));
 			h.name = "トリッピー";
 			h.expValue = 100;
@@ -210,13 +226,14 @@ void BattleScene::spawnEnemiesByEncounter() {
 
 		h.x = x;
 		h.y = y;
+
 		int hp0 = h.getHp();
 		if (hp0 <= 0)
 			hp0 = 1;
 		h.maxHp = hp0;
 		h.dispHp = hp0;
 
-		enemies.push_back(std::move(h)); // ★ ムーブで格納
+		enemies.push_back(std::move(h));
 	}
 }
 
@@ -683,8 +700,10 @@ void BattleScene::Initialize() {
 	encounter.minCount = 1;
 	encounter.maxCount = 3;
 	encounter.enemyTypeWeights.clear();
-	encounter.enemyTypeWeights.push_back(70);
-	encounter.enemyTypeWeights.push_back(30);
+	encounter.enemyTypeWeights.push_back(70); // トリッピー
+	encounter.enemyTypeWeights.push_back(30); // タウロス
+	//encounter.enemyTypeWeights.push_back(60); // ★ スライム
+
 
 	spawnEnemiesByEncounter();
 
