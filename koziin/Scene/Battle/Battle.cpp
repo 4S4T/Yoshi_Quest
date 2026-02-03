@@ -702,7 +702,7 @@ void BattleScene::Initialize() {
 	encounter.enemyTypeWeights.clear();
 	encounter.enemyTypeWeights.push_back(70); // トリッピー
 	encounter.enemyTypeWeights.push_back(30); // タウロス
-	encounter.enemyTypeWeights.push_back(60); // ★ スライム
+	//encounter.enemyTypeWeights.push_back(60); // ★ スライム
 
 
 	spawnEnemiesByEncounter();
