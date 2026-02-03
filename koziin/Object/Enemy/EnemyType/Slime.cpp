@@ -17,7 +17,7 @@ Slime::~Slime()
 void Slime::Initialize()
 {
 	ResourceManager* rm = ResourceManager::GetInstance();
-	image = rm->GetImages("Resource/Images/slime1.png", 1, 1, 1, 16, 16)[0];
+	image = rm->GetImages("Resource/Images/boss.png", 1, 1, 1, 16, 16)[0];
 
 
 	location = Vector2D(480, 360);
