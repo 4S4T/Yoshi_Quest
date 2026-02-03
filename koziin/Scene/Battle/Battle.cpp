@@ -705,7 +705,48 @@ void BattleScene::Initialize() {
 	//encounter.enemyTypeWeights.push_back(60); // ★ スライム
 
 
-	spawnEnemiesByEncounter();
+	if (isTile9SlimeBattle) {
+		enemies.clear();
+
+		GameManager* obj = Singleton<GameManager>::GetInstance();
+
+		float x = 500.0f;
+		float y = 300.0f;
+
+		auto* slime = obj->CreateGameObject<Slime>(Vector2D(x, y));
+
+		EnemyHandle h;
+		h.name = "スライム";
+		h.displayName = "スライム";
+		h.expValue = 50;
+
+		h.getHp = [slime]() { return slime->GetHp(); };
+		h.getAtk = [slime]() { return slime->GetAttack(); };
+		h.getDef = [slime]() { return slime->GetDefense(); };
+		h.applyDamage = [slime](int dmg) { slime->SetHp(dmg); };
+		h.setBlink = [slime](float t) { slime->SetBlink(t); };
+		h.setVisible = [slime](bool v) { slime->SetVisible(v); };
+		h.ai = std::make_unique<SimpleAttackAI>();
+
+		h.x = x;
+		h.y = y;
+
+		int hp0 = h.getHp();
+		if (hp0 <= 0)
+			hp0 = 1;
+		h.maxHp = hp0;
+		h.dispHp = hp0;
+
+		enemies.push_back(std::move(h));
+
+		// ★★★ これが超重要 ★★★
+		isTile9SlimeBattle = false;
+	}
+	else {
+		spawnEnemiesByEncounter();
+	}
+
+
 
 	int firstIdx = firstLivingIndex();
 	if (firstIdx < 0)
@@ -1988,6 +2029,11 @@ void BattleScene::Finalize() {
 }
 eSceneType BattleScene::GetNowSceneType() const { return eSceneType::eBattle; }
 void BattleScene::SetPlayerPosition(const Vector2D& position) { playerPosition = position; }
+
+void BattleScene::SetTile9SlimeBattle(bool enable) {
+	isTile9SlimeBattle = enable;
+}
+
 
 //--------------------------------------
 // ★ バトル用：所持アイテム一覧を構築する

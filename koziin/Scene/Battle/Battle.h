@@ -317,4 +317,11 @@ public:
 	// ★アイテム選択用（消費アイテムだけ）
 	int itemCursor = 0;
 	std::vector<int> battleItemIds; // PlayerData::ownedItems のキー（id）だけ持つ
+
+	private:
+	bool isTile9SlimeBattle = false;
+
+	public:
+	void SetTile9SlimeBattle(bool enable);
+
 };

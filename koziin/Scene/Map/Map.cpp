@@ -556,6 +556,7 @@ eSceneType Map::Update(float delta_second) {
 	}
 
 	// === タイル 6・7 に触れたら Book2.csv（stageFiles[1]）へワープ ===
+	// === タイル 6 / 7 によるマップ遷移（元仕様を崩さない） ===
 	{
 		int col = static_cast<int>(player->GetLocation().x / (D_OBJECT_SIZE * 2));
 		int row = static_cast<int>(player->GetLocation().y / (D_OBJECT_SIZE * 2));
@@ -564,36 +565,69 @@ eSceneType Map::Update(float delta_second) {
 			col >= 0 && col < (int)mapdata[row].size()) {
 
 			char tile = mapdata[row][col];
+			bool doWarp = false;
+			Vector2D respawn(200.0f, 600.0f);
 
-			// タイル 6 または 7 の上にいる？
-			if (tile == '6' || tile == '7') {
-				// stageFiles[1] があれば Book2 に飛ぶ
-				if (stageFiles.size() > 1) {
-					currentStageIndex = 1; // Book2.csv
+			// ---------- タイル6 / 7：マップワープ ----------
+			if (currentStageIndex == 0 && tile == '6') {
+				currentStageIndex = 1;
+				respawn = Vector2D(180.0f, 520.0f);
+				doWarp = true;
+			}
+			else if (currentStageIndex == 1 && tile == '7') {
+				currentStageIndex = 0;
+				respawn = Vector2D(600.0f, 350.0f);
+				doWarp = true;
+			}
 
-					// マップ再読み込み
-					mapdata = LoadStageMapCSV(stageFiles[currentStageIndex]);
-					player->SetMapData(mapdata);
+			if (doWarp) {
+				mapdata = LoadStageMapCSV(stageFiles[currentStageIndex]);
+				player->SetMapData(mapdata);
+				player->SetLocation(respawn);
 
-					// ワープ後の位置（Book2 内のスタート位置に合わせて調整してOK）
-					player->SetLocation(Vector2D(200.0f, 600.0f));
+				ncps.clear();
+				encounterStepCounter = 0;
+				encounterCooldownTimer = encounterCooldown;
+				lastPlayerPos = player->GetLocation();
 
-					// NPC は一旦クリア（必要ならここで Book2 用 NPC を追加）
-					ncps.clear();
-
-					// エンカウント状態リセット
-					encounterStepCounter = 0;
-					encounterCooldownTimer = encounterCooldown;
-					lastPlayerPos = player->GetLocation();
-
-					// フェード演出
-					StartFadeIn();
-				}
-
+				StartFadeIn();
 				return eSceneType::eMap;
 			}
+
+			// ---------- タイル9：イベント戦闘 ----------
+			if (tile == '9' && !isAfterBattle) {
+
+				old_location = player->GetLocation();
+				old_stageIndex = currentStageIndex;
+				wasInBattle = true;
+
+				encounterStepCounter = 0;
+				encounterCooldownTimer = encounterCooldown;
+
+				SoundManager::GetInstance().StopBGM();
+
+				BattleScene* battleScene = new BattleScene();
+				battleScene->SetPlayer(player);
+				battleScene->SetTile9SlimeBattle(true);
+
+				return eSceneType::eBattle;
+			}
 		}
+		// ======================
+		// 戦闘後ロック解除（1マス動いたら）
+		// ======================
+		if (isAfterBattle) {
+			Vector2D cur = player->GetLocation();
+			if ((int)cur.x != (int)lastPlayerPos.x ||
+				(int)cur.y != (int)lastPlayerPos.y) {
+				isAfterBattle = false;
+			}
+		}
+
 	}
+
+	
+
 
 	// エンカウント
 	Vector2D currentPos = player->GetLocation();
