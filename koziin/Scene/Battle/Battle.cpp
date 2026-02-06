@@ -671,9 +671,11 @@ void BattleScene::Initialize() {
 	senntaku_sound = LoadSoundMem("Resource/Sounds/Cursor.mp3");
 	erabu_sound = LoadSoundMem("Resource/Sounds/音/選択/選択1.mp3");
 
+	Mahou = LoadSoundMem("Resource/Sounds/火炎魔法1.mp3");
+	ChangeVolumeSoundMem(550, attack_sound);
 	attack_sound = LoadSoundMem("Resource/Sounds/音/battle/damage1.mp3");
 	ChangeVolumeSoundMem(500, attack_sound);
-	damage_sound = LoadSoundMem("Resource/Sounds/音/battle/damage2.mp3");
+	damage_sound = LoadSoundMem("Resource/Sounds/音/battle/重いパンチ1.mp3");
 	ChangeVolumeSoundMem(500, damage_sound);
 	/*Level_UP_sound = LoadSoundMem("Resource/Sounds/音/battle/LevelUP.mp3");*/
 	
@@ -1195,7 +1197,11 @@ eSceneType BattleScene::Update(float delta_second) {
 			if (firstIdx < 0)
 				firstIdx = 0;
 			targetCursor = firstIdx;
+
+
+			//ここ
 			battleState = BattleState::MagicTarget;
+			
 		}
 		break;
 	}
@@ -1254,7 +1260,7 @@ eSceneType BattleScene::Update(float delta_second) {
 			pd->ConsumeMp(cost);
 			enqueueMessage("MPを " + std::to_string(cost) + " しょうひした！");
 			enqueueMessage(std::string("よっしーは ") + def->name + "を となえた！");
-
+			PlaySoundMem(Mahou, DX_PLAYTYPE_BACK);
 			CalcContext ctx;
 			ctx.attackerAtk = pd->GetAttack();
 			ctx.attackerLv = pd->GetLevel();
