@@ -121,6 +121,7 @@ private:
 	int damage_sound = -1;
 	int nigeru_sound = -1;
 	int Level_UP_sound = -1;
+	int Mahou = -1;
 
 
 
